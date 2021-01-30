@@ -1,6 +1,21 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  const flavor = String.fromEnvironment('FLAVOR');
+  if (flavor == 'development') {
+    debugPrint('FLAVOR: development');
+  } else if (flavor == 'staging') {
+    debugPrint('FLAVOR: staging');
+  } else if (flavor == 'production') {
+    debugPrint('FLAVOR: production');
+  } else {
+    throw Exception('--dart-define=FLAVOR=xxx should be specified.');
+  }
+
   runApp(MyApp());
 }
 
