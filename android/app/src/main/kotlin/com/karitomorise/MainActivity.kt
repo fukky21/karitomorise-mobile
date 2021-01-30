@@ -1,4 +1,4 @@
-package com.example.karitomorise
+package com.karitomorise
 
 import io.flutter.embedding.android.FlutterActivity
 
