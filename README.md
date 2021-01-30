@@ -1,16 +1,56 @@
-# karitomorise
+# karitomo-rise
 
-A new Flutter project.
+## Firebase Project References
+- [karitomorise-dev](https://console.firebase.google.com/u/0/project/karitomorise-dev/overview)
+- [karitomorise-stg](https://console.firebase.google.com/u/0/project/karitomorise-stg/overview)
+- [karitomorise](https://console.firebase.google.com/u/0/project/karitomorise/overview)
 
-## Getting Started
+## Setup
+### xcconfigを設定
+以下のコマンドで`ios/Flutter`ディレクトリに`Development.xcconfig`, `Staging.xcconfig`, `Production.xcconfig`を作成する
 
-This project is a starting point for a Flutter application.
+```
+$ make setup
+```
 
-A few resources to get you started if this is your first Flutter project:
+### Firebaseを設定
+#### iOS
+各Firebase Projectから`GoogleService-Info.plist`をダウンロードして`ios/Runner/Firebase`ディレクトリに
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- `GoogleService-Info-Development.plist`
+- `GoogleService-Info-Staging.plist`
+- `GoogleService-Info-Production.plist`
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+と名前を変更して配置する
+
+#### Android
+各Firebase Projectから`google-services.json`をダウンロードして
+
+- `android/app/src/development`
+- `android/app/src/staging`
+- `android/app/src/production`
+
+にそれぞれ配置する
+
+## Development
+エミュレータでアプリをビルド&インストール&実行
+```
+$ make run
+```
+
+実機でアプリをビルド&インストール&実行
+```
+$ flutter run --release --flavor development --dart-define=FLAVOR=development
+```
+
+## Staging
+実機でアプリをビルド&インストール&実行
+```
+$ flutter run --release --flavor staging --dart-define=FLAVOR=staging
+```
+
+## Production
+実機でアプリをビルド&インストール&実行
+```
+$ flutter run --release --flavor production --dart-define=FLAVOR=production
+```
