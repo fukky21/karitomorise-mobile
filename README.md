@@ -1,4 +1,4 @@
-# karitomo-rise
+# karitomorise-mobile
 
 ## Firebase Project References
 - [karitomorise-dev](https://console.firebase.google.com/u/0/project/karitomorise-dev/overview)
@@ -8,7 +8,6 @@
 ## Setup
 ### xcconfigを設定
 以下のコマンドで`ios/Flutter`ディレクトリに`Development.xcconfig`, `Staging.xcconfig`, `Production.xcconfig`を作成する
-
 ```
 $ make setup
 ```
