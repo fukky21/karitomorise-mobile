@@ -52,7 +52,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: BlocBuilder<SignUpScreenBloc, SignUpScreenState>(
         builder: (context, state) {
           if (state is SignUpFailure) {
-            if (state.errorType != SignUpFailure.errorTypeOther) {
+            if (state.errorType == SignUpFailure.errorTypeOther) {
               return _signUpFailureView(context, state);
             }
           }

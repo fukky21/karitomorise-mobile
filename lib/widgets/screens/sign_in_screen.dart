@@ -44,7 +44,7 @@ class _SignInScreenState extends State<SignInScreen> {
       child: BlocBuilder<SignInScreenBloc, SignInScreenState>(
         builder: (context, state) {
           if (state is SignInFailure) {
-            if (state.errorType != SignInFailure.errorTypeOther) {
+            if (state.errorType == SignInFailure.errorTypeOther) {
               return _signInFailureView(context, state);
             }
           }
@@ -73,11 +73,16 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Widget _signInSuccessView(BuildContext context, SignInSuccess state) {
-    return BlocBuilder<UserCubit, AppUser>(
-      cubit: BlocProvider.of<UserCubit>(context),
-      builder: (context, user) {
-        return Scaffold(
-          body: Center(
+    return Scaffold(
+      body: BlocBuilder<UserCubit, AppUser>(
+        cubit: BlocProvider.of<UserCubit>(context),
+        builder: (context, user) {
+          if (user == null) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -100,9 +105,9 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
               ],
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
