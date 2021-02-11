@@ -5,7 +5,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 import '../../blocs/global_blocs/authentication_bloc/index.dart';
 import '../../blocs/global_blocs/cubits/index.dart';
-import '../../blocs/sign_in_screen_bloc/index.dart';
+import '../../blocs/screen_blocs/sign_in_screen_bloc/index.dart';
 import '../../helpers/index.dart';
 import '../../models/index.dart';
 import '../../widgets/components/index.dart';

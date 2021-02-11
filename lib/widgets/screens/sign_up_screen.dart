@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 
-import '../../blocs/sign_up_screen_bloc/index.dart';
+import '../../blocs/screen_blocs/sign_up_screen_bloc/index.dart';
 import '../../helpers/index.dart';
 import '../../util/index.dart';
 import '../../widgets/components/index.dart';

@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../repositories/index.dart';
+import '../../../repositories/index.dart';
 import 'sign_up_screen_event.dart';
 import 'sign_up_screen_state.dart';
 
