@@ -13,7 +13,7 @@ class FirebaseUserRepository {
   static const biographyFieldName = 'biography';
   static const avatarTypeFieldName = 'avatar_type';
   static const mainWeaponTypeFieldName = 'main_weapon_type';
-  static const firstPlayedSeriesFieldName = 'first_played_series';
+  static const firstPlayedSeriesTypeFieldName = 'first_played_series_type';
   static const createdEventsFieldName = 'created_events';
   static const participatedEventsFieldName = 'participated_events';
   static const likedEventsFieldName = 'liked_events';
@@ -38,7 +38,7 @@ class FirebaseUserRepository {
       biography: data[biographyFieldName] as String,
       avatarType: data[avatarTypeFieldName] as int,
       mainWeaponType: data[mainWeaponTypeFieldName] as int,
-      firstPlayedSeries: data[firstPlayedSeriesFieldName] as int,
+      firstPlayedSeriesType: data[firstPlayedSeriesTypeFieldName] as int,
       createdAt: (data[createdAtFieldName] as Timestamp)?.toDate(),
       updatedAt: (data[updatedAtFieldName] as Timestamp)?.toDate(),
     );
@@ -56,7 +56,7 @@ class FirebaseUserRepository {
         avatarTypeFieldName: user.avatarType,
         biographyFieldName: user.biography,
         mainWeaponTypeFieldName: user.mainWeaponType,
-        firstPlayedSeriesFieldName: user.firstPlayedSeries,
+        firstPlayedSeriesTypeFieldName: user.firstPlayedSeriesType,
         updatedAtFieldName: now,
       },
     );
@@ -134,15 +134,16 @@ class FirebaseUserRepository {
     await _firebaseFirestore.runTransaction((transaction) async {
       transaction
         ..update(
-          _firebaseFirestore.collection('_users').doc(currentUser.uid),
+          _firebaseFirestore.collection(subCollectionName).doc(currentUser.uid),
           <String, dynamic>{
-            'following': FieldValue.arrayUnion(<String>[uid]),
+            followingFieldName: FieldValue.arrayUnion(<String>[uid]),
           },
         )
         ..update(
           _firebaseFirestore.collection('_users').doc(uid),
           <String, dynamic>{
-            'followers': FieldValue.arrayUnion(<String>[currentUser.uid]),
+            followersFieldName:
+                FieldValue.arrayUnion(<String>[currentUser.uid]),
           },
         );
     });
@@ -154,15 +155,16 @@ class FirebaseUserRepository {
     await _firebaseFirestore.runTransaction((transaction) async {
       transaction
         ..update(
-          _firebaseFirestore.collection('_users').doc(currentUser.uid),
+          _firebaseFirestore.collection(subCollectionName).doc(currentUser.uid),
           <String, dynamic>{
-            'following': FieldValue.arrayRemove(<String>[uid]),
+            followingFieldName: FieldValue.arrayRemove(<String>[uid]),
           },
         )
         ..update(
-          _firebaseFirestore.collection('_users').doc(uid),
+          _firebaseFirestore.collection(subCollectionName).doc(uid),
           <String, dynamic>{
-            'followers': FieldValue.arrayRemove(<String>[currentUser.uid]),
+            followersFieldName:
+                FieldValue.arrayRemove(<String>[currentUser.uid]),
           },
         );
     });
