@@ -88,7 +88,7 @@ class _SignInScreenState extends State<SignInScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CustomCircleAvatar(
-                  avatarType: user?.avatarType,
+                  filePath: user?.avatarIconFilePath,
                   radius: 50,
                 ),
                 const SizedBox(height: 10),

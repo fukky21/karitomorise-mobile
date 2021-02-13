@@ -69,7 +69,7 @@ class _AccountCard extends StatelessWidget {
                         child: Row(
                           children: [
                             CustomCircleAvatar(
-                              avatarType: user?.avatarType,
+                              filePath: user?.avatarIconFilePath,
                               radius: _width * 0.0855,
                             ),
                             const SizedBox(width: 10),
