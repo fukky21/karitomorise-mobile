@@ -56,7 +56,7 @@ class _AccountCard extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(15),
               onTap: () {
-                // TODO(Fukky21): ユーザー詳細画面へ遷移する
+                Navigator.pushNamed(context, ShowUserScreen.route);
               },
               child: Container(
                 padding: const EdgeInsets.all(10),

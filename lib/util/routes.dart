@@ -6,6 +6,11 @@ class Routes {
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     try {
       switch (routeSettings.name) {
+        case ShowUserScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            builder: (_) => ShowUserScreen(),
+          );
         case SignInScreen.route:
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
