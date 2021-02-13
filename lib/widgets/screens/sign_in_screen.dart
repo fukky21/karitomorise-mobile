@@ -8,6 +8,7 @@ import '../../blocs/global_blocs/cubits/index.dart';
 import '../../blocs/screen_blocs/sign_in_screen_bloc/index.dart';
 import '../../helpers/index.dart';
 import '../../models/index.dart';
+import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 import 'sign_up_screen.dart';
 
@@ -177,7 +178,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/icons/karitomorise_icon.png',
+                      AppIcons.karitomorise,
                       width: _screenWidth * 0.4,
                     ),
                     const SizedBox(height: 30),

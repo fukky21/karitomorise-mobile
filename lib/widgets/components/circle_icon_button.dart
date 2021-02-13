@@ -46,7 +46,7 @@ class CircleIconButton extends StatelessWidget {
         elevation: 0,
         padding: const EdgeInsets.all(10),
         constraints: BoxConstraints(maxWidth: size, maxHeight: size),
-        child: Image.asset('assets/icons/google_icon.png'),
+        child: Image.asset(AppIcons.google),
         onPressed: onTap,
       );
     }
