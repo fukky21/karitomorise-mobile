@@ -11,7 +11,7 @@ class CustomCircleAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircularProfileAvatar(
       '',
-      child: Image.asset(filePath),
+      child: filePath != null ? Image.asset(filePath) : null,
       borderColor: Theme.of(context).primaryColor,
       borderWidth: 2,
       radius: radius,

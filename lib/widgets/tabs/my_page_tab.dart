@@ -56,7 +56,13 @@ class _AccountCard extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(15),
               onTap: () {
-                Navigator.pushNamed(context, ShowUserScreen.route);
+                if (user != null) {
+                  Navigator.pushNamed(
+                    context,
+                    ShowUserScreen.route,
+                    arguments: ShowUserScreenArguments(uid: user.id),
+                  );
+                }
               },
               child: Container(
                 padding: const EdgeInsets.all(10),

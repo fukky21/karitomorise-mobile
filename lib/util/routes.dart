@@ -7,9 +7,10 @@ class Routes {
     try {
       switch (routeSettings.name) {
         case ShowUserScreen.route:
+          final args = routeSettings.arguments as ShowUserScreenArguments;
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
-            builder: (_) => ShowUserScreen(),
+            builder: (_) => ShowUserScreen(args: args),
           );
         case SignInScreen.route:
           return MaterialPageRoute<dynamic>(

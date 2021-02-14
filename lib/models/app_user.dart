@@ -144,7 +144,7 @@ class AppUser {
       case mainWeaponTypeSwordAndShield:
         return '片手剣';
       default:
-        return '';
+        return '未選択';
     }
   }
 
@@ -181,7 +181,7 @@ class AppUser {
       case firstPlayedSeriesTypeMHR:
         return 'モンスターハンターライズ';
       default:
-        return '';
+        return '未選択';
     }
   }
 }
