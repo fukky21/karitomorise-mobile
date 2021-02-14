@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,6 +15,8 @@ class CurrentUserBloc extends Bloc<CurrentUserEvent, CurrentUserState> {
   final _userRepository = FirebaseUserRepository();
   StreamSubscription _subscription1;
   StreamSubscription _subscription2;
+  DocumentSnapshot _doc;
+  DocumentSnapshot _subDoc;
 
   @override
   Future<void> close() {
@@ -43,13 +46,15 @@ class CurrentUserBloc extends Bloc<CurrentUserEvent, CurrentUserState> {
         await _subscription2?.cancel();
         _subscription1 =
             _userRepository.getDocumentSnapshots(currentUser.uid).listen(
-          (_) {
+          (doc) {
+            _doc = doc;
             add(Listened());
           },
         );
         _subscription2 =
             _userRepository.getSubDocumentSnapshots(currentUser.uid).listen(
-          (_) {
+          (doc) {
+            _subDoc = doc;
             add(Listened());
           },
         );
@@ -61,10 +66,9 @@ class CurrentUserBloc extends Bloc<CurrentUserEvent, CurrentUserState> {
 
   Stream<CurrentUserState> _mapListenedToState() async* {
     try {
-      final currentUser = _authRepository.getCurrentUser();
-      if (currentUser != null) {
-        final user = await _userRepository.getUser(currentUser.uid);
-        final likedEvents = await _userRepository.getLikes(currentUser.uid);
+      if (_doc != null && _subDoc != null) {
+        final user = _userRepository.getUserFromDocuments(_doc, _subDoc);
+        final likedEvents = _userRepository.getLikesFromDocument(_doc);
         yield CurrentUserState(user: user, likedEvents: likedEvents);
       }
     } on Exception catch (e) {
@@ -75,6 +79,8 @@ class CurrentUserBloc extends Bloc<CurrentUserEvent, CurrentUserState> {
   Stream<CurrentUserState> _mapListenStoppedToState() async* {
     await _subscription1?.cancel();
     await _subscription2?.cancel();
+    _doc = null;
+    _subDoc = null;
     yield null;
   }
 }

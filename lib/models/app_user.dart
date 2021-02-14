@@ -8,6 +8,9 @@ class AppUser {
     this.avatarType,
     this.mainWeaponType,
     this.firstPlayedSeriesType,
+    this.createdEventCount,
+    this.followingCount,
+    this.followerCount,
     this.createdAt,
     this.updatedAt,
   });
@@ -18,6 +21,9 @@ class AppUser {
   int avatarType;
   int mainWeaponType;
   int firstPlayedSeriesType;
+  int createdEventCount;
+  int followingCount;
+  int followerCount;
   DateTime createdAt;
   DateTime updatedAt;
 

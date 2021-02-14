@@ -109,7 +109,7 @@ class ShowUserScreen extends StatelessWidget {
                           _countPanel(
                             context,
                             title: '作成した募集',
-                            count: 30, // TODO(Fukky21): 作成した募集数を取得する
+                            count: state?.user?.createdEventCount ?? 0,
                             size: _screenWidth * 0.25,
                             onTap: () {
                               // TODO(Fukky21): 募集一覧画面へ遷移する
@@ -118,7 +118,7 @@ class ShowUserScreen extends StatelessWidget {
                           _countPanel(
                             context,
                             title: 'フォロー中',
-                            count: 30, // TODO(Fukky21): フォロー数を取得する
+                            count: state?.user?.followingCount ?? 0,
                             size: _screenWidth * 0.25,
                             onTap: () {
                               // TODO(Fukky21): フォロー/フォロワー画面へ遷移する
@@ -127,7 +127,7 @@ class ShowUserScreen extends StatelessWidget {
                           _countPanel(
                             context,
                             title: 'フォロワー',
-                            count: 30, // TODO(Fukky21): フォロワー数を取得する
+                            count: state?.user?.followerCount ?? 0,
                             size: _screenWidth * 0.25,
                             onTap: () {
                               // TODO(Fukky21): フォロー/フォロワー画面へ遷移する
