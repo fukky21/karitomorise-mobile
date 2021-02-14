@@ -110,40 +110,6 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget _defaultView(BuildContext context, SignInScreenState state) {
     final _screenWidth = MediaQuery.of(context).size.width;
 
-    String _emailErrorText;
-    String _passwordErrorText;
-    if (state is SignInFailure) {
-      if (state.errorType == SignInFailure.errorTypeInvalidEmail) {
-        _emailErrorText = 'このアドレスは不正です';
-      }
-      if (state.errorType == SignInFailure.errorTypeUserNotFound) {
-        _emailErrorText = 'このアドレスは登録されていません';
-      }
-      if (state.errorType == SignInFailure.errorTypeWrongPassword) {
-        _passwordErrorText = 'パスワードが間違っています';
-      }
-    }
-
-    String _emailValidator(String email) {
-      final blankErrorText = blankValidator(email);
-      if (blankErrorText != null) {
-        return blankErrorText;
-      }
-      final emailFormatErrorText = emailFormatValidator(email);
-      if (emailFormatErrorText != null) {
-        return emailFormatErrorText;
-      }
-      return null;
-    }
-
-    String _passwordValidator(String password) {
-      final blankErrorText = blankValidator(password);
-      if (blankErrorText != null) {
-        return blankErrorText;
-      }
-      return null;
-    }
-
     void _signInButtonEvent() {
       FocusScope.of(context).unfocus();
       if (_formKey.currentState.validate()) {
@@ -181,7 +147,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       labelText: 'メールアドレス',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      errorText: _emailErrorText,
+                      errorText: _emailErrorText(state),
                       validator: _emailValidator,
                     ),
                     const SizedBox(height: 30),
@@ -189,7 +155,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       labelText: 'パスワード',
                       controller: _passwordController,
                       obscureText: true,
-                      errorText: _passwordErrorText,
+                      errorText: _passwordErrorText(state),
                       validator: _passwordValidator,
                     ),
                     const SizedBox(height: 30),
@@ -258,5 +224,46 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       ),
     );
+  }
+
+  String _emailErrorText(SignInScreenState state) {
+    if (state is SignInFailure) {
+      if (state.errorType == SignInFailure.errorTypeInvalidEmail) {
+        return 'このアドレスは不正です';
+      }
+      if (state.errorType == SignInFailure.errorTypeUserNotFound) {
+        return 'このアドレスは登録されていません';
+      }
+    }
+    return null;
+  }
+
+  String _passwordErrorText(SignInScreenState state) {
+    if (state is SignInFailure) {
+      if (state.errorType == SignInFailure.errorTypeWrongPassword) {
+        return 'パスワードが間違っています';
+      }
+    }
+    return null;
+  }
+
+  String _emailValidator(String email) {
+    final blankErrorText = blankValidator(email);
+    if (blankErrorText != null) {
+      return blankErrorText;
+    }
+    final emailFormatErrorText = emailFormatValidator(email);
+    if (emailFormatErrorText != null) {
+      return emailFormatErrorText;
+    }
+    return null;
+  }
+
+  String _passwordValidator(String password) {
+    final blankErrorText = blankValidator(password);
+    if (blankErrorText != null) {
+      return blankErrorText;
+    }
+    return null;
   }
 }

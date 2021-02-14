@@ -26,6 +26,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TapGestureRecognizer _recognizer;
   bool _isAgreed;
 
+  static const _passwordMinLength = 8;
+  static const _passwordMaxLength = 20;
+  static const _passwordNotes = [
+    '半角英子文字大文字数字をそれぞれ1種類以上使用してください',
+    '$_passwordMinLength文字以上$_passwordMaxLength文字以内で入力してください',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -53,11 +60,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
         builder: (context, state) {
           if (state is SignUpFailure) {
             if (state.errorType == SignUpFailure.errorTypeOther) {
-              return _signUpFailureView(context, state);
+              return Scaffold(
+                appBar: simpleAppBar(context, title: _appBarTitle),
+                body: const Center(
+                  child: BigTip(
+                    title: Text('エラーが発生しました'),
+                    child: Icon(Icons.error_outline_sharp),
+                  ),
+                ),
+              );
             }
           }
           if (state is SignUpSuccess) {
-            return _signUpSuccessView(context, state);
+            return Scaffold(
+              appBar: simpleAppBar(context, title: _appBarTitle),
+              body: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('アカウントを作成しました。'),
+                      const SizedBox(height: 15),
+                      const Text('以下のアドレスに確認メールを送信しました。'),
+                      const SizedBox(height: 15),
+                      Text(
+                        state.email,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
           }
           return _defaultView(context, state);
         },
@@ -65,113 +100,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _signUpFailureView(BuildContext context, SignUpFailure state) {
-    return Scaffold(
-      appBar: simpleAppBar(context, title: _appBarTitle),
-      body: const Center(
-        child: BigTip(
-          title: Text('エラーが発生しました'),
-          child: Icon(Icons.error_outline_sharp),
-        ),
-      ),
-    );
-  }
-
-  Widget _signUpSuccessView(BuildContext context, SignUpSuccess state) {
-    return Scaffold(
-      appBar: simpleAppBar(context, title: _appBarTitle),
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('アカウントを作成しました。'),
-              const SizedBox(height: 15),
-              const Text('以下のアドレスに確認メールを送信しました。'),
-              const SizedBox(height: 15),
-              Text(
-                state.email,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _defaultView(BuildContext context, SignUpScreenState state) {
-    const _passwordMinLength = 8;
-    const _passwordMaxLength = 20;
-
-    const _passwordNotes = [
-      '半角英子文字大文字数字をそれぞれ1種類以上使用してください',
-      '$_passwordMinLength文字以上$_passwordMaxLength文字以内で入力してください',
-    ];
-
-    String _emailErrorText;
-    String _passwordErrorText;
-    if (state is SignUpFailure) {
-      if (state.errorType == SignUpFailure.errorTypeEmailAlreadyInUse) {
-        _emailErrorText = 'このアドレスは登録済です';
-      }
-      if (state.errorType == SignUpFailure.errorTypeInvalidEmail) {
-        _emailErrorText = 'このアドレスは不正です';
-      }
-      if (state.errorType == SignUpFailure.errorTypeWeakPassword) {
-        _passwordErrorText = 'パスワード強度が低いです';
-      }
-    }
-
-    String _emailValidator(String email) {
-      final blankErrorText = blankValidator(email);
-      if (blankErrorText != null) {
-        return blankErrorText;
-      }
-      final emailFormatErrorText = emailFormatValidator(email);
-      if (emailFormatErrorText != null) {
-        return emailFormatErrorText;
-      }
-      return null;
-    }
-
-    String _passwordValidator(String password) {
-      final blankErrorText = blankValidator(password);
-      if (blankErrorText != null) {
-        return blankErrorText;
-      }
-      final rangeLengthErrorText = rangeLengthValidator(
-        password,
-        _passwordMinLength,
-        _passwordMaxLength,
-      );
-      if (rangeLengthErrorText != null) {
-        return rangeLengthErrorText;
-      }
-      final passwordFormatErrorText = passwordFormatValidator(password);
-      if (passwordFormatErrorText != null) {
-        return passwordFormatErrorText;
-      }
-      return null;
-    }
-
-    String _confirmPasswordValidator(String confirmPassword) {
-      final blankErrorText = blankValidator(confirmPassword);
-      if (blankErrorText != null) {
-        return blankErrorText;
-      }
-      final password = _passwordController.text;
-      final confirmPasswordErrorText = confirmPasswordValidator(
-        password,
-        confirmPassword,
-      );
-      if (confirmPasswordErrorText != null) {
-        return confirmPasswordErrorText;
-      }
-      return null;
-    }
-
     void _signUpButtonEvent() {
       FocusScope.of(context).unfocus();
       if (_formKey.currentState.validate()) {
@@ -185,62 +114,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         );
       }
-    }
-
-    Widget _termsOfServiceCell() {
-      return Column(
-        children: [
-          CustomDivider(),
-          Container(
-            color: AppColors.grey20,
-            width: double.infinity,
-            height: 50,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.only(left: 15),
-                  child: Row(
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          text: '利用規約',
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          recognizer: _recognizer
-                            ..onTap = () {
-                              // TODO(Fukky21): 利用規約へ飛ぶ
-                            },
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'に同意する',
-                        style: Theme.of(context).textTheme.bodyText1,
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(right: 5),
-                  child: CupertinoSwitch(
-                    value: _isAgreed,
-                    onChanged: (value) {
-                      setState(() {
-                        _isAgreed = value;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          CustomDivider(),
-        ],
-      );
     }
 
     return ModalProgressHUD(
@@ -264,7 +137,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             labelText: 'メールアドレス',
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            errorText: _emailErrorText,
+                            errorText: _emailErrorText(state),
                             validator: _emailValidator,
                           ),
                           const SizedBox(height: 30),
@@ -273,7 +146,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             controller: _passwordController,
                             obscureText: true,
                             maxLength: _passwordMaxLength,
-                            errorText: _passwordErrorText,
+                            errorText: _passwordErrorText(state),
                             validator: _passwordValidator,
                           ),
                           const SizedBox(height: 30),
@@ -309,5 +182,130 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
     );
+  }
+
+  Widget _termsOfServiceCell() {
+    return Column(
+      children: [
+        CustomDivider(),
+        Container(
+          color: AppColors.grey20,
+          width: double.infinity,
+          height: 50,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 15),
+                child: Row(
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        text: '利用規約',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        recognizer: _recognizer
+                          ..onTap = () {
+                            // TODO(Fukky21): 利用規約へ飛ぶ
+                          },
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'に同意する',
+                      style: Theme.of(context).textTheme.bodyText1,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.only(right: 5),
+                child: CupertinoSwitch(
+                  value: _isAgreed,
+                  onChanged: (value) {
+                    setState(() {
+                      _isAgreed = value;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        CustomDivider(),
+      ],
+    );
+  }
+
+  String _emailErrorText(SignUpScreenState state) {
+    if (state is SignUpFailure) {
+      if (state.errorType == SignUpFailure.errorTypeEmailAlreadyInUse) {
+        return 'このアドレスは登録済です';
+      }
+      if (state.errorType == SignUpFailure.errorTypeInvalidEmail) {
+        return 'このアドレスは不正です';
+      }
+    }
+    return null;
+  }
+
+  String _passwordErrorText(SignUpScreenState state) {
+    if (state is SignUpFailure) {
+      if (state.errorType == SignUpFailure.errorTypeWeakPassword) {
+        return 'パスワード強度が低いです';
+      }
+    }
+    return null;
+  }
+
+  String _emailValidator(String email) {
+    final blankErrorText = blankValidator(email);
+    if (blankErrorText != null) {
+      return blankErrorText;
+    }
+    final emailFormatErrorText = emailFormatValidator(email);
+    if (emailFormatErrorText != null) {
+      return emailFormatErrorText;
+    }
+    return null;
+  }
+
+  String _passwordValidator(String password) {
+    final blankErrorText = blankValidator(password);
+    if (blankErrorText != null) {
+      return blankErrorText;
+    }
+    final rangeLengthErrorText = rangeLengthValidator(
+      password,
+      _passwordMinLength,
+      _passwordMaxLength,
+    );
+    if (rangeLengthErrorText != null) {
+      return rangeLengthErrorText;
+    }
+    final passwordFormatErrorText = passwordFormatValidator(password);
+    if (passwordFormatErrorText != null) {
+      return passwordFormatErrorText;
+    }
+    return null;
+  }
+
+  String _confirmPasswordValidator(String confirmPassword) {
+    final blankErrorText = blankValidator(confirmPassword);
+    if (blankErrorText != null) {
+      return blankErrorText;
+    }
+    final password = _passwordController.text;
+    final confirmPasswordErrorText = confirmPasswordValidator(
+      password,
+      confirmPassword,
+    );
+    if (confirmPasswordErrorText != null) {
+      return confirmPasswordErrorText;
+    }
+    return null;
   }
 }
