@@ -1,6 +1,7 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
-import '../../util/index.dart';
+import '../../utils/index.dart';
 
 class CustomRaisedButton extends StatelessWidget {
   const CustomRaisedButton({
@@ -27,7 +28,7 @@ class CustomRaisedButton extends StatelessWidget {
       width: width,
       height: height,
       child: RaisedButton(
-        child: Text(
+        child: AutoSizeText(
           labelText ?? '',
           style: TextStyle(
             color: AppColors.white,

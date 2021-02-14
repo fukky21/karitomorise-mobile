@@ -2,10 +2,15 @@ import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:flutter/material.dart';
 
 class CustomCircleAvatar extends StatelessWidget {
-  const CustomCircleAvatar({@required this.filePath, @required this.radius});
+  const CustomCircleAvatar({
+    @required this.filePath,
+    @required this.radius,
+    this.onTap,
+  });
 
   final String filePath;
   final double radius;
+  final void Function() onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +20,7 @@ class CustomCircleAvatar extends StatelessWidget {
       borderColor: Theme.of(context).primaryColor,
       borderWidth: 2,
       radius: radius,
+      onTap: onTap,
     );
   }
 }

@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 
-import '../../blocs/screen_blocs/sign_up_screen_bloc/index.dart';
-import '../../helpers/index.dart';
-import '../../util/index.dart';
+import '../../blocs/sign_up_screen_bloc/index.dart';
+import '../../utils/index.dart';
 import '../../widgets/components/index.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -55,11 +54,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SignUpScreenBloc>(
-      create: (context) => SignUpScreenBloc(),
+      create: (context) => SignUpScreenBloc(context: context),
       child: BlocBuilder<SignUpScreenBloc, SignUpScreenState>(
         builder: (context, state) {
           if (state is SignUpFailure) {
-            if (state.errorType == SignUpFailure.errorTypeOther) {
+            if (state.type == SignUpFailureType.other) {
               return Scaffold(
                 appBar: simpleAppBar(context, title: _appBarTitle),
                 body: const Center(
@@ -123,7 +122,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: Scaffold(
           appBar: simpleAppBar(context, title: 'アカウントを作成'),
           body: ScrollableLayoutBuilder(
-            body: Center(
+            child: Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 50),
                 child: Column(
@@ -242,10 +241,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   String _emailErrorText(SignUpScreenState state) {
     if (state is SignUpFailure) {
-      if (state.errorType == SignUpFailure.errorTypeEmailAlreadyInUse) {
+      if (state.type == SignUpFailureType.emailAlreadyInUse) {
         return 'このアドレスは登録済です';
       }
-      if (state.errorType == SignUpFailure.errorTypeInvalidEmail) {
+      if (state.type == SignUpFailureType.invalidEmail) {
         return 'このアドレスは不正です';
       }
     }
@@ -254,7 +253,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   String _passwordErrorText(SignUpScreenState state) {
     if (state is SignUpFailure) {
-      if (state.errorType == SignUpFailure.errorTypeWeakPassword) {
+      if (state.type == SignUpFailureType.weakPassword) {
         return 'パスワード強度が低いです';
       }
     }
@@ -262,49 +261,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   String _emailValidator(String email) {
-    final blankErrorText = blankValidator(email);
-    if (blankErrorText != null) {
-      return blankErrorText;
-    }
-    final emailFormatErrorText = emailFormatValidator(email);
-    if (emailFormatErrorText != null) {
-      return emailFormatErrorText;
+    final errorMessages = <String>[]
+      ..add(Validations.blank(email))
+      ..add(Validations.emailFormat(email));
+    for (final errorMessage in errorMessages) {
+      if (errorMessage != null) {
+        return errorMessage;
+      }
     }
     return null;
   }
 
   String _passwordValidator(String password) {
-    final blankErrorText = blankValidator(password);
-    if (blankErrorText != null) {
-      return blankErrorText;
-    }
-    final rangeLengthErrorText = rangeLengthValidator(
-      password,
-      _passwordMinLength,
-      _passwordMaxLength,
-    );
-    if (rangeLengthErrorText != null) {
-      return rangeLengthErrorText;
-    }
-    final passwordFormatErrorText = passwordFormatValidator(password);
-    if (passwordFormatErrorText != null) {
-      return passwordFormatErrorText;
+    final errorMessages = <String>[]
+      ..add(Validations.blank(password))
+      ..add(Validations.rangeLength(
+        password,
+        _passwordMinLength,
+        _passwordMaxLength,
+      ))
+      ..add(Validations.passwordFormat(password));
+    for (final errorMessage in errorMessages) {
+      if (errorMessage != null) {
+        return errorMessage;
+      }
     }
     return null;
   }
 
   String _confirmPasswordValidator(String confirmPassword) {
-    final blankErrorText = blankValidator(confirmPassword);
-    if (blankErrorText != null) {
-      return blankErrorText;
-    }
-    final password = _passwordController.text;
-    final confirmPasswordErrorText = confirmPasswordValidator(
-      password,
-      confirmPassword,
-    );
-    if (confirmPasswordErrorText != null) {
-      return confirmPasswordErrorText;
+    final _password = _passwordController.text;
+    final errorMessages = <String>[]
+      ..add(Validations.blank(confirmPassword))
+      ..add(Validations.confirmPassword(_password, confirmPassword));
+    for (final errorMessage in errorMessages) {
+      if (errorMessage != null) {
+        return errorMessage;
+      }
     }
     return null;
   }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ScrollableLayoutBuilder extends StatelessWidget {
-  const ScrollableLayoutBuilder({@required this.body});
+  const ScrollableLayoutBuilder({@required this.child});
 
-  final Widget body;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +11,7 @@ class ScrollableLayoutBuilder extends StatelessWidget {
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: body,
+          child: child,
         ),
       ),
     );

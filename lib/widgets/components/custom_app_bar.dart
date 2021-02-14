@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../util/index.dart';
+import '../../utils/index.dart';
 
 PreferredSizeWidget simpleAppBar(
   BuildContext context, {

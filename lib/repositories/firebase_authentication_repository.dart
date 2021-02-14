@@ -1,23 +1,32 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../models/index.dart';
 
 class FirebaseAuthenticationRepository {
-  final _firebaseAuth = FirebaseAuth.instance;
+  FirebaseAuthenticationRepository({@required FirebaseAuth firebaseAuth}) {
+    _firebaseAuth = firebaseAuth;
+  }
+
+  FirebaseAuth _firebaseAuth;
 
   CurrentUser getCurrentUser() {
-    final user = _firebaseAuth.currentUser;
-    if (user != null) {
+    final currentUser = _firebaseAuth.currentUser;
+    if (currentUser != null) {
       return CurrentUser(
-        uid: user.uid,
-        email: user.email,
-        createdAt: user.metadata.creationTime,
-        updatedAt: user.metadata.lastSignInTime,
+        uid: currentUser.uid,
+        email: currentUser.email,
+        createdAt: currentUser.metadata.creationTime,
+        updatedAt: currentUser.metadata.lastSignInTime,
       );
     }
     return null;
+  }
+
+  Stream<User> getAuthStateChanges() {
+    return _firebaseAuth.authStateChanges();
   }
 
   Future<void> signInWithEmailAndPassword(String email, String password) async {
@@ -32,11 +41,11 @@ class FirebaseAuthenticationRepository {
   }
 
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
-    final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-    await userCredential.user.sendEmailVerification(); // 確認メールを送信する
+    await credential.user.sendEmailVerification(); // 確認メールを送信する
     await _firebaseAuth.signOut(); // ユーザー作成後にサインイン状態にしない
   }
 

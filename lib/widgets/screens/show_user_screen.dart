@@ -1,12 +1,14 @@
-import 'package:big_tip/big_tip.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
-import '../../blocs/screen_blocs/show_user_screen_bloc/dart/index.dart';
-import '../../helpers/index.dart';
+import '../../blocs/show_user_screen_bloc/index.dart';
 import '../../models/index.dart';
-import '../../util/index.dart';
+import '../../providers/index.dart';
+import '../../utils/index.dart';
 import '../../widgets/components/index.dart';
+import 'edit_user_screen.dart';
 
 class ShowUserScreenArguments {
   ShowUserScreenArguments({@required this.uid});
@@ -23,11 +25,12 @@ class ShowUserScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ShowUserScreenBloc>(
-      create: (context) =>
-          ShowUserScreenBloc()..add(Initialized(uid: args.uid)),
+      create: (context) => ShowUserScreenBloc(
+        context: context,
+      )..add(Initialized(uid: args.uid)),
       child: BlocBuilder<ShowUserScreenBloc, ShowUserScreenState>(
         builder: (context, state) {
-          if (state is Loading) {
+          if (state is InitializeInProgress) {
             return Scaffold(
               appBar: simpleAppBar(context),
               body: const Center(
@@ -35,27 +38,11 @@ class ShowUserScreen extends StatelessWidget {
               ),
             );
           }
-          if (state is LoadFailure) {
-            if (state.errorType == LoadFailure.errorTypeUserAlreadyDeleted) {
-              return Scaffold(
-                appBar: simpleAppBar(context),
-                body: const Center(
-                  child: Text('このユーザーは削除されました'),
-                ),
-              );
-            }
-            return Scaffold(
-              appBar: simpleAppBar(context),
-              body: const Center(
-                child: BigTip(
-                  title: Text('エラーが発生しました'),
-                  child: Icon(Icons.error_outline_sharp),
-                ),
-              ),
-            );
+          if (state is InitializeFailure) {
+            return _userNotFoundView(context);
           }
-          if (state is LoadSuccess) {
-            return _loadSuccessView(context, state);
+          if (state is InitializeSuccess) {
+            return _loadSuccessView(context);
           }
           return Container();
         },
@@ -63,125 +50,154 @@ class ShowUserScreen extends StatelessWidget {
     );
   }
 
-  Widget _loadSuccessView(BuildContext context, LoadSuccess state) {
-    final _screenWidth = MediaQuery.of(context).size.width;
-
+  Widget _userNotFoundView(BuildContext context) {
     return Scaffold(
-      appBar: simpleAppBar(
-        context,
-        title: state?.user?.displayName ?? 'Unknown',
-      ),
-      body: ScrollableLayoutBuilder(
-        body: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 50),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    children: [
-                      CustomCircleAvatar(
-                        filePath: state?.user?.avatarIconFilePath,
-                        radius: 50,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        state?.user?.displayName ?? 'Unknown',
-                        style: Theme.of(context).textTheme.headline6,
-                      ),
-                      const SizedBox(height: 15),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          _buttonSpace(state.editable),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(state?.user?.biography ?? ''),
-                      ),
-                      const SizedBox(height: 15),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _countPanel(
-                            context,
-                            title: '作成した募集',
-                            count: state?.user?.createdEventCount ?? 0,
-                            size: _screenWidth * 0.25,
-                            onTap: () {
-                              // TODO(Fukky21): 募集一覧画面へ遷移する
-                            },
-                          ),
-                          _countPanel(
-                            context,
-                            title: 'フォロー中',
-                            count: state?.user?.followingCount ?? 0,
-                            size: _screenWidth * 0.25,
-                            onTap: () {
-                              // TODO(Fukky21): フォロー/フォロワー画面へ遷移する
-                            },
-                          ),
-                          _countPanel(
-                            context,
-                            title: 'フォロワー',
-                            count: state?.user?.followerCount ?? 0,
-                            size: _screenWidth * 0.25,
-                            onTap: () {
-                              // TODO(Fukky21): フォロー/フォロワー画面へ遷移する
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 15),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  margin: const EdgeInsets.only(bottom: 5),
-                  child: const Text(
-                    '基本情報',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                CustomDivider(),
-                _mainWeaponCell(state?.user),
-                CustomDivider(),
-                _firstPlayedSeriesCell(state?.user),
-                CustomDivider(),
-                _userCreatedAtCell(state?.user),
-                CustomDivider(),
-              ],
-            ),
-          ),
-        ),
+      appBar: simpleAppBar(context),
+      body: const Center(
+        child: Text('このユーザーは表示できません'),
       ),
     );
   }
 
-  Widget _buttonSpace(bool editable) {
+  Widget _loadSuccessView(BuildContext context) {
+    final _screenWidth = MediaQuery.of(context).size.width;
+
+    return Consumer<UsersProvider>(
+      builder: (context, provider, _) {
+        final _user = provider.get(args.uid);
+        if (_user == null) {
+          return _userNotFoundView(context);
+        }
+        return RefreshIndicator(
+          onRefresh: () async {
+            BlocProvider.of<ShowUserScreenBloc>(context).add(
+              Initialized(uid: args.uid),
+            );
+          },
+          child: Scaffold(
+            appBar: simpleAppBar(
+              context,
+              title: _user.displayName ?? 'Unknown',
+            ),
+            body: ScrollableLayoutBuilder(
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 50),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: Column(
+                          children: [
+                            CustomCircleAvatar(
+                              filePath: _user.avatarType?.iconFilePath,
+                              radius: 50,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              _user.displayName ?? 'Unknown',
+                              style: Theme.of(context).textTheme.headline6,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 15),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                _buttonSpace(context, _user),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
+                            Container(
+                              alignment: Alignment.centerLeft,
+                              child: Text(_user.biography ?? ''),
+                            ),
+                            const SizedBox(height: 15),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _countPanel(
+                                  context,
+                                  title: '作成した募集',
+                                  count: _user.createdEventCount ?? 0,
+                                  size: _screenWidth * 0.25,
+                                  onTap: () {
+                                    // TODO(Fukky21): 募集一覧画面へ遷移する
+                                  },
+                                ),
+                                _countPanel(
+                                  context,
+                                  title: 'フォロー中',
+                                  count: _user.followingCount ?? 0,
+                                  size: _screenWidth * 0.25,
+                                  onTap: () {
+                                    // TODO(Fukky21): フォロー/フォロワー画面へ遷移する
+                                  },
+                                ),
+                                _countPanel(
+                                  context,
+                                  title: 'フォロワー',
+                                  count: _user.followerCount ?? 0,
+                                  size: _screenWidth * 0.25,
+                                  onTap: () {
+                                    // TODO(Fukky21): フォロー/フォロワー画面へ遷移する
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        margin: const EdgeInsets.only(bottom: 5),
+                        child: const Text(
+                          '基本情報',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      CustomDivider(),
+                      _mainWeaponCell(_user),
+                      CustomDivider(),
+                      _firstPlayedSeriesCell(_user),
+                      CustomDivider(),
+                      _startDateCell(_user),
+                      CustomDivider(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buttonSpace(BuildContext context, AppUser user) {
     const _width = 115.0;
     const _height = 35.0;
-    const _fontSize = 13.0;
-    if (editable) {
-      return CustomOutlineButton(
-        width: _width,
-        height: _height,
-        fontSize: _fontSize,
-        labelText: '編集する',
-        onPressed: () {},
-      );
-    }
-    return CustomOutlineButton(
-      width: _width,
-      height: _height,
-      fontSize: _fontSize,
-      labelText: 'フォローする',
-      onPressed: () {},
+
+    return Consumer<CurrentUserProvider>(
+      builder: (context, provider, _) {
+        final _currentUser = provider.currentUser;
+        if (_currentUser == null) {
+          return Container();
+        } else {
+          if (_currentUser.uid == args.uid) {
+            return CustomOutlineButton(
+              labelText: '編集する',
+              width: _width,
+              height: _height,
+              onPressed: () {
+                Navigator.pushNamed(context, EditUserScreen.route);
+              },
+            );
+          }
+          return FollowUserButton(user: user, width: _width, height: _height);
+        }
+      },
     );
   }
 
@@ -227,15 +243,15 @@ class ShowUserScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text('メイン武器'),
-          user?.mainWeaponType != null
+          user?.mainWeapon != null
               ? Row(
                   children: [
                     Image.asset(
-                      user?.mainWeaponIconFilePath,
+                      user.mainWeapon.iconFilePath,
                       width: 50,
                       height: 50,
                     ),
-                    Text(user?.mainWeaponName),
+                    Text(user.mainWeapon.name),
                   ],
                 )
               : const Text('未選択'),
@@ -255,9 +271,10 @@ class ShowUserScreen extends StatelessWidget {
           Flexible(
             child: Container(
               padding: const EdgeInsets.only(left: 15),
-              child: Text(
-                user?.firstPlayedSeriesName ?? '未選択',
+              child: AutoSizeText(
+                user?.firstPlayedSeries?.name ?? '未選択',
                 textAlign: TextAlign.right,
+                maxLines: 1,
               ),
             ),
           ),
@@ -266,7 +283,7 @@ class ShowUserScreen extends StatelessWidget {
     );
   }
 
-  Widget _userCreatedAtCell(AppUser user) {
+  Widget _startDateCell(AppUser user) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       height: 50,
@@ -274,7 +291,7 @@ class ShowUserScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text('利用開始日'),
-          Text(getYMDString(user?.createdAt)),
+          Text(user?.createdAt?.toYMDString()),
         ],
       ),
     );

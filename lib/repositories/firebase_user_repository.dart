@@ -2,201 +2,147 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../models/index.dart';
+import '../utils/index.dart';
 
 class FirebaseUserRepository {
-  static const collectionName = 'users';
-  static const subCollectionName = '_users';
-  static const documentVersionFieldName = 'document_version';
-  static const displayNameFieldName = 'display_name';
-  static const biographyFieldName = 'biography';
-  static const avatarTypeFieldName = 'avatar_type';
-  static const mainWeaponTypeFieldName = 'main_weapon_type';
-  static const firstPlayedSeriesTypeFieldName = 'first_played_series_type';
-  static const createdEventsFieldName = 'created_events';
-  static const participatedEventsFieldName = 'participated_events';
-  static const likedEventsFieldName = 'liked_events';
-  static const followingFieldName = 'following';
-  static const followersFieldName = 'followers';
-  static const createdAtFieldName = 'created_at';
-  static const updatedAtFieldName = 'updated_at';
+  FirebaseUserRepository({
+    @required FirebaseAuth firebaseAuth,
+    @required FirebaseFirestore firebaseFirestore,
+  }) {
+    _firebaseAuth = firebaseAuth;
+    _firebaseFirestore = firebaseFirestore;
+  }
 
-  final _firebaseAuth = FirebaseAuth.instance;
-  final _firebaseFirestore = FirebaseFirestore.instance;
+  FirebaseAuth _firebaseAuth;
+  FirebaseFirestore _firebaseFirestore;
+
+  static const _collectionName = 'users';
+  static const _documentVersionFieldName = 'document_version';
+  static const _displayNameFieldName = 'display_name';
+  static const _biographyFieldName = 'biography';
+  static const _avatarTypeFieldName = 'avatar_type';
+  static const _mainWeaponTypeFieldName = 'main_weapon_type';
+  static const _firstPlayedSeriesFieldName = 'first_played_series';
+  static const _followingFieldName = 'following';
+  static const _followersFieldName = 'followers';
+  static const _createdAtFieldName = 'created_at';
+  static const _updatedAtFieldName = 'updated_at';
 
   Future<AppUser> getUser(String uid) async {
     final doc =
-        await _firebaseFirestore.collection(collectionName).doc(uid).get();
-    final subDoc =
-        await _firebaseFirestore.collection(subCollectionName).doc(uid).get();
+        await _firebaseFirestore.collection(_collectionName).doc(uid).get();
     if (doc.data() == null) {
       return null; // ユーザーがすでに削除されている場合
     }
-    return getUserFromDocuments(doc, subDoc);
+    return _getUserFromDocument(doc);
   }
 
   Future<void> updateUser(AppUser user) async {
     final currentUser = _firebaseAuth.currentUser;
     final now = DateTime.now();
     await _firebaseFirestore
-        .collection(collectionName)
+        .collection(_collectionName)
         .doc(currentUser.uid)
         .update(
       <String, dynamic>{
-        displayNameFieldName: user.displayName,
-        avatarTypeFieldName: user.avatarType,
-        biographyFieldName: user.biography,
-        mainWeaponTypeFieldName: user.mainWeaponType,
-        firstPlayedSeriesTypeFieldName: user.firstPlayedSeriesType,
-        updatedAtFieldName: now,
+        _displayNameFieldName: user.displayName,
+        _biographyFieldName: user.biography,
+        _avatarTypeFieldName: user.avatarType?.index,
+        _mainWeaponTypeFieldName: user.mainWeapon?.type,
+        _firstPlayedSeriesFieldName: user.firstPlayedSeries?.index,
+        _updatedAtFieldName: now,
       },
     );
   }
 
-  Future<List<String>> getLikes(String uid) async {
-    final doc =
-        await _firebaseFirestore.collection(collectionName).doc(uid).get();
-    if (doc.data() == null) {
-      return <String>[]; // ユーザーがすでに削除されている場合
-    }
-    return getLikesFromDocument(doc);
-  }
-
-  Future<void> addLike(String eventId) async {
-    final currentUser = _firebaseAuth.currentUser;
-    await _firebaseFirestore
-        .collection(collectionName)
-        .doc(currentUser.uid)
-        .update(
-      <String, dynamic>{
-        likedEventsFieldName: FieldValue.arrayUnion(<String>[eventId]),
-      },
-    );
-  }
-
-  Future<void> removeLike(String eventId) async {
-    final currentUser = _firebaseAuth.currentUser;
-    await _firebaseFirestore
-        .collection(collectionName)
-        .doc(currentUser.uid)
-        .update(
-      <String, dynamic>{
-        likedEventsFieldName: FieldValue.arrayRemove(<String>[eventId]),
-      },
-    );
-  }
-
-  Future<List<String>> getFollowing(String uid) async {
-    final subDoc =
-        await _firebaseFirestore.collection(subCollectionName).doc(uid).get();
-    if (subDoc.data() == null) {
-      return []; // ユーザーがすでに削除されている場合
-    }
-    return getFollowingFromDocument(subDoc);
-  }
-
-  Future<List<String>> getFollowers(String uid) async {
-    final subDoc =
-        await _firebaseFirestore.collection(subCollectionName).doc(uid).get();
-    if (subDoc.data() == null) {
-      return []; // ユーザーがすでに削除されている場合
-    }
-    return getFollowersFromDocument(subDoc);
-  }
-
-  Future<void> addFollow(String uid) async {
+  Future<void> followUser(String uid) async {
     final currentUser = _firebaseAuth.currentUser;
     await _firebaseFirestore.runTransaction((transaction) async {
       transaction
         ..update(
-          _firebaseFirestore.collection(subCollectionName).doc(currentUser.uid),
+          _firebaseFirestore.collection(_collectionName).doc(currentUser.uid),
           <String, dynamic>{
-            followingFieldName: FieldValue.arrayUnion(<String>[uid]),
+            _followingFieldName: FieldValue.arrayUnion(<String>[uid]),
           },
         )
         ..update(
-          _firebaseFirestore.collection('_users').doc(uid),
+          _firebaseFirestore.collection(_collectionName).doc(uid),
           <String, dynamic>{
-            followersFieldName:
+            _followersFieldName:
                 FieldValue.arrayUnion(<String>[currentUser.uid]),
           },
         );
     });
   }
 
-  Future<void> removeFollow(String uid) async {
+  Future<void> unFollowUser(String uid) async {
     final currentUser = _firebaseAuth.currentUser;
     await _firebaseFirestore.runTransaction((transaction) async {
       transaction
         ..update(
-          _firebaseFirestore.collection(subCollectionName).doc(currentUser.uid),
+          _firebaseFirestore.collection(_collectionName).doc(currentUser.uid),
           <String, dynamic>{
-            followingFieldName: FieldValue.arrayRemove(<String>[uid]),
+            _followingFieldName: FieldValue.arrayRemove(<String>[uid]),
           },
         )
         ..update(
-          _firebaseFirestore.collection(subCollectionName).doc(uid),
+          _firebaseFirestore.collection(_collectionName).doc(uid),
           <String, dynamic>{
-            followersFieldName:
+            _followersFieldName:
                 FieldValue.arrayRemove(<String>[currentUser.uid]),
           },
         );
     });
   }
 
-  Stream<DocumentSnapshot> getDocumentSnapshots(String uid) {
-    return _firebaseFirestore.collection(collectionName).doc(uid).snapshots();
-  }
-
-  Stream<DocumentSnapshot> getSubDocumentSnapshots(String uid) {
-    return _firebaseFirestore
-        .collection(subCollectionName)
-        .doc(uid)
-        .snapshots();
-  }
-
-  AppUser getUserFromDocuments(DocumentSnapshot doc, DocumentSnapshot subDoc) {
+  AppUser _getUserFromDocument(DocumentSnapshot doc) {
     final data = doc.data();
-    final subData = subDoc.data();
 
-    return AppUser(
+    final user = AppUser(
       id: doc.id,
-      displayName: data[displayNameFieldName] as String,
-      biography: data[biographyFieldName] as String,
-      avatarType: data[avatarTypeFieldName] as int,
-      mainWeaponType: data[mainWeaponTypeFieldName] as int,
-      firstPlayedSeriesType: data[firstPlayedSeriesTypeFieldName] as int,
-      createdEventCount: (data[createdEventsFieldName] as List<dynamic>).length,
-      followingCount: (subData[followingFieldName] as List<dynamic>).length,
-      followerCount: (subData[followersFieldName] as List<dynamic>).length,
-      createdAt: (data[createdAtFieldName] as Timestamp)?.toDate(),
-      updatedAt: (data[updatedAtFieldName] as Timestamp)?.toDate(),
+      displayName: data[_displayNameFieldName] as String,
+      biography: data[_biographyFieldName] as String,
+      mainWeapon: Weapons.get(type: data[_mainWeaponTypeFieldName] as int),
+      createdEventCount: 0, // TODO(Fukky21): createdEventCount修正
+      followingCount: (data[_followingFieldName] as List<dynamic>).length,
+      followerCount: (data[_followersFieldName] as List<dynamic>).length,
+      createdAt: (data[_createdAtFieldName] as Timestamp)?.toDate(),
+      updatedAt: (data[_updatedAtFieldName] as Timestamp)?.toDate(),
     );
+
+    final avatarTypeIndex = data[_avatarTypeFieldName] as int;
+    if (avatarTypeIndex != null) {
+      user.avatarType = AvatarType.values[avatarTypeIndex];
+    }
+
+    final monsterHunterSeriesIndex = data[_firstPlayedSeriesFieldName] as int;
+    if (monsterHunterSeriesIndex != null) {
+      user.firstPlayedSeries =
+          MonsterHunterSeries.values[monsterHunterSeriesIndex];
+    }
+
+    final currentUser = _firebaseAuth.currentUser;
+    if (currentUser != null) {
+      if (user.id != currentUser.uid) {
+        final followers = _getFollowersFromDocument(doc);
+        if (followers.contains(currentUser.uid)) {
+          user.isFollowed = true;
+        } else {
+          user.isFollowed = false;
+        }
+      }
+    }
+
+    return user;
   }
 
-  List<String> getLikesFromDocument(DocumentSnapshot doc) {
+  List<String> _getFollowersFromDocument(DocumentSnapshot doc) {
     final data = doc.data();
-    final likedEvents = <String>[];
-    for (final eventId in data[likedEventsFieldName] as List<dynamic>) {
-      likedEvents.add(eventId as String);
-    }
-    return likedEvents;
-  }
-
-  List<String> getFollowingFromDocument(DocumentSnapshot subDoc) {
-    final data = subDoc.data();
-    final following = <String>[];
-    for (final userId in data[followingFieldName] as List<dynamic>) {
-      following.add(userId as String);
-    }
-    return following;
-  }
-
-  List<String> getFollowersFromDocument(DocumentSnapshot subDoc) {
-    final data = subDoc.data();
     final followers = <String>[];
-    for (final userId in data[followersFieldName] as List<dynamic>) {
+    for (final userId in data[_followersFieldName] as List<dynamic>) {
       followers.add(userId as String);
     }
     return followers;
