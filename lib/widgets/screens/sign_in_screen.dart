@@ -4,10 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 import '../../blocs/global_blocs/authentication_bloc/index.dart';
-import '../../blocs/global_blocs/cubits/index.dart';
+import '../../blocs/global_blocs/current_user_bloc/index.dart';
 import '../../blocs/screen_blocs/sign_in_screen_bloc/index.dart';
 import '../../helpers/index.dart';
-import '../../models/index.dart';
 import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 import 'sign_up_screen.dart';
@@ -46,7 +45,15 @@ class _SignInScreenState extends State<SignInScreen> {
         builder: (context, state) {
           if (state is SignInFailure) {
             if (state.errorType == SignInFailure.errorTypeOther) {
-              return _signInFailureView(context, state);
+              return Scaffold(
+                appBar: transparentAppBar(context),
+                body: const Center(
+                  child: BigTip(
+                    title: Text('エラーが発生しました'),
+                    child: Icon(Icons.error_outline_sharp),
+                  ),
+                ),
+              );
             }
           }
           if (state is SignInSuccess) {
@@ -61,24 +68,12 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _signInFailureView(BuildContext context, SignInFailure state) {
-    return Scaffold(
-      appBar: transparentAppBar(context),
-      body: const Center(
-        child: BigTip(
-          title: Text('エラーが発生しました'),
-          child: Icon(Icons.error_outline_sharp),
-        ),
-      ),
-    );
-  }
-
   Widget _signInSuccessView(BuildContext context, SignInSuccess state) {
     return Scaffold(
-      body: BlocBuilder<UserCubit, AppUser>(
-        cubit: BlocProvider.of<UserCubit>(context),
-        builder: (context, user) {
-          if (user == null) {
+      body: BlocBuilder<CurrentUserBloc, CurrentUserState>(
+        cubit: BlocProvider.of<CurrentUserBloc>(context),
+        builder: (context, state) {
+          if (state?.user == null) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -88,12 +83,12 @@ class _SignInScreenState extends State<SignInScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CustomCircleAvatar(
-                  filePath: user?.avatarIconFilePath,
+                  filePath: state.user?.avatarIconFilePath,
                   radius: 50,
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  user?.displayName ?? '',
+                  state.user?.displayName ?? '',
                   style: Theme.of(context).textTheme.headline5,
                 ),
                 const SizedBox(height: 50),

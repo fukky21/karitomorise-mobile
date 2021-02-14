@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../blocs/global_blocs/authentication_bloc/index.dart';
-import '../../blocs/global_blocs/cubits/index.dart';
+import '../../blocs/global_blocs/current_user_bloc/index.dart';
 import '../../widgets/tabs/index.dart';
 
 class StartScreen extends StatefulWidget {
@@ -30,9 +30,12 @@ class _StartScreenState extends State<StartScreen> {
       builder: (context, authState) {
         if (authState is AuthenticationSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await BlocProvider.of<FollowingCubit>(context).load();
-            await BlocProvider.of<LikedEventsCubit>(context).load();
-            await BlocProvider.of<UserCubit>(context).load();
+            BlocProvider.of<CurrentUserBloc>(context).add(ListenStarted());
+          });
+        }
+        if (authState is AuthenticationFailure) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            BlocProvider.of<CurrentUserBloc>(context).add(ListenStopped());
           });
         }
         return Scaffold(

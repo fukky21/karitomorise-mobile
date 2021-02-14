@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 import 'blocs/global_blocs/authentication_bloc/index.dart';
-import 'blocs/global_blocs/cubits/index.dart';
+import 'blocs/global_blocs/current_user_bloc/index.dart';
 import 'util/index.dart';
 
 Future<void> main() async {
@@ -28,14 +28,8 @@ Future<void> main() async {
         BlocProvider<AuthenticationBloc>(
           create: (context) => AuthenticationBloc()..add(AppStarted()),
         ),
-        BlocProvider<FollowingCubit>(
-          create: (context) => FollowingCubit(),
-        ),
-        BlocProvider<LikedEventsCubit>(
-          create: (context) => LikedEventsCubit(),
-        ),
-        BlocProvider<UserCubit>(
-          create: (context) => UserCubit(),
+        BlocProvider<CurrentUserBloc>(
+          create: (context) => CurrentUserBloc(),
         ),
       ],
       child: MyApp(),

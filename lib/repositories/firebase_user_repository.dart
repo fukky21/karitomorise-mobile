@@ -169,4 +169,15 @@ class FirebaseUserRepository {
         );
     });
   }
+
+  Stream<DocumentSnapshot> getDocumentSnapshots(String uid) {
+    return _firebaseFirestore.collection(collectionName).doc(uid).snapshots();
+  }
+
+  Stream<DocumentSnapshot> getSubDocumentSnapshots(String uid) {
+    return _firebaseFirestore
+        .collection(subCollectionName)
+        .doc(uid)
+        .snapshots();
+  }
 }
