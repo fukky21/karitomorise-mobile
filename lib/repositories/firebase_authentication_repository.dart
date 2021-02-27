@@ -6,14 +6,12 @@ import 'package:flutter/material.dart';
 import '../models/index.dart';
 
 class FirebaseAuthenticationRepository {
-  FirebaseAuthenticationRepository({@required FirebaseAuth firebaseAuth}) {
-    _firebaseAuth = firebaseAuth;
-  }
+  FirebaseAuthenticationRepository({@required this.firebaseAuth});
 
-  FirebaseAuth _firebaseAuth;
+  final FirebaseAuth firebaseAuth;
 
   CurrentUser getCurrentUser() {
-    final currentUser = _firebaseAuth.currentUser;
+    final currentUser = firebaseAuth.currentUser;
     if (currentUser != null) {
       return CurrentUser(
         uid: currentUser.uid,
@@ -25,23 +23,19 @@ class FirebaseAuthenticationRepository {
     return null;
   }
 
-  Stream<User> getAuthStateChanges() {
-    return _firebaseAuth.authStateChanges();
-  }
-
   Future<void> signInWithEmailAndPassword(String email, String password) async {
-    await _firebaseAuth.signInWithEmailAndPassword(
+    await firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
 
   Future<void> signOut() async {
-    await _firebaseAuth.signOut();
+    await firebaseAuth.signOut();
   }
 
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
-    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+    final credential = await firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
@@ -49,6 +43,6 @@ class FirebaseAuthenticationRepository {
   }
 
   Future<void> deleteCurrentUser() async {
-    await _firebaseAuth.currentUser.delete();
+    await firebaseAuth.currentUser.delete();
   }
 }

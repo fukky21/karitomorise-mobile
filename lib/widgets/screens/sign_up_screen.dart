@@ -109,13 +109,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         if (!_isAgreed) {
           return showErrorModal(context, '利用規約に同意していません');
         }
-        BlocProvider.of<SignUpScreenBloc>(context).add(
-          SignUpOnPressed(
-            email: _emailController.text,
-            password: _passwordController.text,
-            displayName: _displayNameController.text,
-          ),
-        );
+        context.read<SignUpScreenBloc>().add(
+              SignUpOnPressed(
+                email: _emailController.text,
+                password: _passwordController.text,
+                displayName: _displayNameController.text,
+              ),
+            );
       }
     }
 
@@ -138,6 +138,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         children: [
                           CustomTextFormField(
                             labelText: 'メールアドレス',
+                            hintText: 'xxxxx@example.com',
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             errorText: _emailErrorText(state),

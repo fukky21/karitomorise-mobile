@@ -59,7 +59,7 @@ class EditUserScreenBloc
       } else {
         await _userRepository.updateUser(user);
         final updatedUser = await _userRepository.getUser(currentUser.uid);
-        _usersProvider.add(updatedUser);
+        _usersProvider.add(user: updatedUser);
         yield UpdateUserSuccess();
       }
     } on Exception catch (e) {

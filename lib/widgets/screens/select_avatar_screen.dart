@@ -8,12 +8,12 @@ class SelectAvatarScreen extends StatelessWidget {
   static const route = 'select_avatar';
   static const _appBarTitle = 'プロフィール画像';
 
-  static const _avatarTypes = [
-    AvatarType.arzuros, // アオアシラ
-    AvatarType.agnaktor, // アグナコトル
-    AvatarType.azureRathalos, // リオレウス亜種
-    AvatarType.balefulGigginox, // ギギネブラ亜種
-    AvatarType.akantor, // アカムトルム
+  static const _avatars = [
+    UserAvatar.arzuros, // アオアシラ
+    UserAvatar.agnaktor, // アグナコトル
+    UserAvatar.azureRathalos, // リオレウス亜種
+    UserAvatar.balefulGigginox, // ギギネブラ亜種
+    UserAvatar.akantor, // アカムトルム
   ];
 
   @override
@@ -27,16 +27,16 @@ class SelectAvatarScreen extends StatelessWidget {
               decoration: const BoxDecoration(color: AppColors.grey20),
               child: ListTile(
                 leading: CustomCircleAvatar(
-                  filePath: _avatarTypes[index].iconFilePath,
+                  filePath: _avatars[index].iconFilePath,
                   radius: 25,
                 ),
-                title: Text(_avatarTypes[index].name),
-                onTap: () => Navigator.of(context).pop(_avatarTypes[index]),
+                title: Text(_avatars[index].name),
+                onTap: () => Navigator.of(context).pop(_avatars[index]),
               ),
             );
           },
           separatorBuilder: (context, _) => CustomDivider(),
-          itemCount: _avatarTypes.length,
+          itemCount: _avatars.length,
         ),
       ),
     );

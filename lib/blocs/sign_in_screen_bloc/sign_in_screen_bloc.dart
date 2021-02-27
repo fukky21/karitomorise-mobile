@@ -2,22 +2,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../providers/index.dart';
 import '../../repositories/index.dart';
+import '../authentication_bloc/index.dart';
 import 'sign_in_screen_event.dart';
 import 'sign_in_screen_state.dart';
 
 class SignInScreenBloc extends Bloc<SignInScreenEvent, SignInScreenState> {
   SignInScreenBloc({@required this.context}) : super(null) {
+    _authBloc = context.read<AuthenticationBloc>();
     _authRepository = context.read<FirebaseAuthenticationRepository>();
-    _userRepository = context.read<FirebaseUserRepository>();
-    _usersProvider = context.read<UsersProvider>();
   }
 
   final BuildContext context;
+  AuthenticationBloc _authBloc;
   FirebaseAuthenticationRepository _authRepository;
-  FirebaseUserRepository _userRepository;
-  UsersProvider _usersProvider;
 
   @override
   Stream<SignInScreenState> mapEventToState(SignInScreenEvent event) async* {
@@ -33,10 +31,9 @@ class SignInScreenBloc extends Bloc<SignInScreenEvent, SignInScreenState> {
     yield SignInInProgress();
     try {
       await _authRepository.signInWithEmailAndPassword(email, password);
+      _authBloc.add(SignedIn());
       final currentUser = _authRepository.getCurrentUser();
-      final user = await _userRepository.getUser(currentUser.uid);
-      _usersProvider.add(user);
-      yield SignInSuccess();
+      yield SignInSuccess(uid: currentUser.uid);
     } on FirebaseAuthException catch (e) {
       debugPrint(e.code);
       if (e.code == 'invalid-email') {

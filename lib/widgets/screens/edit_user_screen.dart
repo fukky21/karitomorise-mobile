@@ -17,10 +17,10 @@ class EditUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => EditUserScreenBloc(
-        context: context,
-      )..add(Initialized()),
+    return BlocProvider<EditUserScreenBloc>(
+      create: (context) {
+        return EditUserScreenBloc(context: context)..add(Initialized());
+      },
       child: BlocBuilder<EditUserScreenBloc, EditUserScreenState>(
         builder: (context, state) {
           if (state is InitializeInProgress) {
@@ -66,9 +66,7 @@ class EditUserScreen extends StatelessWidget {
       FocusScope.of(context).unfocus();
       final user = _editUserFormStateKey.currentState.get();
       if (_formKey.currentState.validate()) {
-        BlocProvider.of<EditUserScreenBloc>(context).add(
-          UpdateUserOnPressed(user: user),
-        );
+        context.read<EditUserScreenBloc>().add(UpdateUserOnPressed(user: user));
       }
     }
 

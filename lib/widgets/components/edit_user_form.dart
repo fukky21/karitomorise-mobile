@@ -23,7 +23,7 @@ class EditUserForm extends StatefulWidget {
 class EditUserFormState extends State<EditUserForm> {
   TextEditingController _displayNameController;
   TextEditingController _biographyController;
-  AvatarType _avatarType;
+  UserAvatar _avatar;
   Weapon _mainWeapon;
   MonsterHunterSeries _firstPlayedSeries;
 
@@ -34,7 +34,7 @@ class EditUserFormState extends State<EditUserForm> {
     return AppUser(
       displayName: _displayNameController.text,
       biography: _biographyController.text,
-      avatarType: _avatarType,
+      avatar: _avatar,
       mainWeapon: _mainWeapon,
       firstPlayedSeries: _firstPlayedSeries,
     );
@@ -49,7 +49,7 @@ class EditUserFormState extends State<EditUserForm> {
     _biographyController = TextEditingController(
       text: widget.initialValue?.biography ?? '',
     );
-    _avatarType = widget.initialValue?.avatarType;
+    _avatar = widget.initialValue?.avatar;
     _mainWeapon = widget.initialValue?.mainWeapon;
     _firstPlayedSeries = widget.initialValue?.firstPlayedSeries;
   }
@@ -66,17 +66,17 @@ class EditUserFormState extends State<EditUserForm> {
     return Column(
       children: [
         CustomCircleAvatar(
-          filePath: _avatarType?.iconFilePath,
+          filePath: _avatar?.iconFilePath,
           radius: 50,
           onTap: () async {
             final result = await Navigator.pushNamed(
               context,
               SelectAvatarScreen.route,
-            ) as AvatarType;
+            ) as UserAvatar;
             if (result != null) {
               if (mounted) {
                 setState(() {
-                  _avatarType = result;
+                  _avatar = result;
                 });
               }
             }
@@ -96,6 +96,7 @@ class EditUserFormState extends State<EditUserForm> {
               const SizedBox(height: 30),
               CustomTextFormField(
                 labelText: '自己紹介',
+                hintText: 'よろしくお願いします！',
                 controller: _biographyController,
                 maxLength: _biographyMaxLength,
                 maxLines: 6,

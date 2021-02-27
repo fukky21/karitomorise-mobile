@@ -1,10 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'blocs/authentication_bloc/index.dart';
+import 'localizations/index.dart';
 import 'providers/index.dart';
 import 'repositories/index.dart';
 import 'utils/index.dart';
@@ -13,25 +18,27 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  const flavorStr = String.fromEnvironment('FLAVOR');
-  Flavor flavor;
-  if (flavorStr == 'development') {
-    flavor = Flavor.development;
-  } else if (flavorStr == 'staging') {
-    flavor = Flavor.staging;
-  } else if (flavorStr == 'production') {
-    flavor = Flavor.production;
-  } else {
-    throw Exception('--dart-define=FLAVOR=xxx should be specified.');
-  }
-
   final firebaseAuth = FirebaseAuth.instance;
   final firebaseFirestore = FirebaseFirestore.instance;
 
   runApp(
     MultiProvider(
       providers: [
-        Provider<Flavor>.value(value: flavor),
+        Provider<Flavor>(
+          create: (_) {
+            const flavorStr = String.fromEnvironment('FLAVOR');
+            if (flavorStr == 'development') {
+              return Flavor.development;
+            }
+            if (flavorStr == 'staging') {
+              return Flavor.staging;
+            }
+            if (flavorStr == 'production') {
+              return Flavor.production;
+            }
+            throw Exception('--dart-define=FLAVOR=xxx should be specified.');
+          },
+        ),
         Provider<FirebaseAuthenticationRepository>(
           create: (_) => FirebaseAuthenticationRepository(
             firebaseAuth: firebaseAuth,
@@ -43,26 +50,30 @@ Future<void> main() async {
             firebaseFirestore: firebaseFirestore,
           ),
         ),
-        ChangeNotifierProvider<CurrentUserProvider>(
-          create: (_) => CurrentUserProvider(
-            authRepository: FirebaseAuthenticationRepository(
-              firebaseAuth: firebaseAuth,
-            ),
-          ),
-        ),
-        ChangeNotifierProvider<UsersProvider>(
-          create: (_) => UsersProvider(
-            authRepository: FirebaseAuthenticationRepository(
-              firebaseAuth: firebaseAuth,
-            ),
-            userRepository: FirebaseUserRepository(
-              firebaseAuth: firebaseAuth,
-              firebaseFirestore: firebaseFirestore,
-            ),
+        Provider<FirebaseEventRepository>(
+          create: (_) => FirebaseEventRepository(
+            firebaseAuth: firebaseAuth,
+            firebaseFirestore: firebaseFirestore,
           ),
         ),
       ],
-      child: MyApp(),
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider<UsersProvider>(
+            create: (context) => UsersProvider(context: context),
+          ),
+          ChangeNotifierProvider<EventsProvider>(
+            create: (_) => EventsProvider(),
+          ),
+          ChangeNotifierProvider<FollowingProvider>(
+            create: (context) => FollowingProvider(context: context),
+          ),
+          ChangeNotifierProvider<LikesProvider>(
+            create: (context) => LikesProvider(context: context),
+          ),
+        ],
+        child: MyApp(),
+      ),
     ),
   );
 }
@@ -70,12 +81,25 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return KeyboardDismissOnTap(
-      child: MaterialApp(
-        title: '狩友Rise',
-        theme: defaultTheme,
-        onGenerateRoute: Routes.generateRoute,
-        onUnknownRoute: Routes.errorRoute,
+    return BlocProvider<AuthenticationBloc>(
+      create: (context) {
+        return AuthenticationBloc(context: context)..add(AppStarted());
+      },
+      child: KeyboardDismissOnTap(
+        child: MaterialApp(
+          title: '狩友Rise',
+          theme: defaultTheme,
+          onGenerateRoute: Routes.generateRoute,
+          onUnknownRoute: Routes.errorRoute,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            DefaultCupertinoLocalizations.delegate,
+            JapaneseCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('ja', 'JP')],
+          locale: const Locale('ja', 'JP'),
+        ),
       ),
     );
   }

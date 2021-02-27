@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
+import '../../blocs/authentication_bloc/index.dart';
 import '../../blocs/show_user_screen_bloc/index.dart';
 import '../../models/index.dart';
 import '../../providers/index.dart';
@@ -25,9 +26,11 @@ class ShowUserScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ShowUserScreenBloc>(
-      create: (context) => ShowUserScreenBloc(
-        context: context,
-      )..add(Initialized(uid: args.uid)),
+      create: (context) {
+        return ShowUserScreenBloc(
+          context: context,
+        )..add(Initialized(uid: args.uid));
+      },
       child: BlocBuilder<ShowUserScreenBloc, ShowUserScreenState>(
         builder: (context, state) {
           if (state is InitializeInProgress) {
@@ -42,7 +45,7 @@ class ShowUserScreen extends StatelessWidget {
             return _userNotFoundView(context);
           }
           if (state is InitializeSuccess) {
-            return _loadSuccessView(context);
+            return _initializeSuccessView(context);
           }
           return Container();
         },
@@ -59,20 +62,18 @@ class ShowUserScreen extends StatelessWidget {
     );
   }
 
-  Widget _loadSuccessView(BuildContext context) {
+  Widget _initializeSuccessView(BuildContext context) {
     final _screenWidth = MediaQuery.of(context).size.width;
 
     return Consumer<UsersProvider>(
       builder: (context, provider, _) {
-        final _user = provider.get(args.uid);
+        final _user = provider.get(uid: args.uid);
         if (_user == null) {
           return _userNotFoundView(context);
         }
         return RefreshIndicator(
           onRefresh: () async {
-            BlocProvider.of<ShowUserScreenBloc>(context).add(
-              Initialized(uid: args.uid),
-            );
+            context.read<ShowUserScreenBloc>().add(Initialized(uid: args.uid));
           },
           child: Scaffold(
             appBar: simpleAppBar(
@@ -80,6 +81,7 @@ class ShowUserScreen extends StatelessWidget {
               title: _user.displayName ?? 'Unknown',
             ),
             body: ScrollableLayoutBuilder(
+              alwaysScrollable: true,
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 50),
@@ -90,7 +92,7 @@ class ShowUserScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             CustomCircleAvatar(
-                              filePath: _user.avatarType?.iconFilePath,
+                              filePath: _user.avatar?.iconFilePath,
                               radius: 50,
                             ),
                             const SizedBox(height: 10),
@@ -103,7 +105,7 @@ class ShowUserScreen extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                _buttonSpace(context, _user),
+                                _buttonSpace(context, _user.id),
                               ],
                             ),
                             const SizedBox(height: 15),
@@ -175,17 +177,15 @@ class ShowUserScreen extends StatelessWidget {
     );
   }
 
-  Widget _buttonSpace(BuildContext context, AppUser user) {
+  Widget _buttonSpace(BuildContext context, String uid) {
     const _width = 115.0;
     const _height = 35.0;
 
-    return Consumer<CurrentUserProvider>(
-      builder: (context, provider, _) {
-        final _currentUser = provider.currentUser;
-        if (_currentUser == null) {
-          return Container();
-        } else {
-          if (_currentUser.uid == args.uid) {
+    return BlocBuilder<AuthenticationBloc, AuthenticationState>(
+      cubit: context.watch<AuthenticationBloc>(),
+      builder: (context, state) {
+        if (state is AuthenticationSuccess) {
+          if (state.currentUser.uid == args.uid) {
             return CustomOutlineButton(
               labelText: '編集する',
               width: _width,
@@ -195,8 +195,9 @@ class ShowUserScreen extends StatelessWidget {
               },
             );
           }
-          return FollowUserButton(user: user, width: _width, height: _height);
+          return FollowUserButton(uid: uid, width: _width, height: _height);
         }
+        return Container();
       },
     );
   }

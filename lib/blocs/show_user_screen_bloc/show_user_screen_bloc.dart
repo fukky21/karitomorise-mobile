@@ -33,10 +33,10 @@ class ShowUserScreenBloc
     try {
       final user = await _userRepository.getUser(uid);
       if (user == null) {
-        _usersProvider.remove(uid);
+        _usersProvider.remove(uid: uid);
         yield InitializeFailure();
       } else {
-        _usersProvider.add(user);
+        _usersProvider.add(user: user);
         yield InitializeSuccess();
       }
     } on Exception catch (e) {

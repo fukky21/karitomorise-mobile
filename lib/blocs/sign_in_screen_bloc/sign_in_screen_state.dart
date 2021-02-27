@@ -8,7 +8,11 @@ abstract class SignInScreenState extends Equatable {
 
 class SignInInProgress extends SignInScreenState {}
 
-class SignInSuccess extends SignInScreenState {}
+class SignInSuccess extends SignInScreenState {
+  SignInSuccess({@required this.uid});
+
+  final String uid;
+}
 
 class SignInFailure extends SignInScreenState {
   SignInFailure({@required this.type});

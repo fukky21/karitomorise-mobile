@@ -9,6 +9,7 @@ class CustomTextFormField extends StatelessWidget {
     this.maxLines = 1,
     this.obscureText = false,
     this.labelText,
+    this.hintText,
     this.errorText,
     this.validator,
   });
@@ -20,11 +21,33 @@ class CustomTextFormField extends StatelessWidget {
   final int maxLines;
   final bool obscureText;
   final String labelText;
+  final String hintText;
   final String errorText;
   final String Function(String) validator;
 
   @override
   Widget build(BuildContext context) {
+    if (labelText != null) {
+      return Column(
+        children: [
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(left: 3),
+            child: Text(
+              labelText,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 3),
+          _textFormField(),
+        ],
+      );
+    }
+
+    return _textFormField();
+  }
+
+  Widget _textFormField() {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -33,7 +56,7 @@ class CustomTextFormField extends StatelessWidget {
       maxLines: maxLines,
       obscureText: obscureText,
       decoration: InputDecoration(
-        labelText: labelText,
+        hintText: hintText,
         errorText: errorText,
         border: const OutlineInputBorder(),
       ),

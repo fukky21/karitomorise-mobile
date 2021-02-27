@@ -6,6 +6,12 @@ class Routes {
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     try {
       switch (routeSettings.name) {
+        case CreateEventScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => CreateEventScreen(),
+          );
         case EditUserScreen.route:
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
@@ -26,6 +32,12 @@ class Routes {
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             builder: (_) => SelectWeaponScreen(),
+          );
+        case ShowEventScreen.route:
+          final args = routeSettings.arguments as ShowEventScreenArguments;
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            builder: (_) => ShowEventScreen(args: args),
           );
         case ShowUserScreen.route:
           final args = routeSettings.arguments as ShowUserScreenArguments;

@@ -57,7 +57,7 @@ class _SignInScreenState extends State<SignInScreen> {
             }
           }
           if (state is SignInSuccess) {
-            return _signInSuccessView(context);
+            return _signInSuccessView(context, state);
           }
           return _defaultView(context, state);
         },
@@ -65,64 +65,43 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _signInSuccessView(BuildContext context) {
-    final _currentUser = context.watch<CurrentUserProvider>().currentUser;
-    AppUser _user;
-    if (_currentUser != null) {
-      _user = context.watch<UsersProvider>().get(_currentUser.uid);
-    }
-
-    if (_user == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    return Consumer<CurrentUserProvider>(
-      builder: (context, currentUserProvider, _) {
-        return Consumer<UsersProvider>(
-          builder: (context, usersProvider, _) {
-            final _currentUser = currentUserProvider.currentUser;
-            if (_currentUser != null) {
-              final _user = usersProvider.get(_currentUser.uid);
-              if (_user != null) {
-                return Scaffold(
-                  body: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CustomCircleAvatar(
-                            filePath: _user.avatarType?.iconFilePath,
-                            radius: 50,
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            _user.displayName ?? 'Unknown',
-                            style: Theme.of(context).textTheme.headline5,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 50),
-                          CustomRaisedButton(
-                            labelText: 'ENTER',
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                        ],
-                      ),
-                    ),
+  Widget _signInSuccessView(BuildContext context, SignInSuccess state) {
+    return Consumer<UsersProvider>(
+      builder: (context, provider, _) {
+        final _user = provider.get(uid: state.uid);
+        if (_user == null) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        return Scaffold(
+          body: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomCircleAvatar(
+                    filePath: _user.avatar?.iconFilePath,
+                    radius: 50,
                   ),
-                );
-              }
-            }
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
+                  const SizedBox(height: 10),
+                  Text(
+                    _user.displayName ?? 'Unknown',
+                    style: Theme.of(context).textTheme.headline5,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 50),
+                  CustomRaisedButton(
+                    labelText: 'ENTER',
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -134,12 +113,12 @@ class _SignInScreenState extends State<SignInScreen> {
     void _signInButtonEvent() {
       FocusScope.of(context).unfocus();
       if (_formKey.currentState.validate()) {
-        BlocProvider.of<SignInScreenBloc>(context).add(
-          SignInOnPressed(
-            email: _emailController.text,
-            password: _passwordController.text,
-          ),
-        );
+        context.read<SignInScreenBloc>().add(
+              SignInOnPressed(
+                email: _emailController.text,
+                password: _passwordController.text,
+              ),
+            );
       }
     }
 
@@ -166,6 +145,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 30),
                     CustomTextFormField(
                       labelText: 'メールアドレス',
+                      hintText: 'xxxxx@example.com',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       errorText: _emailErrorText(state),
