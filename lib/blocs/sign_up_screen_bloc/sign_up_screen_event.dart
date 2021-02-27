@@ -7,8 +7,13 @@ abstract class SignUpScreenEvent extends Equatable {
 }
 
 class SignUpOnPressed extends SignUpScreenEvent {
-  SignUpOnPressed({@required this.email, @required this.password});
+  SignUpOnPressed({
+    @required this.email,
+    @required this.password,
+    @required this.displayName,
+  });
 
   final String email;
   final String password;
+  final String displayName;
 }

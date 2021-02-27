@@ -46,7 +46,6 @@ class FirebaseAuthenticationRepository {
       password: password,
     );
     await credential.user.sendEmailVerification(); // 確認メールを送信する
-    await _firebaseAuth.signOut(); // ユーザー作成後にサインイン状態にしない
   }
 
   Future<void> deleteCurrentUser() async {

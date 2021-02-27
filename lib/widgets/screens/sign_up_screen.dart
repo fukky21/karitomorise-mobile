@@ -22,6 +22,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _emailController;
   TextEditingController _passwordController;
   TextEditingController _confirmPasswordController;
+  TextEditingController _displayNameController;
   TapGestureRecognizer _recognizer;
   bool _isAgreed;
 
@@ -31,6 +32,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     '半角英子文字大文字数字をそれぞれ1種類以上使用してください',
     '$_passwordMinLength文字以上$_passwordMaxLength文字以内で入力してください',
   ];
+  static const _displayNameMaxLength = 20;
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+    _displayNameController = TextEditingController();
     _recognizer = TapGestureRecognizer();
     _isAgreed = false;
   }
@@ -110,6 +113,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           SignUpOnPressed(
             email: _emailController.text,
             password: _passwordController.text,
+            displayName: _displayNameController.text,
           ),
         );
       }
@@ -159,6 +163,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             obscureText: true,
                             maxLength: _passwordMaxLength,
                             validator: _confirmPasswordValidator,
+                          ),
+                          const SizedBox(height: 30),
+                          CustomTextFormField(
+                            labelText: 'ユーザー名',
+                            controller: _displayNameController,
+                            maxLength: _displayNameMaxLength,
+                            validator: _displayNameValidator,
                           ),
                         ],
                       ),
@@ -294,6 +305,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final errorMessages = <String>[]
       ..add(Validations.blank(confirmPassword))
       ..add(Validations.confirmPassword(_password, confirmPassword));
+    for (final errorMessage in errorMessages) {
+      if (errorMessage != null) {
+        return errorMessage;
+      }
+    }
+    return null;
+  }
+
+  String _displayNameValidator(String displayName) {
+    final errorMessages = <String>[]
+      ..add(Validations.blank(displayName))
+      ..add(Validations.maxLength(displayName, _displayNameMaxLength));
     for (final errorMessage in errorMessages) {
       if (errorMessage != null) {
         return errorMessage;

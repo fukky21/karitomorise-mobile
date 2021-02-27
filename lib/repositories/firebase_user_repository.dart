@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,6 +31,30 @@ class FirebaseUserRepository {
   static const _followersFieldName = 'followers';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
+
+  Future<void> createUser(String displayName) async {
+    final currentUser = _firebaseAuth.currentUser;
+    final avatarType = math.Random().nextInt(AvatarType.values.length);
+    final now = DateTime.now();
+
+    await _firebaseFirestore
+        .collection(_collectionName)
+        .doc(currentUser.uid)
+        .set(
+      <String, dynamic>{
+        _documentVersionFieldName: 1,
+        _displayNameFieldName: displayName,
+        _biographyFieldName: 'よろしくお願いします！',
+        _avatarTypeFieldName: avatarType,
+        _mainWeaponTypeFieldName: null,
+        _firstPlayedSeriesFieldName: null,
+        _followingFieldName: <String>[],
+        _followersFieldName: <String>[],
+        _createdAtFieldName: now,
+        _updatedAtFieldName: now,
+      },
+    );
+  }
 
   Future<AppUser> getUser(String uid) async {
     final doc =
