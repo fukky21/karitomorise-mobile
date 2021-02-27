@@ -135,7 +135,7 @@ class _SignInScreenState extends State<SignInScreen> {
       FocusScope.of(context).unfocus();
       if (_formKey.currentState.validate()) {
         BlocProvider.of<SignInScreenBloc>(context).add(
-          SignInWithEmailAndPasswordOnPressed(
+          SignInOnPressed(
             email: _emailController.text,
             password: _passwordController.text,
           ),
@@ -183,36 +183,6 @@ class _SignInScreenState extends State<SignInScreen> {
                     CustomRaisedButton(
                       labelText: 'サインイン',
                       onPressed: _signInButtonEvent,
-                    ),
-                    const SizedBox(height: 30),
-                    CustomDivider(),
-                    const SizedBox(height: 30),
-                    const Text('持っているアカウントでサインイン'),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircleIconButton(
-                          type: CircleIconButtonType.google,
-                          onTap: () {
-                            // TODO(Fukky21): Googleログインを実装する
-                          },
-                        ),
-                        const SizedBox(width: 30),
-                        CircleIconButton(
-                          type: CircleIconButtonType.facebook,
-                          onTap: () {
-                            // TODO(Fukky21): Facebookログインを実装する
-                          },
-                        ),
-                        const SizedBox(width: 30),
-                        CircleIconButton(
-                          type: CircleIconButtonType.twitter,
-                          onTap: () {
-                            // TODO(Fukky21): Twitterログインを実装する
-                          },
-                        ),
-                      ],
                     ),
                     const SizedBox(height: 30),
                     CustomDivider(),

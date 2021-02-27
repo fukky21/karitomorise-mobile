@@ -21,24 +21,12 @@ class SignInScreenBloc extends Bloc<SignInScreenEvent, SignInScreenState> {
 
   @override
   Stream<SignInScreenState> mapEventToState(SignInScreenEvent event) async* {
-    if (event is SignInWithEmailAndPasswordOnPressed) {
-      yield* _mapSignInWithEmailAndPasswordOnPressedToState(
-        event.email,
-        event.password,
-      );
-    }
-    if (event is SignInWithFacebookOnPressed) {
-      yield* _mapSignInWithFacebookOnPressedToState();
-    }
-    if (event is SignInWithGoogleOnPressed) {
-      yield* _mapSignInWithGoogleOnPressedToState();
-    }
-    if (event is SignInWithTwitterOnPressed) {
-      yield* _mapSignInWithTwitterOnPressedToState();
+    if (event is SignInOnPressed) {
+      yield* _mapSignInOnPressedToState(event.email, event.password);
     }
   }
 
-  Stream<SignInScreenState> _mapSignInWithEmailAndPasswordOnPressedToState(
+  Stream<SignInScreenState> _mapSignInOnPressedToState(
     String email,
     String password,
   ) async* {
@@ -65,10 +53,4 @@ class SignInScreenBloc extends Bloc<SignInScreenEvent, SignInScreenState> {
       yield SignInFailure(type: SignInFailureType.other);
     }
   }
-
-  Stream<SignInScreenState> _mapSignInWithFacebookOnPressedToState() async* {}
-
-  Stream<SignInScreenState> _mapSignInWithGoogleOnPressedToState() async* {}
-
-  Stream<SignInScreenState> _mapSignInWithTwitterOnPressedToState() async* {}
 }

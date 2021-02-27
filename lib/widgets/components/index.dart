@@ -1,5 +1,4 @@
 export 'bullet_texts.dart';
-export 'circle_icon_button.dart';
 export 'custom_app_bar.dart';
 export 'custom_circle_avatar.dart';
 export 'custom_divider.dart';

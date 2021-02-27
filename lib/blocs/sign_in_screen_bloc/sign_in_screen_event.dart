@@ -6,18 +6,9 @@ abstract class SignInScreenEvent extends Equatable {
   List<Object> get props => const [];
 }
 
-class SignInWithEmailAndPasswordOnPressed extends SignInScreenEvent {
-  SignInWithEmailAndPasswordOnPressed({
-    @required this.email,
-    @required this.password,
-  });
+class SignInOnPressed extends SignInScreenEvent {
+  SignInOnPressed({@required this.email, @required this.password});
 
   final String email;
   final String password;
 }
-
-class SignInWithFacebookOnPressed extends SignInScreenEvent {}
-
-class SignInWithGoogleOnPressed extends SignInScreenEvent {}
-
-class SignInWithTwitterOnPressed extends SignInScreenEvent {}
