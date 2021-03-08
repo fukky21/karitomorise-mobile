@@ -1,18 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-abstract class FollowUserButtonEvent extends Equatable {
+abstract class FollowButtonEvent extends Equatable {
   @override
   List<Object> get props => const [];
 }
 
-class FollowUserOnPressed extends FollowUserButtonEvent {
+class FollowUserOnPressed extends FollowButtonEvent {
   FollowUserOnPressed({@required this.uid});
 
   final String uid;
 }
 
-class UnFollowUserOnPressed extends FollowUserButtonEvent {
+class UnFollowUserOnPressed extends FollowButtonEvent {
   UnFollowUserOnPressed({@required this.uid});
 
   final String uid;

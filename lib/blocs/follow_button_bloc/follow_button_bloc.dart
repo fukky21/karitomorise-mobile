@@ -4,12 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../providers/index.dart';
 import '../../repositories/index.dart';
 import '../../widgets/components/index.dart';
-import 'follow_user_button_event.dart';
-import 'follow_user_button_state.dart';
+import 'follow_button_event.dart';
+import 'follow_button_state.dart';
 
-class FollowUserButtonBloc
-    extends Bloc<FollowUserButtonEvent, FollowUserButtonState> {
-  FollowUserButtonBloc({@required this.context}) : super(null) {
+class FollowButtonBloc extends Bloc<FollowButtonEvent, FollowButtonState> {
+  FollowButtonBloc({@required this.context}) : super(null) {
     _userRepository = context.read<FirebaseUserRepository>();
     _usersProvider = context.read<UsersProvider>();
     _followingProvider = context.read<FollowingProvider>();
@@ -21,9 +20,7 @@ class FollowUserButtonBloc
   FollowingProvider _followingProvider;
 
   @override
-  Stream<FollowUserButtonState> mapEventToState(
-    FollowUserButtonEvent event,
-  ) async* {
+  Stream<FollowButtonState> mapEventToState(FollowButtonEvent event) async* {
     if (event is FollowUserOnPressed) {
       yield* _mapFollowUserOnPressedToState(event.uid);
     }
@@ -32,37 +29,37 @@ class FollowUserButtonBloc
     }
   }
 
-  Stream<FollowUserButtonState> _mapFollowUserOnPressedToState(
+  Stream<FollowButtonState> _mapFollowUserOnPressedToState(
     String uid,
   ) async* {
-    yield FollowUserButtonState(inProgress: true);
+    yield FollowButtonState(inProgress: true);
     try {
       await _userRepository.followUser(uid);
-      _usersProvider.follow(uid: uid);
+      _usersProvider.follow(uid: uid); // フォロワー数を+1する
       await _followingProvider.reload();
       showSnackBar(context, 'フォローしました');
-      yield FollowUserButtonState(inProgress: false);
+      yield FollowButtonState(inProgress: false);
     } on Exception catch (e) {
       debugPrint(e.toString());
       showSnackBar(context, 'エラーが発生しました');
-      yield FollowUserButtonState(inProgress: false);
+      yield FollowButtonState(inProgress: false);
     }
   }
 
-  Stream<FollowUserButtonState> _mapUnFollowUserOnPressedToState(
+  Stream<FollowButtonState> _mapUnFollowUserOnPressedToState(
     String uid,
   ) async* {
-    yield FollowUserButtonState(inProgress: true);
+    yield FollowButtonState(inProgress: true);
     try {
       await _userRepository.unFollowUser(uid);
-      _usersProvider.unFollow(uid: uid);
+      _usersProvider.unFollow(uid: uid); // フォロワー数を-1する
       await _followingProvider.reload();
       showSnackBar(context, 'フォローを解除しました');
-      yield FollowUserButtonState(inProgress: false);
+      yield FollowButtonState(inProgress: false);
     } on Exception catch (e) {
       debugPrint(e.toString());
       showSnackBar(context, 'エラーが発生しました');
-      yield FollowUserButtonState(inProgress: false);
+      yield FollowButtonState(inProgress: false);
     }
   }
 }

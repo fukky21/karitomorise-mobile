@@ -28,6 +28,16 @@ class EventsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void changeCommentCount({String eventId, int count}) {
+    if (eventId != null) {
+      final event = _eventList[eventId];
+      if (event != null) {
+        event.commentCount = count;
+        add(event: event);
+      }
+    }
+  }
+
   Future<void> _init() async {
     _eventList = {};
     notifyListeners();

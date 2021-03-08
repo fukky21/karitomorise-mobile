@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../blocs/authentication_bloc/index.dart';
+import '../../utils/index.dart';
 import '../../widgets/tabs/index.dart';
 
 class StartScreen extends StatefulWidget {
@@ -14,11 +15,12 @@ class StartScreen extends StatefulWidget {
 
 class _StartScreenState extends State<StartScreen> {
   int _currentIndex = 0;
+  static final _homeTabStateKey = GlobalKey<HomeTabState>();
 
   final List<Widget> _tabs = [
+    HomeTab(key: _homeTabStateKey),
     SearchTab(),
-    ChatTab(),
-    EventTab(),
+    FavoriteTab(),
     NotificationTab(),
     MyPageTab(),
   ];
@@ -30,22 +32,27 @@ class _StartScreenState extends State<StartScreen> {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
       builder: (context, state) {
         if (state == null || state is AuthenticationInProgress) {
-          return Scaffold(
+          return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
             ),
           );
         }
         return Scaffold(
-          body: _tabs[_currentIndex],
+          body: IndexedStack(
+            index: _currentIndex,
+            children: _tabs,
+          ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
             items: const [
+              BottomNavigationBarItem(
+                icon: Icon(
+                  FontAwesomeIcons.home,
+                  size: _iconSize,
+                ),
+                label: 'ホーム',
+              ),
               BottomNavigationBarItem(
                 icon: Icon(
                   FontAwesomeIcons.search,
@@ -55,17 +62,10 @@ class _StartScreenState extends State<StartScreen> {
               ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  FontAwesomeIcons.solidComment,
+                  FontAwesomeIcons.solidHeart,
                   size: _iconSize,
                 ),
-                label: 'チャット',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(
-                  FontAwesomeIcons.users,
-                  size: _iconSize,
-                ),
-                label: '募集',
+                label: 'お気に入り',
               ),
               BottomNavigationBarItem(
                 icon: Icon(
@@ -82,7 +82,19 @@ class _StartScreenState extends State<StartScreen> {
                 label: 'マイページ',
               ),
             ],
+            backgroundColor: AppColors.grey10,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
             type: BottomNavigationBarType.fixed,
+            onTap: (index) {
+              if (index == 0 && _currentIndex == index) {
+                // ホームアイコンがタップされた & 現在ホームタブを表示中のとき
+                _homeTabStateKey.currentState.scrollToTop();
+              }
+              setState(() {
+                _currentIndex = index;
+              });
+            },
           ),
         );
       },

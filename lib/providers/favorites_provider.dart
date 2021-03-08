@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../repositories/index.dart';
 
-class LikesProvider with ChangeNotifier {
-  LikesProvider({@required this.context}) {
+class FavoritesProvider with ChangeNotifier {
+  FavoritesProvider({@required this.context}) {
     _authRepository = context.read<FirebaseAuthenticationRepository>();
     _userRepository = context.read<FirebaseUserRepository>();
     _init();
@@ -13,18 +13,18 @@ class LikesProvider with ChangeNotifier {
   final BuildContext context;
   FirebaseAuthenticationRepository _authRepository;
   FirebaseUserRepository _userRepository;
-  List<String> _likes;
+  List<String> _favorites;
 
-  List<String> get likes => _likes;
+  List<String> get favorites => _favorites;
 
   Future<void> reload() async {
     final currentUser = _authRepository.getCurrentUser();
     if (currentUser != null) {
-      final likes = await _userRepository.getLikes(currentUser.uid);
-      _likes = likes;
+      final favorites = await _userRepository.getFavorites(currentUser.uid);
+      _favorites = favorites;
       notifyListeners();
     } else {
-      _likes = [];
+      _favorites = [];
       notifyListeners();
     }
   }

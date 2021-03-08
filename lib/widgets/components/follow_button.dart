@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
-import '../../blocs/follow_user_button_bloc/index.dart';
+import '../../blocs/follow_button_bloc/index.dart';
 import '../../providers/index.dart';
 import 'custom_outline_button.dart';
 import 'custom_raised_button.dart';
 
-class FollowUserButton extends StatelessWidget {
-  const FollowUserButton({
+class FollowButton extends StatelessWidget {
+  const FollowButton({
     @required this.uid,
     @required this.width,
     @required this.height,
@@ -20,18 +20,17 @@ class FollowUserButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<FollowUserButtonBloc>(
-      create: (context) => FollowUserButtonBloc(context: context),
-      child: BlocBuilder<FollowUserButtonBloc, FollowUserButtonState>(
+    return BlocProvider<FollowButtonBloc>(
+      create: (context) => FollowButtonBloc(context: context),
+      child: BlocBuilder<FollowButtonBloc, FollowButtonState>(
         builder: (context, state) {
-          if (uid == null) {
-            return Container();
-          }
           if (state != null && state.inProgress) {
             return SizedBox(
               width: width,
               height: height,
-              child: const Center(child: CircularProgressIndicator()),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           }
           return Consumer<FollowingProvider>(
@@ -44,7 +43,7 @@ class FollowUserButton extends StatelessWidget {
                   height: height,
                   onPressed: () {
                     context
-                        .read<FollowUserButtonBloc>()
+                        .read<FollowButtonBloc>()
                         .add(UnFollowUserOnPressed(uid: uid));
                   },
                 );
@@ -55,7 +54,7 @@ class FollowUserButton extends StatelessWidget {
                 height: height,
                 onPressed: () {
                   context
-                      .read<FollowUserButtonBloc>()
+                      .read<FollowButtonBloc>()
                       .add(FollowUserOnPressed(uid: uid));
                 },
               );

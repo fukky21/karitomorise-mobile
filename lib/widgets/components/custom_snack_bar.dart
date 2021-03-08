@@ -8,12 +8,13 @@ void showSnackBar(BuildContext context, String message) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
+        backgroundColor: AppColors.grey10,
+        behavior: SnackBarBehavior.floating,
         content: AutoSizeText(
           message,
           style: const TextStyle(color: AppColors.white),
           maxLines: 1,
         ),
-        backgroundColor: AppColors.grey10,
         action: SnackBarAction(
           label: 'とじる',
           textColor: AppColors.white,

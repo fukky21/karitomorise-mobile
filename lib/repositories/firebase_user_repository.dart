@@ -26,7 +26,7 @@ class FirebaseUserRepository {
   static const _firstPlayedSeriesIdFieldName = 'first_played_series_id';
   static const _followingFieldName = 'following';
   static const _followersFieldName = 'followers';
-  static const _likedEventsFieldName = 'liked_events';
+  static const _favoritesFieldName = 'favorites';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
 
@@ -48,7 +48,7 @@ class FirebaseUserRepository {
         _firstPlayedSeriesIdFieldName: null,
         _followingFieldName: <String>[],
         _followersFieldName: <String>[],
-        _likedEventsFieldName: <String>[],
+        _favoritesFieldName: <String>[],
         _createdAtFieldName: now,
         _updatedAtFieldName: now,
       },
@@ -131,37 +131,46 @@ class FirebaseUserRepository {
     return _getFollowingFromDocument(doc);
   }
 
-  Future<void> likeEvent(String eventId) async {
-    final currentUser = firebaseAuth.currentUser;
-    await firebaseFirestore
-        .collection(_collectionName)
-        .doc(currentUser.uid)
-        .update(
-      <String, dynamic>{
-        _likedEventsFieldName: FieldValue.arrayUnion(<String>[eventId]),
-      },
-    );
-  }
-
-  Future<void> unLikeEvent(String eventId) async {
-    final currentUser = firebaseAuth.currentUser;
-    await firebaseFirestore
-        .collection(_collectionName)
-        .doc(currentUser.uid)
-        .update(
-      <String, dynamic>{
-        _likedEventsFieldName: FieldValue.arrayRemove(<String>[eventId]),
-      },
-    );
-  }
-
-  Future<List<String>> getLikes(String uid) async {
+  Future<List<String>> getFollowers(String uid) async {
     final doc =
         await firebaseFirestore.collection(_collectionName).doc(uid).get();
     if (doc.data() == null) {
       return null; // ユーザーがすでに削除されている場合
     }
-    return _getLikesFromDocument(doc);
+    return _getFollowersFromDocument(doc);
+  }
+
+  Future<void> addToFavorites(String eventId) async {
+    final currentUser = firebaseAuth.currentUser;
+    await firebaseFirestore
+        .collection(_collectionName)
+        .doc(currentUser.uid)
+        .update(
+      <String, dynamic>{
+        _favoritesFieldName: FieldValue.arrayUnion(<String>[eventId]),
+      },
+    );
+  }
+
+  Future<void> removeFromFavorites(String eventId) async {
+    final currentUser = firebaseAuth.currentUser;
+    await firebaseFirestore
+        .collection(_collectionName)
+        .doc(currentUser.uid)
+        .update(
+      <String, dynamic>{
+        _favoritesFieldName: FieldValue.arrayRemove(<String>[eventId]),
+      },
+    );
+  }
+
+  Future<List<String>> getFavorites(String uid) async {
+    final doc =
+        await firebaseFirestore.collection(_collectionName).doc(uid).get();
+    if (doc.data() == null) {
+      return null; // ユーザーがすでに削除されている場合
+    }
+    return _getFavoritesFromDocument(doc);
   }
 
   AppUser _getUserFromDocument(DocumentSnapshot doc) {
@@ -204,12 +213,12 @@ class FirebaseUserRepository {
     return followers;
   }
 
-  List<String> _getLikesFromDocument(DocumentSnapshot doc) {
+  List<String> _getFavoritesFromDocument(DocumentSnapshot doc) {
     final data = doc.data();
-    final likes = <String>[];
-    for (final eventId in data[_likedEventsFieldName] as List<dynamic>) {
-      likes.add(eventId as String);
+    final favorites = <String>[];
+    for (final eventId in data[_favoritesFieldName] as List<dynamic>) {
+      favorites.add(eventId as String);
     }
-    return likes;
+    return favorites;
   }
 }

@@ -33,6 +33,13 @@ class Routes {
             settings: routeSettings,
             builder: (_) => SelectWeaponScreen(),
           );
+        case ShowEventCommentsScreen.route:
+          final args =
+              routeSettings.arguments as ShowEventCommentsScreenArguments;
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            builder: (_) => ShowEventCommentsScreen(args: args),
+          );
         case ShowEventScreen.route:
           final args = routeSettings.arguments as ShowEventScreenArguments;
           return MaterialPageRoute<dynamic>(

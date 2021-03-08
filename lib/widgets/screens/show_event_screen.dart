@@ -8,6 +8,7 @@ import '../../models/index.dart';
 import '../../providers/index.dart';
 import '../../utils/index.dart';
 import '../../widgets/components/index.dart';
+import 'show_event_comments_screen.dart';
 import 'show_user_screen.dart';
 
 class ShowEventScreenArguments {
@@ -136,7 +137,13 @@ class ShowEventScreen extends StatelessWidget {
                       labelText: 'コメントを確認する',
                       width: MediaQuery.of(context).size.width * 0.7,
                       onPressed: () {
-                        // TODO(Fukky21): コメント画面へ遷移する
+                        Navigator.pushNamed(
+                          context,
+                          ShowEventCommentsScreen.route,
+                          arguments: ShowEventCommentsScreenArguments(
+                            eventId: args.eventId,
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -213,9 +220,9 @@ class ShowEventScreen extends StatelessWidget {
               CommentButton(
                 eventId: event?.id,
                 size: _size,
-                commentCount: 4, // TODO(Fukky21): コメント数を取得する
+                commentCount: event?.commentCount ?? 0,
               ),
-              LikeEventButton(
+              FavoriteButton(
                 eventId: event?.id,
                 isSignedIn: state is AuthenticationSuccess,
                 size: _size,

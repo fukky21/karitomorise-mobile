@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:like_button/like_button.dart';
 
 import '../../utils/index.dart';
+import '../../widgets/screens/index.dart';
 
 class CommentButton extends StatelessWidget {
   const CommentButton({
@@ -44,7 +45,11 @@ class CommentButton extends StatelessWidget {
       },
       onTap: (_) async {
         if (eventId != null) {
-          // TODO(Fukky21): コメント画面へ遷移する
+          await Navigator.pushNamed(
+            context,
+            ShowEventCommentsScreen.route,
+            arguments: ShowEventCommentsScreenArguments(eventId: eventId),
+          );
         }
         return false;
       },

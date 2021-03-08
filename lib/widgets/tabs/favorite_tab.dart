@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class ChatTab extends StatelessWidget {
+class FavoriteTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('CHAT'),
+        child: Text('FAVORITE'),
       ),
     );
   }

@@ -10,7 +10,7 @@ import '../../utils/index.dart';
 import '../../widgets/screens/index.dart';
 import 'comment_button.dart';
 import 'custom_circle_avatar.dart';
-import 'like_event_button.dart';
+import 'favorite_button.dart';
 import 'share_button.dart';
 
 class EventCell extends StatelessWidget {
@@ -23,19 +23,7 @@ class EventCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<EventsProvider>(
       builder: (context, provider, _) {
-        //final _event = provider.get(eventId: eventId);
-        final _event = AppEvent(
-          id: 'tmp_id',
-          uid: 'RffWCpsFTzgIlHJJWyGI3W7FUhg2',
-          description: 'これはテスト募集です',
-          type: EventType.story,
-          questRank: EventQuestRank.high,
-          targetLevel: EventTargetLevel.all,
-          playTime: EventPlayTime.for1to2H,
-          isClosed: false,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime(2021, 3, 7, 14, 0),
-        );
+        final _event = provider.get(eventId: eventId);
 
         return Material(
           color: AppColors.grey20,
@@ -189,9 +177,9 @@ class EventCell extends StatelessWidget {
               CommentButton(
                 eventId: event?.id,
                 size: _size,
-                commentCount: 4, // TODO(Fukky21): コメント数を取得する
+                commentCount: event?.commentCount ?? 0,
               ),
-              LikeEventButton(
+              FavoriteButton(
                 eventId: event?.id,
                 isSignedIn: state is AuthenticationSuccess,
                 size: _size,

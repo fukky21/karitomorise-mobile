@@ -56,6 +56,12 @@ Future<void> main() async {
             firebaseFirestore: firebaseFirestore,
           ),
         ),
+        Provider<FirebaseEventCommentRepository>(
+          create: (_) => FirebaseEventCommentRepository(
+            firebaseAuth: firebaseAuth,
+            firebaseFirestore: firebaseFirestore,
+          ),
+        ),
       ],
       child: MultiProvider(
         providers: [
@@ -68,8 +74,8 @@ Future<void> main() async {
           ChangeNotifierProvider<FollowingProvider>(
             create: (context) => FollowingProvider(context: context),
           ),
-          ChangeNotifierProvider<LikesProvider>(
-            create: (context) => LikesProvider(context: context),
+          ChangeNotifierProvider<FavoritesProvider>(
+            create: (context) => FavoritesProvider(context: context),
           ),
         ],
         child: MyApp(),

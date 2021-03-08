@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../blocs/authentication_bloc/index.dart';
 import '../../models/index.dart';
 import '../../providers/index.dart';
+import '../../repositories/index.dart';
 import '../../utils/index.dart';
 import '../../widgets/components/index.dart';
 import '../../widgets/screens/index.dart';
@@ -25,19 +26,9 @@ class MyPageTab extends StatelessWidget {
             const SizedBox(height: 20),
             _signButton(context),
             const SizedBox(height: 20),
-            CustomRaisedButton(
-              width: 300,
-              labelText: 'GO TO TEST USER2',
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  ShowUserScreen.route,
-                  arguments: ShowUserScreenArguments(
-                    uid: 'PuxczFjpfjUdbD2kkspZSkW3YKl1',
-                  ),
-                );
-              },
-            ),
+            _goToUser2Button(context),
+            const SizedBox(height: 20),
+            _createDummyEventsButton(context),
           ],
         ),
       ),
@@ -167,6 +158,38 @@ class MyPageTab extends StatelessWidget {
         ),
         CustomDivider(),
       ],
+    );
+  }
+
+  // TODO(Fukky21): 後で削除する(_goToUser2Button)
+  Widget _goToUser2Button(BuildContext context) {
+    return CustomRaisedButton(
+      width: 300,
+      labelText: 'GO TO TEST USER2',
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          ShowUserScreen.route,
+          arguments: ShowUserScreenArguments(
+            uid: 'PuxczFjpfjUdbD2kkspZSkW3YKl1',
+          ),
+        );
+      },
+    );
+  }
+
+  // TODO(Fukky21): 後で削除する(_createDummyEventsButton)
+  Widget _createDummyEventsButton(BuildContext context) {
+    return CustomRaisedButton(
+      width: 300,
+      labelText: 'ダミー募集を作成',
+      onPressed: () async {
+        if (await showConfirmModal(context, 'ダミーイベントを作成しますか？')) {
+          await context
+              .read<FirebaseEventRepository>()
+              .createDummyEvents(context);
+        }
+      },
     );
   }
 }

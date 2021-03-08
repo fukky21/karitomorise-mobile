@@ -195,7 +195,7 @@ class ShowUserScreen extends StatelessWidget {
               },
             );
           }
-          return FollowUserButton(uid: uid, width: _width, height: _height);
+          return FollowButton(uid: uid, width: _width, height: _height);
         }
         return Container();
       },
