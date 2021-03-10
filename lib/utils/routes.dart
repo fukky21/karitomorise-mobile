@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 
 import '../widgets/screens/index.dart';
 
@@ -17,6 +18,13 @@ class Routes {
             settings: routeSettings,
             fullscreenDialog: true,
             builder: (_) => EditUserScreen(),
+          );
+        case SearchScreen.route:
+          final args = routeSettings.arguments as SearchScreenArguments;
+          return PageTransition<dynamic>(
+            settings: routeSettings,
+            type: PageTransitionType.fade,
+            child: SearchScreen(args: args),
           );
         case SelectAvatarScreen.route:
           return MaterialPageRoute<dynamic>(
