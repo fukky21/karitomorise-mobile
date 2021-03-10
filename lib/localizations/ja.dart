@@ -97,6 +97,18 @@ class JapaneseCupertinoLocalizations implements CupertinoLocalizations {
 
   static const LocalizationsDelegate<CupertinoLocalizations> delegate =
       _JapaneseCupertinoLocalizationDelegate();
+
+  @override
+  String get searchTextFieldPlaceholderLabel => 'さがす';
+
+  @override
+  List<String> get timerPickerHourLabels => ['時'];
+
+  @override
+  List<String> get timerPickerMinuteLabels => ['分'];
+
+  @override
+  List<String> get timerPickerSecondLabels => ['秒'];
 }
 
 class _JapaneseCupertinoLocalizationDelegate
