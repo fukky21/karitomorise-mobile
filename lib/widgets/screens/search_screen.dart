@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../utils/index.dart';
+import '../../widgets/components/index.dart';
+import 'search_result_screen.dart';
 
 class SearchScreenArguments {
   SearchScreenArguments({@required this.initialValue});
@@ -18,79 +18,33 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _searchAppBar(
+      appBar: searchAppBar(
         context,
-        initialValue: args?.initialValue ?? '',
-      ),
-      body: Container(),
-    );
-  }
-
-  PreferredSizeWidget _searchAppBar(
-    BuildContext context, {
-    @required String initialValue,
-  }) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(50),
-      child: AppBar(
-        automaticallyImplyLeading: false,
-        titleSpacing: 7,
         actions: [
-          Container(
-            margin: const EdgeInsets.only(left: 15, right: 15, bottom: 10),
-            child: CupertinoButton(
-              padding: const EdgeInsets.symmetric(vertical: 5),
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'キャンセル',
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle2
-                    .copyWith(color: Theme.of(context).primaryColor),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              // TODO(Fukky21): 入力中の文字を全消しする機能を実装する
+            },
           ),
         ],
-        title: Hero(
-          tag: 'search_bar',
-          child: Material(
-            color: AppColors.transparent,
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 10),
-              height: 40,
-              child: TextFormField(
-                autofocus: true,
-                initialValue: initialValue,
-                textInputAction: TextInputAction.search,
-                style: const TextStyle(fontSize: 15),
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.grey20,
-                  hintText: 'キーワード検索',
-                  hintStyle: TextStyle(color: AppColors.grey60),
-                  prefixIcon: Icon(Icons.search, color: AppColors.grey60),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                  ),
-                  contentPadding: EdgeInsets.only(left: 10),
-                ),
-                onFieldSubmitted: (text) {
-                  debugPrint(text);
-                },
-              ),
-            ),
-          ),
-        ),
-        backgroundColor: AppColors.grey10,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.3),
-          child: Container(
-            color: Theme.of(context).dividerColor,
-            height: 0.3,
-          ),
-        ),
+        initialValue: args?.initialValue,
+        autofocus: true,
+        onFieldSubmitted: (text) async {
+          // TODO(Fukky21): スペースだけのときでも遷移できてしまうので修正する
+          if (text.isNotEmpty) {
+            await Navigator.pushNamed(
+              context,
+              SearchResultScreen.route,
+              arguments: SearchResultScreenArguments(keyword: text),
+            );
+            // この検索結果画面から戻ってくるとき、この画面はスルーする
+            Navigator.of(context).pop();
+          }
+        },
+      ),
+      body: const Center(
+        child: Text('SEARCHING'),
       ),
     );
   }

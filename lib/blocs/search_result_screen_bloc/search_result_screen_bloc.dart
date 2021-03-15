@@ -4,11 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../providers/index.dart';
 import '../../repositories/index.dart';
-import 'search_tab_event.dart';
-import 'search_tab_state.dart';
+import 'search_result_screen_event.dart';
+import 'search_result_screen_state.dart';
 
-class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
-  SearchTabBloc({@required this.context}) : super(null) {
+class SearchResultScreenBloc
+    extends Bloc<SearchResultScreenEvent, SearchResultScreenState> {
+  SearchResultScreenBloc({@required this.context}) : super(null) {
     _userRepository = context.read<FirebaseUserRepository>();
     _eventRepository = context.read<FirebaseEventRepository>();
     _usersProvider = context.read<UsersProvider>();
@@ -21,22 +22,28 @@ class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
   UsersProvider _usersProvider;
   EventsProvider _eventsProvider;
   List<String> _eventIds;
+  String _keyword;
   QueryDocumentSnapshot _lastVisible;
   bool _fetching = false;
 
   @override
-  Stream<SearchTabState> mapEventToState(SearchTabEvent event) async* {
+  Stream<SearchResultScreenState> mapEventToState(
+    SearchResultScreenEvent event,
+  ) async* {
     if (event is Initialized) {
-      yield* _mapInitializedToState();
+      yield* _mapInitializedToState(event.keyword);
     }
     if (event is Fetched) {
       yield* _mapFetchedToState();
     }
   }
 
-  Stream<SearchTabState> _mapInitializedToState() async* {
+  Stream<SearchResultScreenState> _mapInitializedToState(
+    String keyword,
+  ) async* {
     yield null; // Refresh時に中央にインジケータを表示するためにnullを渡す
     _eventIds = [];
+    _keyword = keyword;
     _lastVisible = null;
     try {
       yield await _fetch();
@@ -45,7 +52,7 @@ class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
     }
   }
 
-  Stream<SearchTabState> _mapFetchedToState() async* {
+  Stream<SearchResultScreenState> _mapFetchedToState() async* {
     if (!_fetching) {
       _fetching = true; // 重複してFetchしないようにする
       try {
@@ -57,9 +64,13 @@ class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
     }
   }
 
-  Future<SearchTabState> _fetch() async {
+  Future<SearchResultScreenState> _fetch() async {
     final response = await _eventRepository.searchEvents(
-      EventQuery(limit: 10, lastVisible: _lastVisible),
+      EventQuery(
+        keyword: _keyword,
+        limit: 10,
+        lastVisible: _lastVisible,
+      ),
     );
     _lastVisible = response.lastVisible;
     final events = response.events;
@@ -80,6 +91,9 @@ class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
         isFetchable = false;
       }
     }
-    return SearchTabState(eventIds: _eventIds, isFetchabled: isFetchable);
+    return SearchResultScreenState(
+      eventIds: _eventIds,
+      isFetchabled: isFetchable,
+    );
   }
 }

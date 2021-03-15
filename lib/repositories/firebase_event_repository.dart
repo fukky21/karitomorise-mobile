@@ -21,12 +21,14 @@ class FirebaseEventRepository {
   static const _documentVersionFieldName = 'document_version';
   static const _uidFieldName = 'uid';
   static const _descriptionFieldName = 'description';
+  static const _descriptionTokenMapFieldName = 'description_token_map';
   static const _typeIdFieldName = 'type_id';
   static const _questRankIdFieldName = 'quest_rank_id';
   static const _targetLevelIdFieldName = 'target_level_id';
   static const _playTimeIdFieldName = 'play_time_id';
   static const _isClosedFieldName = 'is_closed';
   static const _commentCountFieldName = 'comment_count';
+  static const _timeBlockTagFieldName = 'time_block_tag';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
 
@@ -34,17 +36,31 @@ class FirebaseEventRepository {
     final currentUser = firebaseAuth.currentUser;
     final now = DateTime.now();
 
+    final description = event.description;
+    final descriptionTokenMap = <String, bool>{}; // 検索用 2-gram
+    if (description.isNotEmpty) {
+      for (var i = 0; i < description.length - 1; i++) {
+        final token = description.substring(i, i + 2).toLowerCase();
+        // 重複して追加しないようにする
+        if (descriptionTokenMap[token] == null) {
+          descriptionTokenMap[token] = true;
+        }
+      }
+    }
+
     await firebaseFirestore.collection(_collectionName).doc().set(
       <String, dynamic>{
         _documentVersionFieldName: 1,
         _uidFieldName: currentUser.uid,
-        _descriptionFieldName: event.description,
+        _descriptionFieldName: description,
+        _descriptionTokenMapFieldName: descriptionTokenMap,
         _typeIdFieldName: event.type?.id,
         _questRankIdFieldName: event.questRank?.id,
         _targetLevelIdFieldName: event.targetLevel?.id,
         _playTimeIdFieldName: event.playTime?.id,
         _isClosedFieldName: false,
         _commentCountFieldName: 0,
+        _timeBlockTagFieldName: _getTimeTag(now),
         _createdAtFieldName: now,
         _updatedAtFieldName: now,
       },
@@ -60,18 +76,55 @@ class FirebaseEventRepository {
     return _getEventFromDocument(doc);
   }
 
-  // TODO(Fukky21): getEventと統合する
-  Future<FirebaseEventResponse> getEvents(FirebaseEventQuery eventQuery) async {
-    Query query;
+  Future<EventResponse> searchEvents(EventQuery searchEventsQuery) async {
+    Query query = firebaseFirestore.collection(_collectionName);
 
-    query = firebaseFirestore
-        .collection(_collectionName)
-        .orderBy('updated_at', descending: true);
-    if (eventQuery?.lastVisible != null) {
-      query = query.startAfterDocument(eventQuery.lastVisible);
+    if (searchEventsQuery?.keyword != null) {
+      final keywords = <String>[];
+      // 半角/全角スペースで文字列を分割する
+      searchEventsQuery.keyword.split(RegExp(r' |　')).forEach(
+        (keyword) {
+          if (keyword.isNotEmpty) {
+            keywords.add(keyword.toLowerCase()); // 例: [リオレウス, リオレイア]
+          }
+        },
+      );
+      final searchTokens = <String>[];
+      for (final keyword in keywords) {
+        for (var i = 0; i < keyword.length - 1; i++) {
+          final token = keyword.substring(i, i + 2);
+          // 重複して追加しないようにする(重複するとqueryエラーが発生するので注意)
+          if (!searchTokens.contains(token)) {
+            searchTokens.add(token); // 例: [リオ, オレ, レウ, ウス, リオ, レイ, イア]
+          }
+        }
+      }
+      for (final token in searchTokens) {
+        query = query.where(
+          '$_descriptionTokenMapFieldName.$token',
+          isEqualTo: true,
+        );
+      }
+      // 現在の時刻ブロックと1つ前の時刻ブロックに属する募集のみを検索対象にする
+      final now = DateTime.now();
+      final oneHourAgo = now.add(const Duration(hours: 1) * -1);
+      query = query.where(
+        _timeBlockTagFieldName,
+        whereIn: <String>[_getTimeTag(now), _getTimeTag(oneHourAgo)],
+      );
     }
-    if (eventQuery?.limit != null) {
-      query = query.limit(eventQuery?.limit);
+
+    // Firebaseの制約でキーワード検索するときは時刻でソートできない
+    if (searchEventsQuery?.keyword == null) {
+      query = query.orderBy('updated_at', descending: true);
+    }
+
+    if (searchEventsQuery?.lastVisible != null) {
+      query = query.startAfterDocument(searchEventsQuery.lastVisible);
+    }
+
+    if (searchEventsQuery?.limit != null) {
+      query = query.limit(searchEventsQuery.limit);
     }
 
     final snapshot = await query.get();
@@ -88,7 +141,7 @@ class FirebaseEventRepository {
       events.add(_getEventFromDocument(doc));
     }
 
-    return FirebaseEventResponse(events: events, lastVisible: lastVisible);
+    return EventResponse(events: events, lastVisible: lastVisible);
   }
 
   // TODO(Fukky21): 後で削除する(ダミー募集作成メソッド)
@@ -99,11 +152,22 @@ class FirebaseEventRepository {
 
     for (var i = firstIndex; i < count + firstIndex; i++) {
       final now = DateTime.now();
+
+      final description = 'これはダミー募集${i + 1}です。';
+      final descriptionTokenMap = <String, bool>{};
+      if (description.isNotEmpty) {
+        for (var i = 0; i < description.length - 1; i++) {
+          final token = description.substring(i, i + 2).toLowerCase();
+          descriptionTokenMap[token] = true;
+        }
+      }
+
       await firebaseFirestore.collection(_collectionName).doc().set(
         <String, dynamic>{
           _documentVersionFieldName: 1,
           _uidFieldName: currentUser.uid,
-          _descriptionFieldName: 'これはダミー募集${i + 1}です。',
+          _descriptionFieldName: description,
+          _descriptionTokenMapFieldName: descriptionTokenMap,
           _typeIdFieldName: 1 + math.Random().nextInt(EventType.values.length),
           _questRankIdFieldName:
               1 + math.Random().nextInt(EventQuestRank.values.length),
@@ -113,6 +177,7 @@ class FirebaseEventRepository {
               1 + math.Random().nextInt(EventPlayTime.values.length),
           _isClosedFieldName: false,
           _commentCountFieldName: 0,
+          _timeBlockTagFieldName: _getTimeTag(now),
           _createdAtFieldName: now,
           _updatedAtFieldName: now,
         },
@@ -141,20 +206,31 @@ class FirebaseEventRepository {
       updatedAt: (data[_updatedAtFieldName] as Timestamp)?.toDate(),
     );
   }
+
+  String _getTimeTag(DateTime dateTime) {
+    final year = dateTime.year.toString();
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+
+    return '$year-$month-$day-$hour-00';
+  }
 }
 
-class FirebaseEventQuery {
-  FirebaseEventQuery({
-    this.limit,
+class EventQuery {
+  EventQuery({
+    this.limit = 10,
+    this.keyword,
     this.lastVisible,
   });
 
   final int limit;
+  final String keyword;
   final QueryDocumentSnapshot lastVisible;
 }
 
-class FirebaseEventResponse {
-  FirebaseEventResponse({
+class EventResponse {
+  EventResponse({
     this.events,
     this.lastVisible,
   });
