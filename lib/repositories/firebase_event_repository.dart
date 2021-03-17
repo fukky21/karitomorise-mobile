@@ -116,7 +116,7 @@ class FirebaseEventRepository {
 
     // Firebaseの制約でキーワード検索するときは時刻でソートできない
     if (searchEventsQuery?.keyword == null) {
-      query = query.orderBy('updated_at', descending: true);
+      query = query.orderBy(_updatedAtFieldName, descending: true);
     }
 
     if (searchEventsQuery?.lastVisible != null) {
