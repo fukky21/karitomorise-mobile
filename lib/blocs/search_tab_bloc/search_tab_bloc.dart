@@ -58,7 +58,7 @@ class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
   }
 
   Future<SearchTabState> _fetch() async {
-    final response = await _eventRepository.searchEvents(
+    final response = await _eventRepository.find(
       EventQuery(limit: 10, lastVisible: _lastVisible),
     );
     _lastVisible = response.lastVisible;

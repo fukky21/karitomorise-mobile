@@ -23,6 +23,7 @@ class SearchResultScreenBloc
   EventsProvider _eventsProvider;
   List<String> _eventIds;
   String _keyword;
+  List<String> _eventIdsByKeywords;
   QueryDocumentSnapshot _lastVisible;
   bool _fetching = false;
 
@@ -44,6 +45,7 @@ class SearchResultScreenBloc
     yield null; // Refresh時に中央にインジケータを表示するためにnullを渡す
     _eventIds = [];
     _keyword = keyword;
+    _eventIdsByKeywords = null;
     _lastVisible = null;
     try {
       yield await _fetch();
@@ -65,11 +67,25 @@ class SearchResultScreenBloc
   }
 
   Future<SearchResultScreenState> _fetch() async {
-    final response = await _eventRepository.searchEvents(
+    if (_eventIdsByKeywords == null) {
+      final keywords = <String>[];
+      // 半角/全角スペースで文字列を分割する
+      _keyword.split(RegExp(r' |　')).forEach(
+        (keyword) {
+          if (keyword.isNotEmpty) {
+            keywords.add(keyword.toLowerCase()); // 例: [リオレウス, リオレイア]
+          }
+        },
+      );
+      _eventIdsByKeywords =
+          await _eventRepository.getEventIdsByKeywords(keywords);
+    }
+    final response = await _eventRepository.find(
       EventQuery(
         keyword: _keyword,
-        limit: 10,
+        eventIds: _eventIdsByKeywords,
         lastVisible: _lastVisible,
+        limit: 10,
       ),
     );
     _lastVisible = response.lastVisible;

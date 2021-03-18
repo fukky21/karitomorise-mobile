@@ -18,53 +18,80 @@ class FirebaseEventRepository {
   final FirebaseFirestore firebaseFirestore;
 
   static const _collectionName = 'events';
+  static const _subCollectionName = '_events';
+  static const _idFieldName = 'id';
   static const _documentVersionFieldName = 'document_version';
   static const _uidFieldName = 'uid';
   static const _descriptionFieldName = 'description';
-  static const _descriptionTokenMapFieldName = 'description_token_map';
   static const _typeIdFieldName = 'type_id';
   static const _questRankIdFieldName = 'quest_rank_id';
   static const _targetLevelIdFieldName = 'target_level_id';
   static const _playTimeIdFieldName = 'play_time_id';
   static const _isClosedFieldName = 'is_closed';
   static const _commentCountFieldName = 'comment_count';
+  static const _uniGramTokenMapFieldName = 'uni_gram_token_map';
+  static const _biGramTokenMapFieldName = 'bi_gram_token_map';
   static const _timeBlockTagFieldName = 'time_block_tag';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
 
   Future<void> createEvent(AppEvent event) async {
     final currentUser = firebaseAuth.currentUser;
+    final id = firebaseFirestore.collection(_subCollectionName).doc().id;
     final now = DateTime.now();
 
     final description = event.description;
-    final descriptionTokenMap = <String, bool>{}; // 検索用 2-gram
+    final uniGramTokenMap = <String, bool>{}; // 検索用 uni-gram
+    final biGramTokenMap = <String, bool>{}; // 検索用 bi-gram
     if (description.isNotEmpty) {
+      for (var i = 0; i < description.length; i++) {
+        final token = description.substring(i, i + 1).toLowerCase();
+        // 重複して追加しないようにする
+        if (uniGramTokenMap[token] == null) {
+          uniGramTokenMap[token] = true;
+        }
+      }
       for (var i = 0; i < description.length - 1; i++) {
         final token = description.substring(i, i + 2).toLowerCase();
         // 重複して追加しないようにする
-        if (descriptionTokenMap[token] == null) {
-          descriptionTokenMap[token] = true;
+        if (biGramTokenMap[token] == null) {
+          biGramTokenMap[token] = true;
         }
       }
     }
 
-    await firebaseFirestore.collection(_collectionName).doc().set(
-      <String, dynamic>{
-        _documentVersionFieldName: 1,
-        _uidFieldName: currentUser.uid,
-        _descriptionFieldName: description,
-        _descriptionTokenMapFieldName: descriptionTokenMap,
-        _typeIdFieldName: event.type?.id,
-        _questRankIdFieldName: event.questRank?.id,
-        _targetLevelIdFieldName: event.targetLevel?.id,
-        _playTimeIdFieldName: event.playTime?.id,
-        _isClosedFieldName: false,
-        _commentCountFieldName: 0,
-        _timeBlockTagFieldName: _getTimeTag(now),
-        _createdAtFieldName: now,
-        _updatedAtFieldName: now,
-      },
-    );
+    await firebaseFirestore.runTransaction((transaction) async {
+      transaction
+        ..set(
+          firebaseFirestore.collection(_subCollectionName).doc(id),
+          <String, dynamic>{
+            _idFieldName: id,
+            _documentVersionFieldName: 1,
+            _uniGramTokenMapFieldName: uniGramTokenMap,
+            _biGramTokenMapFieldName: biGramTokenMap,
+            _timeBlockTagFieldName: _getTimeTag(now),
+            _createdAtFieldName: now,
+            _updatedAtFieldName: now,
+          },
+        )
+        ..set(
+          firebaseFirestore.collection(_collectionName).doc(id),
+          <String, dynamic>{
+            _idFieldName: id,
+            _documentVersionFieldName: 1,
+            _uidFieldName: currentUser.uid,
+            _descriptionFieldName: description,
+            _typeIdFieldName: event.type?.id,
+            _questRankIdFieldName: event.questRank?.id,
+            _targetLevelIdFieldName: event.targetLevel?.id,
+            _playTimeIdFieldName: event.playTime?.id,
+            _isClosedFieldName: false,
+            _commentCountFieldName: 0,
+            _createdAtFieldName: now,
+            _updatedAtFieldName: now,
+          },
+        );
+    });
   }
 
   Future<AppEvent> getEvent(String eventId) async {
@@ -76,55 +103,25 @@ class FirebaseEventRepository {
     return _getEventFromDocument(doc);
   }
 
-  Future<EventResponse> searchEvents(EventQuery searchEventsQuery) async {
+  Future<EventResponse> find(EventQuery eventQuery) async {
     Query query = firebaseFirestore.collection(_collectionName);
 
-    if (searchEventsQuery?.keyword != null) {
-      final keywords = <String>[];
-      // 半角/全角スペースで文字列を分割する
-      searchEventsQuery.keyword.split(RegExp(r' |　')).forEach(
-        (keyword) {
-          if (keyword.isNotEmpty) {
-            keywords.add(keyword.toLowerCase()); // 例: [リオレウス, リオレイア]
-          }
-        },
-      );
-      final searchTokens = <String>[];
-      for (final keyword in keywords) {
-        for (var i = 0; i < keyword.length - 1; i++) {
-          final token = keyword.substring(i, i + 2);
-          // 重複して追加しないようにする(重複するとqueryエラーが発生するので注意)
-          if (!searchTokens.contains(token)) {
-            searchTokens.add(token); // 例: [リオ, オレ, レウ, ウス, リオ, レイ, イア]
-          }
-        }
+    if (eventQuery.eventIds != null) {
+      if (eventQuery.eventIds.isEmpty) {
+        // キーワード検索のヒット数が0のとき、eventIdsに空の配列が渡ってくる
+        return EventResponse(events: []);
       }
-      for (final token in searchTokens) {
-        query = query.where(
-          '$_descriptionTokenMapFieldName.$token',
-          isEqualTo: true,
-        );
-      }
-      // 現在の時刻ブロックと1つ前の時刻ブロックに属する募集のみを検索対象にする
-      final now = DateTime.now();
-      final oneHourAgo = now.add(const Duration(hours: 1) * -1);
-      query = query.where(
-        _timeBlockTagFieldName,
-        whereIn: <String>[_getTimeTag(now), _getTimeTag(oneHourAgo)],
-      );
+      query = query.where(_idFieldName, whereIn: eventQuery.eventIds);
     }
 
-    // Firebaseの制約でキーワード検索するときは時刻でソートできない
-    if (searchEventsQuery?.keyword == null) {
-      query = query.orderBy(_updatedAtFieldName, descending: true);
+    query = query.orderBy(_updatedAtFieldName, descending: true);
+
+    if (eventQuery.lastVisible != null) {
+      query = query.startAfterDocument(eventQuery.lastVisible);
     }
 
-    if (searchEventsQuery?.lastVisible != null) {
-      query = query.startAfterDocument(searchEventsQuery.lastVisible);
-    }
-
-    if (searchEventsQuery?.limit != null) {
-      query = query.limit(searchEventsQuery.limit);
+    if (eventQuery.limit != null) {
+      query = query.limit(eventQuery.limit);
     }
 
     final snapshot = await query.get();
@@ -144,43 +141,82 @@ class FirebaseEventRepository {
     return EventResponse(events: events, lastVisible: lastVisible);
   }
 
+  Future<List<String>> getEventIdsByKeywords(List<String> keywords) async {
+    Query query = firebaseFirestore.collection(_subCollectionName);
+
+    final tokens = <String>[]; // 例: [リオ, オレ, レウ, ウス, 珠]
+    for (final keyword in keywords) {
+      if (keyword.length == 1) {
+        // 重複して追加しないようにする(重複するとqueryエラーが発生するので注意)
+        if (!tokens.contains(keyword)) {
+          tokens.add(keyword);
+        }
+      } else {
+        for (var i = 0; i < keyword.length - 1; i++) {
+          final token = keyword.substring(i, i + 2);
+          // 重複して追加しないようにする(重複するとqueryエラーが発生するので注意)
+          if (!tokens.contains(token)) {
+            tokens.add(token);
+          }
+        }
+      }
+    }
+
+    for (final token in tokens) {
+      if (token.length == 1) {
+        query = query.where(
+          '$_uniGramTokenMapFieldName.$token',
+          isEqualTo: true,
+        );
+      } else {
+        query = query.where(
+          '$_biGramTokenMapFieldName.$token',
+          isEqualTo: true,
+        );
+      }
+    }
+    // 現在の時刻ブロックと1つ前の時刻ブロックに属する募集のみを検索対象にする
+    final now = DateTime.now();
+    final oneHourAgo = now.add(const Duration(hours: 1) * -1);
+    query = query.where(
+      _timeBlockTagFieldName,
+      whereIn: <String>[_getTimeTag(now), _getTimeTag(oneHourAgo)],
+    );
+
+    final snapshot = await query.get();
+    final docs = snapshot.docs;
+
+    final eventIds = <String>[];
+    for (final doc in docs) {
+      if (doc.data() != null) {
+        eventIds.add(doc.id);
+      }
+    }
+    return eventIds;
+  }
+
   // TODO(Fukky21): 後で削除する(ダミー募集作成メソッド)
   Future<void> createDummyEvents(BuildContext context) async {
     const count = 10;
     const firstIndex = 0;
-    final currentUser = firebaseAuth.currentUser;
 
     for (var i = firstIndex; i < count + firstIndex; i++) {
-      final now = DateTime.now();
-
-      final description = 'これはダミー募集${i + 1}です。';
-      final descriptionTokenMap = <String, bool>{};
-      if (description.isNotEmpty) {
-        for (var i = 0; i < description.length - 1; i++) {
-          final token = description.substring(i, i + 2).toLowerCase();
-          descriptionTokenMap[token] = true;
-        }
-      }
-
-      await firebaseFirestore.collection(_collectionName).doc().set(
-        <String, dynamic>{
-          _documentVersionFieldName: 1,
-          _uidFieldName: currentUser.uid,
-          _descriptionFieldName: description,
-          _descriptionTokenMapFieldName: descriptionTokenMap,
-          _typeIdFieldName: 1 + math.Random().nextInt(EventType.values.length),
-          _questRankIdFieldName:
-              1 + math.Random().nextInt(EventQuestRank.values.length),
-          _targetLevelIdFieldName:
-              1 + math.Random().nextInt(EventTargetLevel.values.length),
-          _playTimeIdFieldName:
-              1 + math.Random().nextInt(EventPlayTime.values.length),
-          _isClosedFieldName: false,
-          _commentCountFieldName: 0,
-          _timeBlockTagFieldName: _getTimeTag(now),
-          _createdAtFieldName: now,
-          _updatedAtFieldName: now,
-        },
+      await createEvent(
+        AppEvent(
+          description: 'これはダミー募集${i + 1}です。',
+          type: getEventType(
+            id: 1 + math.Random().nextInt(EventType.values.length),
+          ),
+          questRank: getEventQuestRank(
+            id: 1 + math.Random().nextInt(EventQuestRank.values.length),
+          ),
+          targetLevel: getEventTargetLevel(
+            id: 1 + math.Random().nextInt(EventTargetLevel.values.length),
+          ),
+          playTime: getEventPlayTime(
+            id: 1 + math.Random().nextInt(EventPlayTime.values.length),
+          ),
+        ),
       );
       debugPrint('ダミー募集${i + 1}を作成しました');
     }
@@ -221,11 +257,13 @@ class EventQuery {
   EventQuery({
     this.limit = 10,
     this.keyword,
+    this.eventIds,
     this.lastVisible,
   });
 
   final int limit;
   final String keyword;
+  final List<String> eventIds;
   final QueryDocumentSnapshot lastVisible;
 }
 
