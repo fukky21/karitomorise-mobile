@@ -29,8 +29,10 @@ class FirebaseEventRepository {
   static const _playTimeIdFieldName = 'play_time_id';
   static const _isClosedFieldName = 'is_closed';
   static const _commentCountFieldName = 'comment_count';
-  static const _uniGramTokenMapFieldName = 'uni_gram_token_map';
-  static const _biGramTokenMapFieldName = 'bi_gram_token_map';
+  static const _descriptionUnigramTokenMapFieldName =
+      'description_unigram_token_map';
+  static const _descriptionBigramTokenMapFieldName =
+      'description_bigram_token_map';
   static const _timeBlockTagFieldName = 'time_block_tag';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
@@ -41,21 +43,21 @@ class FirebaseEventRepository {
     final now = DateTime.now();
 
     final description = event.description;
-    final uniGramTokenMap = <String, bool>{}; // 検索用 uni-gram
-    final biGramTokenMap = <String, bool>{}; // 検索用 bi-gram
+    final unigramTokenMap = <String, bool>{};
+    final bigramTokenMap = <String, bool>{};
     if (description.isNotEmpty) {
       for (var i = 0; i < description.length; i++) {
         final token = description.substring(i, i + 1).toLowerCase();
         // 重複して追加しないようにする
-        if (uniGramTokenMap[token] == null) {
-          uniGramTokenMap[token] = true;
+        if (unigramTokenMap[token] == null) {
+          unigramTokenMap[token] = true;
         }
       }
       for (var i = 0; i < description.length - 1; i++) {
         final token = description.substring(i, i + 2).toLowerCase();
         // 重複して追加しないようにする
-        if (biGramTokenMap[token] == null) {
-          biGramTokenMap[token] = true;
+        if (bigramTokenMap[token] == null) {
+          bigramTokenMap[token] = true;
         }
       }
     }
@@ -67,8 +69,8 @@ class FirebaseEventRepository {
           <String, dynamic>{
             _idFieldName: id,
             _documentVersionFieldName: 1,
-            _uniGramTokenMapFieldName: uniGramTokenMap,
-            _biGramTokenMapFieldName: biGramTokenMap,
+            _descriptionUnigramTokenMapFieldName: unigramTokenMap,
+            _descriptionBigramTokenMapFieldName: bigramTokenMap,
             _timeBlockTagFieldName: _getTimeTag(now),
             _createdAtFieldName: now,
             _updatedAtFieldName: now,
@@ -165,12 +167,12 @@ class FirebaseEventRepository {
     for (final token in tokens) {
       if (token.length == 1) {
         query = query.where(
-          '$_uniGramTokenMapFieldName.$token',
+          '$_descriptionUnigramTokenMapFieldName.$token',
           isEqualTo: true,
         );
       } else {
         query = query.where(
-          '$_biGramTokenMapFieldName.$token',
+          '$_descriptionBigramTokenMapFieldName.$token',
           isEqualTo: true,
         );
       }

@@ -18,6 +18,8 @@ class FirebaseUserRepository {
   final FirebaseFirestore firebaseFirestore;
 
   static const _collectionName = 'users';
+  static const _subCollectionName = '_users';
+  static const _idFieldName = 'id';
   static const _documentVersionFieldName = 'document_version';
   static const _displayNameFieldName = 'display_name';
   static const _biographyFieldName = 'biography';
@@ -27,6 +29,10 @@ class FirebaseUserRepository {
   static const _followingFieldName = 'following';
   static const _followersFieldName = 'followers';
   static const _favoritesFieldName = 'favorites';
+  static const _displayNameUnigramTokenMapFieldName =
+      'display_name_unigram_token_map';
+  static const _displayNameBigramTokenMapFieldName =
+      'display_name_bigram_token_map';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
 
@@ -35,24 +41,56 @@ class FirebaseUserRepository {
     final avatarId = 1 + math.Random().nextInt(UserAvatar.values.length);
     final now = DateTime.now();
 
-    await firebaseFirestore
-        .collection(_collectionName)
-        .doc(currentUser.uid)
-        .set(
-      <String, dynamic>{
-        _documentVersionFieldName: 1,
-        _displayNameFieldName: displayName,
-        _biographyFieldName: 'よろしくお願いします！',
-        _avatarIdFieldName: avatarId,
-        _mainWeaponIdFieldName: null,
-        _firstPlayedSeriesIdFieldName: null,
-        _followingFieldName: <String>[],
-        _followersFieldName: <String>[],
-        _favoritesFieldName: <String>[],
-        _createdAtFieldName: now,
-        _updatedAtFieldName: now,
-      },
-    );
+    final unigramTokenMap = <String, bool>{};
+    final bigramTokenMap = <String, bool>{};
+    if (displayName.isNotEmpty) {
+      for (var i = 0; i < displayName.length; i++) {
+        final token = displayName.substring(i, i + 1).toLowerCase();
+        // 重複して追加しないようにする
+        if (unigramTokenMap[token] == null) {
+          unigramTokenMap[token] = true;
+        }
+      }
+      for (var i = 0; i < displayName.length - 1; i++) {
+        final token = displayName.substring(i, i + 2).toLowerCase();
+        // 重複して追加しないようにする
+        if (bigramTokenMap[token] == null) {
+          bigramTokenMap[token] = true;
+        }
+      }
+    }
+
+    await firebaseFirestore.runTransaction((transaction) async {
+      transaction
+        ..set(
+          firebaseFirestore.collection(_subCollectionName).doc(currentUser.uid),
+          <String, dynamic>{
+            _idFieldName: currentUser.uid,
+            _documentVersionFieldName: 1,
+            _displayNameUnigramTokenMapFieldName: unigramTokenMap,
+            _displayNameBigramTokenMapFieldName: bigramTokenMap,
+            _createdAtFieldName: now,
+            _updatedAtFieldName: now,
+          },
+        )
+        ..set(
+          firebaseFirestore.collection(_collectionName).doc(currentUser.uid),
+          <String, dynamic>{
+            _idFieldName: currentUser.uid,
+            _documentVersionFieldName: 1,
+            _displayNameFieldName: displayName,
+            _biographyFieldName: 'よろしくお願いします！',
+            _avatarIdFieldName: avatarId,
+            _mainWeaponIdFieldName: null,
+            _firstPlayedSeriesIdFieldName: null,
+            _followingFieldName: <String>[],
+            _followersFieldName: <String>[],
+            _favoritesFieldName: <String>[],
+            _createdAtFieldName: now,
+            _updatedAtFieldName: now,
+          },
+        );
+    });
   }
 
   Future<AppUser> getUser(String uid) async {
