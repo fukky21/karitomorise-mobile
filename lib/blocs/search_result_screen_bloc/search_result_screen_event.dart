@@ -11,5 +11,3 @@ class Initialized extends SearchResultScreenEvent {
 
   final String keyword;
 }
-
-class Fetched extends SearchResultScreenEvent {}

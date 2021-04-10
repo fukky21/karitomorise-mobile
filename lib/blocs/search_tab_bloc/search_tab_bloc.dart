@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../models/index.dart';
 import '../../providers/index.dart';
 import '../../repositories/index.dart';
 import 'search_tab_event.dart';
@@ -58,11 +59,11 @@ class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
   }
 
   Future<SearchTabState> _fetch() async {
-    final response = await _eventRepository.find(
-      EventQuery(limit: 10, lastVisible: _lastVisible),
+    final response = await _eventRepository.getNewEvents(
+      lastVisible: _lastVisible,
     );
-    _lastVisible = response.lastVisible;
-    final events = response.events;
+    _lastVisible = response['last_visible'] as QueryDocumentSnapshot;
+    final events = response['events'] as List<AppEvent>;
     var isFetchable = true;
     for (final event in events) {
       if (!_eventIds.contains(event.id)) {

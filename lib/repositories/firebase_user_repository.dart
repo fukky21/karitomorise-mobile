@@ -18,8 +18,6 @@ class FirebaseUserRepository {
   final FirebaseFirestore firebaseFirestore;
 
   static const _collectionName = 'users';
-  static const _subCollectionName = '_users';
-  static const _idFieldName = 'id';
   static const _documentVersionFieldName = 'document_version';
   static const _displayNameFieldName = 'display_name';
   static const _biographyFieldName = 'biography';
@@ -60,37 +58,26 @@ class FirebaseUserRepository {
       }
     }
 
-    await firebaseFirestore.runTransaction((transaction) async {
-      transaction
-        ..set(
-          firebaseFirestore.collection(_subCollectionName).doc(currentUser.uid),
-          <String, dynamic>{
-            _idFieldName: currentUser.uid,
-            _documentVersionFieldName: 1,
-            _displayNameUnigramTokenMapFieldName: unigramTokenMap,
-            _displayNameBigramTokenMapFieldName: bigramTokenMap,
-            _createdAtFieldName: now,
-            _updatedAtFieldName: now,
-          },
-        )
-        ..set(
-          firebaseFirestore.collection(_collectionName).doc(currentUser.uid),
-          <String, dynamic>{
-            _idFieldName: currentUser.uid,
-            _documentVersionFieldName: 1,
-            _displayNameFieldName: displayName,
-            _biographyFieldName: 'よろしくお願いします！',
-            _avatarIdFieldName: avatarId,
-            _mainWeaponIdFieldName: null,
-            _firstPlayedSeriesIdFieldName: null,
-            _followingFieldName: <String>[],
-            _followersFieldName: <String>[],
-            _favoritesFieldName: <String>[],
-            _createdAtFieldName: now,
-            _updatedAtFieldName: now,
-          },
-        );
-    });
+    await firebaseFirestore
+        .collection(_collectionName)
+        .doc(currentUser.uid)
+        .set(
+      <String, dynamic>{
+        _documentVersionFieldName: 1,
+        _displayNameFieldName: displayName,
+        _displayNameUnigramTokenMapFieldName: unigramTokenMap,
+        _displayNameBigramTokenMapFieldName: bigramTokenMap,
+        _biographyFieldName: 'よろしくお願いします！',
+        _avatarIdFieldName: avatarId,
+        _mainWeaponIdFieldName: null,
+        _firstPlayedSeriesIdFieldName: null,
+        _followingFieldName: <String>[],
+        _followersFieldName: <String>[],
+        _favoritesFieldName: <String>[],
+        _createdAtFieldName: now,
+        _updatedAtFieldName: now,
+      },
+    );
   }
 
   Future<AppUser> getUser(String uid) async {

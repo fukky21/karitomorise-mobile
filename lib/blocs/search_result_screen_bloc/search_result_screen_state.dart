@@ -1,11 +1,19 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-class SearchResultScreenState {
-  const SearchResultScreenState({
-    @required this.eventIds,
-    @required this.isFetchabled,
-  });
+import '../../models/index.dart';
 
-  final List<String> eventIds;
-  final bool isFetchabled;
+abstract class SearchResultScreenState extends Equatable {
+  @override
+  List<Object> get props => const [];
 }
+
+class SearchInProgress extends SearchResultScreenState {}
+
+class SearchSuccess extends SearchResultScreenState {
+  SearchSuccess({@required this.events});
+
+  final List<AppEvent> events;
+}
+
+class SearchFailure extends SearchResultScreenState {}

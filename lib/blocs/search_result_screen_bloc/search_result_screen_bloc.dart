@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -21,11 +20,6 @@ class SearchResultScreenBloc
   FirebaseEventRepository _eventRepository;
   UsersProvider _usersProvider;
   EventsProvider _eventsProvider;
-  List<String> _eventIds;
-  String _keyword;
-  List<String> _eventIdsByKeywords;
-  QueryDocumentSnapshot _lastVisible;
-  bool _fetching = false;
 
   @override
   Stream<SearchResultScreenState> mapEventToState(
@@ -34,67 +28,15 @@ class SearchResultScreenBloc
     if (event is Initialized) {
       yield* _mapInitializedToState(event.keyword);
     }
-    if (event is Fetched) {
-      yield* _mapFetchedToState();
-    }
   }
 
   Stream<SearchResultScreenState> _mapInitializedToState(
     String keyword,
   ) async* {
-    yield null; // Refresh時に中央にインジケータを表示するためにnullを渡す
-    _eventIds = [];
-    _keyword = keyword;
-    _eventIdsByKeywords = null;
-    _lastVisible = null;
+    yield SearchInProgress();
     try {
-      yield await _fetch();
-    } on Exception catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  Stream<SearchResultScreenState> _mapFetchedToState() async* {
-    if (!_fetching) {
-      _fetching = true; // 重複してFetchしないようにする
-      try {
-        yield await _fetch();
-      } on Exception catch (e) {
-        debugPrint(e.toString());
-      }
-      _fetching = false;
-    }
-  }
-
-  Future<SearchResultScreenState> _fetch() async {
-    if (_eventIdsByKeywords == null) {
-      final keywords = <String>[];
-      // 半角/全角スペースで文字列を分割する
-      _keyword.split(RegExp(r' |　')).forEach(
-        (keyword) {
-          if (keyword.isNotEmpty) {
-            keywords.add(keyword.toLowerCase()); // 例: [リオレウス, リオレイア]
-          }
-        },
-      );
-      _eventIdsByKeywords =
-          await _eventRepository.getEventIdsByKeywords(keywords);
-    }
-    final response = await _eventRepository.find(
-      EventQuery(
-        keyword: _keyword,
-        eventIds: _eventIdsByKeywords,
-        lastVisible: _lastVisible,
-        limit: 10,
-      ),
-    );
-    _lastVisible = response.lastVisible;
-    final events = response.events;
-    var isFetchable = true;
-    for (final event in events) {
-      if (!_eventIds.contains(event.id)) {
-        // 未追加の場合は追加する
-        _eventIds.add(event.id);
+      final events = await _eventRepository.getEventsByKeyword(keyword);
+      for (final event in events) {
         _eventsProvider.add(event: event);
         if (event?.uid != null) {
           final user = await _userRepository.getUser(event.uid);
@@ -102,14 +44,11 @@ class SearchResultScreenBloc
             _usersProvider.add(user: user);
           }
         }
-      } else {
-        // すでに追加されている場合は最後まで取得したと判断する
-        isFetchable = false;
       }
+      yield SearchSuccess(events: events);
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+      yield SearchFailure();
     }
-    return SearchResultScreenState(
-      eventIds: _eventIds,
-      isFetchabled: isFetchable,
-    );
   }
 }

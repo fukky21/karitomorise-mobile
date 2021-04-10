@@ -71,45 +71,46 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         ),
         body: BlocBuilder<SearchResultScreenBloc, SearchResultScreenState>(
           builder: (context, state) {
-            if (state == null) {
+            if (state is SearchFailure) {
               return const Center(
-                child: CircularProgressIndicator(),
+                child: Text('エラーが発生しました'),
               );
             }
-            if (state.eventIds.isEmpty) {
-              return const Center(
-                child: Text('検索結果はありません'),
-              );
-            }
-            return RefreshIndicator(
-              onRefresh: () async {
-                context
-                    .read<SearchResultScreenBloc>()
-                    .add(Initialized(keyword: widget?.args?.keyword ?? ''));
-              },
-              child: ListView.separated(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: state.eventIds.length,
-                itemBuilder: (context, index) {
-                  if (index == state.eventIds.length - 1 &&
-                      state.isFetchabled) {
-                    context.read<SearchResultScreenBloc>().add(Fetched());
-                  }
-                  return EventCell(
-                    eventId: state.eventIds[index],
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        ShowEventScreen.route,
-                        arguments: ShowEventScreenArguments(
-                          eventId: state.eventIds[index],
-                        ),
-                      );
-                    },
-                  );
+            if (state is SearchSuccess) {
+              if (state.events.isEmpty) {
+                return const Center(
+                  child: Text('検索結果はありません'),
+                );
+              }
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context
+                      .read<SearchResultScreenBloc>()
+                      .add(Initialized(keyword: widget?.args?.keyword ?? ''));
                 },
-                separatorBuilder: (context, _) => CustomDivider(),
-              ),
+                child: ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: state.events.length,
+                  itemBuilder: (context, index) {
+                    return EventCell(
+                      eventId: state.events[index].id,
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          ShowEventScreen.route,
+                          arguments: ShowEventScreenArguments(
+                            eventId: state.events[index].id,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  separatorBuilder: (context, _) => CustomDivider(),
+                ),
+              );
+            }
+            return const Center(
+              child: CircularProgressIndicator(),
             );
           },
         ),

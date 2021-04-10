@@ -18,8 +18,6 @@ class FirebaseEventRepository {
   final FirebaseFirestore firebaseFirestore;
 
   static const _collectionName = 'events';
-  static const _subCollectionName = '_events';
-  static const _idFieldName = 'id';
   static const _documentVersionFieldName = 'document_version';
   static const _uidFieldName = 'uid';
   static const _descriptionFieldName = 'description';
@@ -39,7 +37,6 @@ class FirebaseEventRepository {
 
   Future<void> createEvent(AppEvent event) async {
     final currentUser = firebaseAuth.currentUser;
-    final id = firebaseFirestore.collection(_subCollectionName).doc().id;
     final now = DateTime.now();
 
     final description = event.description;
@@ -62,38 +59,24 @@ class FirebaseEventRepository {
       }
     }
 
-    await firebaseFirestore.runTransaction((transaction) async {
-      transaction
-        ..set(
-          firebaseFirestore.collection(_subCollectionName).doc(id),
-          <String, dynamic>{
-            _idFieldName: id,
-            _documentVersionFieldName: 1,
-            _descriptionUnigramTokenMapFieldName: unigramTokenMap,
-            _descriptionBigramTokenMapFieldName: bigramTokenMap,
-            _timeBlockTagFieldName: _getTimeTag(now),
-            _createdAtFieldName: now,
-            _updatedAtFieldName: now,
-          },
-        )
-        ..set(
-          firebaseFirestore.collection(_collectionName).doc(id),
-          <String, dynamic>{
-            _idFieldName: id,
-            _documentVersionFieldName: 1,
-            _uidFieldName: currentUser.uid,
-            _descriptionFieldName: description,
-            _typeIdFieldName: event.type?.id,
-            _questRankIdFieldName: event.questRank?.id,
-            _targetLevelIdFieldName: event.targetLevel?.id,
-            _playTimeIdFieldName: event.playTime?.id,
-            _isClosedFieldName: false,
-            _commentCountFieldName: 0,
-            _createdAtFieldName: now,
-            _updatedAtFieldName: now,
-          },
-        );
-    });
+    await firebaseFirestore.collection(_collectionName).doc().set(
+      <String, dynamic>{
+        _documentVersionFieldName: 1,
+        _uidFieldName: currentUser.uid,
+        _descriptionFieldName: description,
+        _descriptionUnigramTokenMapFieldName: unigramTokenMap,
+        _descriptionBigramTokenMapFieldName: bigramTokenMap,
+        _typeIdFieldName: event.type?.id,
+        _questRankIdFieldName: event.questRank?.id,
+        _targetLevelIdFieldName: event.targetLevel?.id,
+        _playTimeIdFieldName: event.playTime?.id,
+        _isClosedFieldName: false,
+        _timeBlockTagFieldName: _getTimeTag(now),
+        _commentCountFieldName: 0,
+        _createdAtFieldName: now,
+        _updatedAtFieldName: now,
+      },
+    );
   }
 
   Future<AppEvent> getEvent(String eventId) async {
@@ -105,34 +88,25 @@ class FirebaseEventRepository {
     return _getEventFromDocument(doc);
   }
 
-  Future<EventResponse> find(EventQuery eventQuery) async {
-    Query query = firebaseFirestore.collection(_collectionName);
+  Future<Map<String, dynamic>> getNewEvents({
+    QueryDocumentSnapshot lastVisible,
+  }) async {
+    var query = firebaseFirestore
+        .collection(_collectionName)
+        .orderBy(_updatedAtFieldName, descending: true);
 
-    if (eventQuery.eventIds != null) {
-      if (eventQuery.eventIds.isEmpty) {
-        // キーワード検索のヒット数が0のとき、eventIdsに空の配列が渡ってくる
-        return EventResponse(events: []);
-      }
-      query = query.where(_idFieldName, whereIn: eventQuery.eventIds);
+    if (lastVisible != null) {
+      query = query.startAfterDocument(lastVisible);
     }
-
-    query = query.orderBy(_updatedAtFieldName, descending: true);
-
-    if (eventQuery.lastVisible != null) {
-      query = query.startAfterDocument(eventQuery.lastVisible);
-    }
-
-    if (eventQuery.limit != null) {
-      query = query.limit(eventQuery.limit);
-    }
+    query = query.limit(10);
 
     final snapshot = await query.get();
     final docs = snapshot.docs;
 
-    QueryDocumentSnapshot lastVisible;
+    QueryDocumentSnapshot newLastVisible;
     if (docs.isNotEmpty) {
       // どこまでデータを取得したかを保持しておく
-      lastVisible = docs[docs.length - 1];
+      newLastVisible = docs[docs.length - 1];
     }
 
     final events = <AppEvent>[];
@@ -140,22 +114,33 @@ class FirebaseEventRepository {
       events.add(_getEventFromDocument(doc));
     }
 
-    return EventResponse(events: events, lastVisible: lastVisible);
+    return <String, dynamic>{
+      'last_visible': newLastVisible,
+      'events': events,
+    };
   }
 
-  Future<List<String>> getEventIdsByKeywords(List<String> keywords) async {
-    Query query = firebaseFirestore.collection(_subCollectionName);
+  Future<List<AppEvent>> getEventsByKeyword(String keyword) async {
+    final words = <String>[]; // 例: [リオレウス, リオレイア]
+    // 半角/全角スペースで文字列を分割する
+    keyword.split(RegExp(r' |　')).forEach(
+      (word) {
+        if (word.isNotEmpty) {
+          words.add(word.toLowerCase()); // 例: [リオレウス, リオレイア]
+        }
+      },
+    );
 
     final tokens = <String>[]; // 例: [リオ, オレ, レウ, ウス, 珠]
-    for (final keyword in keywords) {
-      if (keyword.length == 1) {
+    for (final word in words) {
+      if (word.length == 1) {
         // 重複して追加しないようにする(重複するとqueryエラーが発生するので注意)
         if (!tokens.contains(keyword)) {
           tokens.add(keyword);
         }
       } else {
-        for (var i = 0; i < keyword.length - 1; i++) {
-          final token = keyword.substring(i, i + 2);
+        for (var i = 0; i < word.length - 1; i++) {
+          final token = word.substring(i, i + 2);
           // 重複して追加しないようにする(重複するとqueryエラーが発生するので注意)
           if (!tokens.contains(token)) {
             tokens.add(token);
@@ -163,6 +148,8 @@ class FirebaseEventRepository {
         }
       }
     }
+
+    Query query = firebaseFirestore.collection(_collectionName);
 
     for (final token in tokens) {
       if (token.length == 1) {
@@ -188,13 +175,15 @@ class FirebaseEventRepository {
     final snapshot = await query.get();
     final docs = snapshot.docs;
 
-    final eventIds = <String>[];
+    final events = <AppEvent>[];
     for (final doc in docs) {
-      if (doc.data() != null) {
-        eventIds.add(doc.id);
-      }
+      events.add(_getEventFromDocument(doc));
     }
-    return eventIds;
+
+    // updatedAtでソートする
+    events.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    return events;
   }
 
   // TODO(Fukky21): 後で削除する(ダミー募集作成メソッド)

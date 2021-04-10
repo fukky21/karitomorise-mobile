@@ -17,7 +17,6 @@ class FirebaseEventCommentRepository {
 
   static const _parentCollectionName = 'events';
   static const _collectionName = 'comments';
-  static const _idFieldName = 'id';
   static const _documentVersionFieldName = 'document_version';
   static const _uidFieldName = 'uid';
   static const _messageFieldName = 'message';
@@ -26,12 +25,6 @@ class FirebaseEventCommentRepository {
 
   Future<void> createEventComment(String eventId, String message) async {
     final currentUser = firebaseAuth.currentUser;
-    final id = firebaseFirestore
-        .collection(_parentCollectionName)
-        .doc(eventId)
-        .collection(_collectionName)
-        .doc()
-        .id;
     final now = DateTime.now();
 
     await firebaseFirestore.runTransaction((transaction) async {
@@ -41,9 +34,8 @@ class FirebaseEventCommentRepository {
               .collection(_parentCollectionName)
               .doc(eventId)
               .collection(_collectionName)
-              .doc(id),
+              .doc(),
           <String, dynamic>{
-            _idFieldName: id,
             _documentVersionFieldName: 1,
             _uidFieldName: currentUser.uid,
             _messageFieldName: message,
