@@ -26,7 +26,7 @@ class FirebaseEventRepository {
   static const _targetLevelIdFieldName = 'target_level_id';
   static const _playTimeIdFieldName = 'play_time_id';
   static const _isClosedFieldName = 'is_closed';
-  static const _timeBlockTagFieldName = 'time_block_tag';
+  static const _timeBlockFieldName = 'time_block';
   static const _commentCountFieldName = 'comment_count';
   static const _descriptionUnigramTokenMapFieldName =
       'description_unigram_token_map';
@@ -71,7 +71,7 @@ class FirebaseEventRepository {
         _targetLevelIdFieldName: event.targetLevel?.id,
         _playTimeIdFieldName: event.playTime?.id,
         _isClosedFieldName: false,
-        _timeBlockTagFieldName: _getTimeTag(now),
+        _timeBlockFieldName: _getTimeBlock(now),
         _commentCountFieldName: 0,
         _createdAtFieldName: now,
         _updatedAtFieldName: now,
@@ -168,8 +168,8 @@ class FirebaseEventRepository {
     final now = DateTime.now();
     final oneHourAgo = now.add(const Duration(hours: 1) * -1);
     query = query.where(
-      _timeBlockTagFieldName,
-      whereIn: <String>[_getTimeTag(now), _getTimeTag(oneHourAgo)],
+      _timeBlockFieldName,
+      whereIn: <String>[_getTimeBlock(now), _getTimeBlock(oneHourAgo)],
     );
 
     final snapshot = await query.get();
@@ -234,7 +234,7 @@ class FirebaseEventRepository {
     );
   }
 
-  String _getTimeTag(DateTime dateTime) {
+  String _getTimeBlock(DateTime dateTime) {
     final year = dateTime.year.toString();
     final month = dateTime.month.toString().padLeft(2, '0');
     final day = dateTime.day.toString().padLeft(2, '0');
