@@ -25,7 +25,6 @@ class FirebaseEventRepository {
   static const _questRankIdFieldName = 'quest_rank_id';
   static const _targetLevelIdFieldName = 'target_level_id';
   static const _playTimeIdFieldName = 'play_time_id';
-  static const _isClosedFieldName = 'is_closed';
   static const _timeBlockFieldName = 'time_block';
   static const _commentCountFieldName = 'comment_count';
   static const _descriptionUnigramTokenMapFieldName =
@@ -70,7 +69,6 @@ class FirebaseEventRepository {
         _questRankIdFieldName: event.questRank?.id,
         _targetLevelIdFieldName: event.targetLevel?.id,
         _playTimeIdFieldName: event.playTime?.id,
-        _isClosedFieldName: false,
         _timeBlockFieldName: _getTimeBlock(now),
         _commentCountFieldName: 0,
         _createdAtFieldName: now,
@@ -227,7 +225,6 @@ class FirebaseEventRepository {
         id: data[_targetLevelIdFieldName] as int,
       ),
       playTime: getEventPlayTime(id: data[_playTimeIdFieldName] as int),
-      isClosed: data[_isClosedFieldName] as bool,
       commentCount: data[_commentCountFieldName] as int,
       createdAt: (data[_createdAtFieldName] as Timestamp)?.toDate(),
       updatedAt: (data[_updatedAtFieldName] as Timestamp)?.toDate(),

@@ -9,7 +9,6 @@ class AppEvent {
     this.questRank,
     this.targetLevel,
     this.playTime,
-    this.isClosed,
     this.commentCount,
     this.createdAt,
     this.updatedAt,
@@ -22,7 +21,6 @@ class AppEvent {
   EventQuestRank questRank;
   EventTargetLevel targetLevel;
   EventPlayTime playTime;
-  bool isClosed;
   int commentCount;
   DateTime createdAt;
   DateTime updatedAt;

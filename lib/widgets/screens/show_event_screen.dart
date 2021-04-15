@@ -107,13 +107,7 @@ class ShowEventScreen extends StatelessWidget {
                         horizontal: 20,
                         vertical: 10,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _actionButtons(context, _event),
-                          _statusText(context, _event),
-                        ],
-                      ),
+                      child: _actionButtons(context, _event),
                     ),
                     CustomDivider(),
                     const SizedBox(height: 30),
@@ -172,20 +166,13 @@ class ShowEventScreen extends StatelessWidget {
                 children: [
                   SizedBox(
                     width: _width * 0.35,
-                    child: event.isClosed
-                        ? CustomOutlineButton(
-                            labelText: '募集を再開する',
-                            onPressed: () {
-                              // TODO(Fukky21): 募集再開機能を実装する
-                            },
-                          )
-                        : CustomOutlineButton(
-                            labelText: '募集を終了する',
-                            isDanger: true,
-                            onPressed: () {
-                              // TODO(Fukky21): 募集締め切り機能を実装する
-                            },
-                          ),
+                    child: CustomOutlineButton(
+                      labelText: '募集を削除する',
+                      isDanger: true,
+                      onPressed: () {
+                        // TODO(Fukky21): 募集削除機能を実装する
+                      },
+                    ),
                   ),
                   SizedBox(
                     width: _width * 0.5,
@@ -213,7 +200,7 @@ class ShowEventScreen extends StatelessWidget {
       cubit: context.watch<AuthenticationBloc>(),
       builder: (context, state) {
         return SizedBox(
-          width: MediaQuery.of(context).size.width * 0.4,
+          width: MediaQuery.of(context).size.width * 0.6,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -235,13 +222,6 @@ class ShowEventScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _statusText(BuildContext context, AppEvent event) {
-    return Text(
-      event?.isClosed ?? false ? '募集終了' : '募集中',
-      style: Theme.of(context).textTheme.subtitle2,
     );
   }
 

@@ -28,6 +28,7 @@ class EventCell extends StatelessWidget {
         return Material(
           color: AppColors.grey20,
           child: InkWell(
+            onTap: onTap,
             child: Container(
               padding: const EdgeInsets.all(10),
               width: double.infinity,
@@ -39,13 +40,7 @@ class EventCell extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _userPart(context, _event?.uid),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          _elapsedTimeText(context, _event),
-                          _statusText(context, _event),
-                        ],
-                      ),
+                      _elapsedTimeText(context, _event),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -60,7 +55,6 @@ class EventCell extends StatelessWidget {
                 ],
               ),
             ),
-            onTap: onTap,
           ),
         );
       },
@@ -121,10 +115,6 @@ class EventCell extends StatelessWidget {
       text ?? '',
       style: Theme.of(context).textTheme.caption,
     );
-  }
-
-  Widget _statusText(BuildContext context, AppEvent event) {
-    return Text(event?.isClosed ?? false ? '募集終了' : '募集中');
   }
 
   Widget _tags(BuildContext context, AppEvent event) {
