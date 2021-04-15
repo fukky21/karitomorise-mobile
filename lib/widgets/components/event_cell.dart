@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_tags/flutter_tags.dart';
 import 'package:provider/provider.dart';
 
 import '../../blocs/authentication_bloc/index.dart';
@@ -48,8 +47,6 @@ class EventCell extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Text(_event.description ?? '(募集文なし)'),
                   ),
-                  const SizedBox(height: 10),
-                  _tags(context, _event),
                   const SizedBox(height: 10),
                   _actionButtons(context, _event),
                 ],
@@ -115,42 +112,6 @@ class EventCell extends StatelessWidget {
       text ?? '',
       style: Theme.of(context).textTheme.caption,
     );
-  }
-
-  Widget _tags(BuildContext context, AppEvent event) {
-    if (event != null) {
-      final labels = <String>[];
-      if (event.type?.name != null) {
-        labels.add(event.type.name);
-      }
-      if (event.questRank?.name != null) {
-        labels.add(event.questRank.name);
-      }
-      if (event.targetLevel?.name != null) {
-        labels.add(event.targetLevel.name);
-      }
-      if (event.playTime?.name != null) {
-        labels.add(event.playTime.name);
-      }
-
-      return Tags(
-        spacing: 5,
-        runSpacing: 5,
-        itemCount: labels.length,
-        itemBuilder: (index) {
-          return ItemTags(
-            index: index,
-            title: labels[index],
-            textColor: AppColors.white,
-            elevation: 0,
-            activeColor: Theme.of(context).primaryColor,
-            pressEnabled: false,
-          );
-        },
-      );
-    }
-
-    return Container();
   }
 
   Widget _actionButtons(BuildContext context, AppEvent event) {

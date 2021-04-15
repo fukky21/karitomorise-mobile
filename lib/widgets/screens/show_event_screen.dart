@@ -116,17 +116,6 @@ class ShowEventScreen extends StatelessWidget {
                     _userCell(_event.uid),
                     CustomDivider(),
                     const SizedBox(height: 30),
-                    _headline('募集詳細'),
-                    CustomDivider(),
-                    _detailCell('募集タイプ', _event.type?.name),
-                    CustomDivider(),
-                    _detailCell('クエスト難度', _event.questRank?.name),
-                    CustomDivider(),
-                    _detailCell('募集レベル', _event.targetLevel?.name),
-                    CustomDivider(),
-                    _detailCell('予定プレイ時間', _event.playTime?.name),
-                    CustomDivider(),
-                    const SizedBox(height: 30),
                     CustomRaisedButton(
                       labelText: 'コメントを確認する',
                       width: MediaQuery.of(context).size.width * 0.7,
@@ -246,6 +235,15 @@ class ShowEventScreen extends StatelessWidget {
         return Material(
           color: AppColors.grey20,
           child: InkWell(
+            onTap: () {
+              if (uid != null) {
+                Navigator.pushNamed(
+                  context,
+                  ShowUserScreen.route,
+                  arguments: ShowUserScreenArguments(uid: uid),
+                );
+              }
+            },
             child: Container(
               width: double.infinity,
               height: _height,
@@ -283,15 +281,6 @@ class ShowEventScreen extends StatelessWidget {
                 ],
               ),
             ),
-            onTap: () {
-              if (uid != null) {
-                Navigator.pushNamed(
-                  context,
-                  ShowUserScreen.route,
-                  arguments: ShowUserScreenArguments(uid: uid),
-                );
-              }
-            },
           ),
         );
       },

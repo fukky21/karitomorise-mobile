@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,16 +20,12 @@ class FirebaseEventRepository {
   static const _documentVersionFieldName = 'document_version';
   static const _uidFieldName = 'uid';
   static const _descriptionFieldName = 'description';
-  static const _typeIdFieldName = 'type_id';
-  static const _questRankIdFieldName = 'quest_rank_id';
-  static const _targetLevelIdFieldName = 'target_level_id';
-  static const _playTimeIdFieldName = 'play_time_id';
-  static const _timeBlockFieldName = 'time_block';
-  static const _commentCountFieldName = 'comment_count';
   static const _descriptionUnigramTokenMapFieldName =
       'description_unigram_token_map';
   static const _descriptionBigramTokenMapFieldName =
       'description_bigram_token_map';
+  static const _timeBlockFieldName = 'time_block';
+  static const _commentCountFieldName = 'comment_count';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
 
@@ -65,10 +60,6 @@ class FirebaseEventRepository {
         _descriptionFieldName: description,
         _descriptionUnigramTokenMapFieldName: unigramTokenMap,
         _descriptionBigramTokenMapFieldName: bigramTokenMap,
-        _typeIdFieldName: event.type?.id,
-        _questRankIdFieldName: event.questRank?.id,
-        _targetLevelIdFieldName: event.targetLevel?.id,
-        _playTimeIdFieldName: event.playTime?.id,
         _timeBlockFieldName: _getTimeBlock(now),
         _commentCountFieldName: 0,
         _createdAtFieldName: now,
@@ -80,9 +71,6 @@ class FirebaseEventRepository {
   Future<AppEvent> getEvent(String eventId) async {
     final doc =
         await firebaseFirestore.collection(_collectionName).doc(eventId).get();
-    if (doc.data() == null) {
-      return null; // 募集がすでに削除されている場合
-    }
     return _getEventFromDocument(doc);
   }
 
@@ -102,14 +90,12 @@ class FirebaseEventRepository {
     final docs = snapshot.docs;
 
     QueryDocumentSnapshot newLastVisible;
-    if (docs.isNotEmpty) {
-      // どこまでデータを取得したかを保持しておく
-      newLastVisible = docs[docs.length - 1];
-    }
-
     final events = <AppEvent>[];
-    for (final doc in docs) {
-      events.add(_getEventFromDocument(doc));
+    if (docs.isNotEmpty) {
+      newLastVisible = docs[docs.length - 1]; // どこまでデータを取得したかを保持しておく
+      for (final doc in docs) {
+        events.add(_getEventFromDocument(doc));
+      }
     }
 
     return <String, dynamic>{
@@ -193,18 +179,6 @@ class FirebaseEventRepository {
       await createEvent(
         AppEvent(
           description: 'これはダミー募集${i + 1}です。',
-          type: getEventType(
-            id: 1 + math.Random().nextInt(EventType.values.length),
-          ),
-          questRank: getEventQuestRank(
-            id: 1 + math.Random().nextInt(EventQuestRank.values.length),
-          ),
-          targetLevel: getEventTargetLevel(
-            id: 1 + math.Random().nextInt(EventTargetLevel.values.length),
-          ),
-          playTime: getEventPlayTime(
-            id: 1 + math.Random().nextInt(EventPlayTime.values.length),
-          ),
         ),
       );
       debugPrint('ダミー募集${i + 1}を作成しました');
@@ -213,18 +187,15 @@ class FirebaseEventRepository {
   }
 
   AppEvent _getEventFromDocument(DocumentSnapshot doc) {
+    if (doc?.data() == null) {
+      return null; // 募集がすでに削除されている場合
+    }
     final data = doc.data();
 
     return AppEvent(
       id: doc.id,
       uid: data[_uidFieldName] as String,
       description: data[_descriptionFieldName] as String,
-      type: getEventType(id: data[_typeIdFieldName] as int),
-      questRank: getEventQuestRank(id: data[_questRankIdFieldName] as int),
-      targetLevel: getEventTargetLevel(
-        id: data[_targetLevelIdFieldName] as int,
-      ),
-      playTime: getEventPlayTime(id: data[_playTimeIdFieldName] as int),
       commentCount: data[_commentCountFieldName] as int,
       createdAt: (data[_createdAtFieldName] as Timestamp)?.toDate(),
       updatedAt: (data[_updatedAtFieldName] as Timestamp)?.toDate(),
@@ -239,28 +210,4 @@ class FirebaseEventRepository {
 
     return '$year-$month-$day-$hour-00';
   }
-}
-
-class EventQuery {
-  EventQuery({
-    this.limit = 10,
-    this.keyword,
-    this.eventIds,
-    this.lastVisible,
-  });
-
-  final int limit;
-  final String keyword;
-  final List<String> eventIds;
-  final QueryDocumentSnapshot lastVisible;
-}
-
-class EventResponse {
-  EventResponse({
-    this.events,
-    this.lastVisible,
-  });
-
-  final List<AppEvent> events;
-  final QueryDocumentSnapshot lastVisible;
 }
