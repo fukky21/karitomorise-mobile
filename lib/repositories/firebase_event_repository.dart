@@ -26,12 +26,12 @@ class FirebaseEventRepository {
   static const _targetLevelIdFieldName = 'target_level_id';
   static const _playTimeIdFieldName = 'play_time_id';
   static const _isClosedFieldName = 'is_closed';
+  static const _timeBlockTagFieldName = 'time_block_tag';
   static const _commentCountFieldName = 'comment_count';
   static const _descriptionUnigramTokenMapFieldName =
       'description_unigram_token_map';
   static const _descriptionBigramTokenMapFieldName =
       'description_bigram_token_map';
-  static const _timeBlockTagFieldName = 'time_block_tag';
   static const _createdAtFieldName = 'created_at';
   static const _updatedAtFieldName = 'updated_at';
 
