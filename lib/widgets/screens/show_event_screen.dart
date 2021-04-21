@@ -1,3 +1,4 @@
+import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -46,7 +47,7 @@ class ShowEventScreen extends StatelessWidget {
             return _eventNotFoundView(context);
           }
           if (state is InitializeSuccess) {
-            return _initializeSuccessView(context);
+            return _initializeSuccessView(context, state);
           }
           return Container();
         },
@@ -63,7 +64,7 @@ class ShowEventScreen extends StatelessWidget {
     );
   }
 
-  Widget _initializeSuccessView(BuildContext context) {
+  Widget _initializeSuccessView(BuildContext context, InitializeSuccess state) {
     return Consumer<EventsProvider>(
       builder: (context, provider, _) {
         final _event = provider.get(eventId: args.eventId);
@@ -111,20 +112,17 @@ class ShowEventScreen extends StatelessWidget {
                       child: _actionButtons(context, _event),
                     ),
                     CustomDivider(),
-                    const SizedBox(height: 30),
-                    CustomRaisedButton(
-                      labelText: 'コメントを確認する',
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          ShowEventCommentsScreen.route,
-                          arguments: ShowEventCommentsScreenArguments(
-                            eventId: args.eventId,
-                          ),
-                        );
-                      },
+                    const SizedBox(height: 15),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      margin: const EdgeInsets.only(bottom: 5),
+                      child: const Text(
+                        '最近のコメント',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
+                    _resentCommentView(state.comments),
                   ],
                 ),
               ),
@@ -162,9 +160,15 @@ class ShowEventScreen extends StatelessWidget {
                   SizedBox(
                     width: _width * 0.5,
                     child: CustomRaisedButton(
-                      labelText: '編集する',
+                      labelText: 'コメントする',
                       onPressed: () {
-                        // TODO(Fukky21): 募集編集機能を実装する
+                        Navigator.pushNamed(
+                          context,
+                          ShowEventCommentsScreen.route,
+                          arguments: ShowEventCommentsScreenArguments(
+                            eventId: args.eventId,
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -249,6 +253,105 @@ class ShowEventScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _resentCommentView(List<EventComment> comments) {
+    final commentCells = <Widget>[];
+    for (final comment in comments) {
+      commentCells.add(_commentCell(comment));
+    }
+
+    if (commentCells.isEmpty) {
+      return Container(
+        height: 150,
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        child: const Center(
+          child: Text('コメントはありません'),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Column(
+        children: commentCells,
+      ),
+    );
+  }
+
+  Widget _commentCell(EventComment comment) {
+    return Consumer<UsersProvider>(
+      builder: (context, provider, _) {
+        final _user = provider.get(uid: comment.uid);
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                child: CustomCircleAvatar(
+                  filePath: _user?.avatar?.iconFilePath,
+                  radius: 25,
+                  onTap: () {
+                    if (_user?.id != null) {
+                      Navigator.pushNamed(
+                        context,
+                        ShowUserScreen.route,
+                        arguments: ShowUserScreenArguments(uid: _user?.id),
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _user?.displayName ?? 'Unknown',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Flexible(
+                            child: Container(
+                              child: Bubble(
+                                nip: BubbleNip.leftTop,
+                                color: AppColors.grey60,
+                                child: Text(
+                                  comment.message ?? '(表示できません)',
+                                ),
+                              ),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Container(
+                                child: Text(
+                                  comment.createdAt?.toHHMMString() ?? '',
+                                  style: Theme.of(context).textTheme.caption,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

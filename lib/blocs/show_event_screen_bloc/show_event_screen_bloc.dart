@@ -13,6 +13,7 @@ class ShowEventScreenBloc
   ShowEventScreenBloc({@required this.context}) : super(null) {
     _userRepository = context.read<FirebaseUserRepository>();
     _eventRepository = context.read<FirebaseEventRepository>();
+    _eventCommentRepository = context.read<FirebaseEventCommentRepository>();
     _usersProvider = context.read<UsersProvider>();
     _eventsProvider = context.read<EventsProvider>();
   }
@@ -20,6 +21,7 @@ class ShowEventScreenBloc
   final BuildContext context;
   FirebaseUserRepository _userRepository;
   FirebaseEventRepository _eventRepository;
+  FirebaseEventCommentRepository _eventCommentRepository;
   UsersProvider _usersProvider;
   EventsProvider _eventsProvider;
 
@@ -43,7 +45,15 @@ class ShowEventScreenBloc
         _eventsProvider.add(event: event);
         final user = await _userRepository.getUser(event.uid);
         _usersProvider.add(user: user);
-        yield InitializeSuccess();
+
+        // 最近のコメントを取得する
+        final comments =
+            await _eventCommentRepository.getRecentEventComments(eventId);
+        for (final comment in comments) {
+          final user = await _userRepository.getUser(comment.uid);
+          _usersProvider.add(user: user);
+        }
+        yield InitializeSuccess(comments: comments);
       }
     } on Exception catch (e) {
       debugPrint(e.toString());

@@ -52,6 +52,22 @@ class FirebaseEventCommentRepository {
     });
   }
 
+  Future<List<EventComment>> getRecentEventComments(String eventId) async {
+    final snapshot = await firebaseFirestore
+        .collection(_parentCollectionName)
+        .doc(eventId)
+        .collection(_collectionName)
+        .orderBy(_createdAtFieldName, descending: true)
+        .limit(5)
+        .get();
+    final docs = snapshot.docs;
+    final comments = <EventComment>[];
+    for (final doc in docs) {
+      comments.add(getEventCommentFromDocument(doc));
+    }
+    return comments;
+  }
+
   Stream<QuerySnapshot> getSnapshots(String eventId) {
     return firebaseFirestore
         .collection(_parentCollectionName)
