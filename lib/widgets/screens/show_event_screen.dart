@@ -82,9 +82,10 @@ class ShowEventScreen extends StatelessWidget {
             body: ScrollableLayoutBuilder(
               alwaysScrollable: true,
               child: Container(
-                padding: const EdgeInsets.only(top: 20, bottom: 50),
+                padding: const EdgeInsets.only(bottom: 50),
                 child: Column(
                   children: [
+                    _userCell(_event.uid),
                     Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -109,11 +110,6 @@ class ShowEventScreen extends StatelessWidget {
                       ),
                       child: _actionButtons(context, _event),
                     ),
-                    CustomDivider(),
-                    const SizedBox(height: 30),
-                    _headline('募集ユーザー'),
-                    CustomDivider(),
-                    _userCell(_event.uid),
                     CustomDivider(),
                     const SizedBox(height: 30),
                     CustomRaisedButton(
@@ -214,90 +210,48 @@ class ShowEventScreen extends StatelessWidget {
     );
   }
 
-  Widget _headline(String text) {
-    return Container(
-      alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      margin: const EdgeInsets.only(bottom: 5),
-      child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
   Widget _userCell(String uid) {
     const _height = 65.0;
 
     return Consumer<UsersProvider>(
       builder: (context, provider, _) {
         final _user = provider.get(uid: uid);
-        return Material(
-          color: AppColors.grey20,
-          child: InkWell(
-            onTap: () {
-              if (uid != null) {
-                Navigator.pushNamed(
-                  context,
-                  ShowUserScreen.route,
-                  arguments: ShowUserScreenArguments(uid: uid),
-                );
-              }
-            },
-            child: Container(
-              width: double.infinity,
-              height: _height,
-              padding: const EdgeInsets.only(
-                top: 5,
-                left: 15,
-                right: 5,
-                bottom: 5,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        CustomCircleAvatar(
-                          filePath: _user?.avatar?.iconFilePath,
-                          radius: (_height - 15) / 2,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            _user?.displayName ?? 'Unknown',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+        return GestureDetector(
+          onTap: () {
+            if (uid != null) {
+              Navigator.pushNamed(
+                context,
+                ShowUserScreen.route,
+                arguments: ShowUserScreenArguments(uid: uid),
+              );
+            }
+          },
+          child: Container(
+            width: double.infinity,
+            height: _height,
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+            child: Row(
+              children: [
+                CustomCircleAvatar(
+                  filePath: _user?.avatar?.iconFilePath,
+                  radius: (_height - 15) / 2,
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    _user?.displayName ?? 'Unknown',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const Icon(Icons.chevron_right_sharp),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _detailCell(String title, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      height: 50,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title),
-          Text(label ?? '未設定'),
-        ],
-      ),
     );
   }
 }
