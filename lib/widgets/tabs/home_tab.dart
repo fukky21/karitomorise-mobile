@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/authentication_bloc/index.dart';
-import '../../blocs/search_tab_bloc/index.dart';
+import '../../blocs/home_tab_bloc/index.dart';
 import '../../utils/index.dart';
 import '../../widgets/components/index.dart';
 import '../../widgets/screens/index.dart';

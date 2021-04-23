@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/index.dart';
 import '../../providers/index.dart';
 import '../../repositories/index.dart';
-import 'search_tab_event.dart';
-import 'search_tab_state.dart';
+import 'home_tab_event.dart';
+import 'home_tab_state.dart';
 
 class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
   SearchTabBloc({@required this.context}) : super(null) {
