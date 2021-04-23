@@ -47,7 +47,7 @@ class HomeTabState extends State<HomeTab> {
       child: Scaffold(
         appBar: simpleAppBar(context, title: _appBarTitle),
         floatingActionButton: _createEventButton(),
-        body: BlocBuilder<HomeTabBloc, SearchTabState>(
+        body: BlocBuilder<HomeTabBloc, HomeTabData>(
           builder: (context, state) {
             if (state == null) {
               return const Center(

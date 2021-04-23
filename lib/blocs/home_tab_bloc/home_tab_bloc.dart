@@ -5,10 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/index.dart';
 import '../../providers/index.dart';
 import '../../repositories/index.dart';
+import 'home_tab_data.dart';
 import 'home_tab_event.dart';
-import 'home_tab_state.dart';
 
-class HomeTabBloc extends Bloc<HomeTabEvent, SearchTabState> {
+class HomeTabBloc extends Bloc<HomeTabEvent, HomeTabData> {
   HomeTabBloc({@required this.context}) : super(null) {
     _userRepository = context.read<FirebaseUserRepository>();
     _eventRepository = context.read<FirebaseEventRepository>();
@@ -26,7 +26,7 @@ class HomeTabBloc extends Bloc<HomeTabEvent, SearchTabState> {
   bool _fetching = false;
 
   @override
-  Stream<SearchTabState> mapEventToState(HomeTabEvent event) async* {
+  Stream<HomeTabData> mapEventToState(HomeTabEvent event) async* {
     if (event is Initialized) {
       yield* _mapInitializedToState();
     }
@@ -35,7 +35,7 @@ class HomeTabBloc extends Bloc<HomeTabEvent, SearchTabState> {
     }
   }
 
-  Stream<SearchTabState> _mapInitializedToState() async* {
+  Stream<HomeTabData> _mapInitializedToState() async* {
     yield null; // Refresh時に中央にインジケータを表示するためにnullを渡す
     _eventIds = [];
     _lastVisible = null;
@@ -46,7 +46,7 @@ class HomeTabBloc extends Bloc<HomeTabEvent, SearchTabState> {
     }
   }
 
-  Stream<SearchTabState> _mapFetchedToState() async* {
+  Stream<HomeTabData> _mapFetchedToState() async* {
     if (!_fetching) {
       _fetching = true; // 重複してFetchしないようにする
       try {
@@ -58,7 +58,7 @@ class HomeTabBloc extends Bloc<HomeTabEvent, SearchTabState> {
     }
   }
 
-  Future<SearchTabState> _fetch() async {
+  Future<HomeTabData> _fetch() async {
     final response = await _eventRepository.getNewEvents(
       lastVisible: _lastVisible,
     );
@@ -81,6 +81,6 @@ class HomeTabBloc extends Bloc<HomeTabEvent, SearchTabState> {
         isFetchable = false;
       }
     }
-    return SearchTabState(eventIds: _eventIds, isFetchabled: isFetchable);
+    return HomeTabData(eventIds: _eventIds, isFetchabled: isFetchable);
   }
 }
