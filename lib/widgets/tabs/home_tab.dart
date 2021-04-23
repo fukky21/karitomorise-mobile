@@ -42,12 +42,12 @@ class HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SearchTabBloc>(
-      create: (context) => SearchTabBloc(context: context)..add(Initialized()),
+    return BlocProvider<HomeTabBloc>(
+      create: (context) => HomeTabBloc(context: context)..add(Initialized()),
       child: Scaffold(
         appBar: simpleAppBar(context, title: _appBarTitle),
         floatingActionButton: _createEventButton(),
-        body: BlocBuilder<SearchTabBloc, SearchTabState>(
+        body: BlocBuilder<HomeTabBloc, SearchTabState>(
           builder: (context, state) {
             if (state == null) {
               return const Center(
@@ -61,7 +61,7 @@ class HomeTabState extends State<HomeTab> {
             }
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<SearchTabBloc>().add(Initialized());
+                context.read<HomeTabBloc>().add(Initialized());
               },
               child: ListView.separated(
                 controller: _scrollController,
@@ -70,7 +70,7 @@ class HomeTabState extends State<HomeTab> {
                 itemBuilder: (context, index) {
                   if (index == state.eventIds.length - 1 &&
                       state.isFetchabled) {
-                    context.read<SearchTabBloc>().add(Fetched());
+                    context.read<HomeTabBloc>().add(Fetched());
                   }
                   return EventCell(
                     eventId: state.eventIds[index],

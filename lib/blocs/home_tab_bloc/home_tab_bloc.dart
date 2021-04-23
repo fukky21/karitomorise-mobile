@@ -8,8 +8,8 @@ import '../../repositories/index.dart';
 import 'home_tab_event.dart';
 import 'home_tab_state.dart';
 
-class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
-  SearchTabBloc({@required this.context}) : super(null) {
+class HomeTabBloc extends Bloc<HomeTabEvent, SearchTabState> {
+  HomeTabBloc({@required this.context}) : super(null) {
     _userRepository = context.read<FirebaseUserRepository>();
     _eventRepository = context.read<FirebaseEventRepository>();
     _usersProvider = context.read<UsersProvider>();
@@ -26,7 +26,7 @@ class SearchTabBloc extends Bloc<SearchTabEvent, SearchTabState> {
   bool _fetching = false;
 
   @override
-  Stream<SearchTabState> mapEventToState(SearchTabEvent event) async* {
+  Stream<SearchTabState> mapEventToState(HomeTabEvent event) async* {
     if (event is Initialized) {
       yield* _mapInitializedToState();
     }

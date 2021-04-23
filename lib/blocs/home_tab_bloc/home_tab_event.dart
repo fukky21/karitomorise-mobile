@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-abstract class SearchTabEvent extends Equatable {
+abstract class HomeTabEvent extends Equatable {
   @override
   List<Object> get props => const [];
 }
 
-class Initialized extends SearchTabEvent {}
+class Initialized extends HomeTabEvent {}
 
-class Fetched extends SearchTabEvent {}
+class Fetched extends HomeTabEvent {}
