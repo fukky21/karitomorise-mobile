@@ -62,6 +62,11 @@ Future<void> main() async {
             firebaseFirestore: firebaseFirestore,
           ),
         ),
+        Provider<FirebasePublicRepository>(
+          create: (_) => FirebasePublicRepository(
+            firebaseFirestore: firebaseFirestore,
+          ),
+        ),
       ],
       child: MultiProvider(
         providers: [
