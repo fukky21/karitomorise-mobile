@@ -79,7 +79,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             if (state is SearchSuccess) {
               if (state.events.isEmpty) {
                 return const Center(
-                  child: Text('検索結果はありません'),
+                  child: Text('直近の募集はありません'),
                 );
               }
               return RefreshIndicator(
