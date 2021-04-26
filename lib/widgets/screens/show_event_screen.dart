@@ -189,7 +189,7 @@ class ShowEventScreen extends StatelessWidget {
       cubit: context.watch<AuthenticationBloc>(),
       builder: (context, state) {
         return SizedBox(
-          width: MediaQuery.of(context).size.width * 0.6,
+          width: MediaQuery.of(context).size.width * 0.5,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -201,10 +201,6 @@ class ShowEventScreen extends StatelessWidget {
               FavoriteButton(
                 eventId: event?.id,
                 isSignedIn: state is AuthenticationSuccess,
-                size: _size,
-              ),
-              ShareButton(
-                eventId: event?.id,
                 size: _size,
               ),
             ],

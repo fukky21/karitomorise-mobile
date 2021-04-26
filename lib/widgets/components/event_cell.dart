@@ -10,7 +10,6 @@ import '../../widgets/screens/index.dart';
 import 'comment_button.dart';
 import 'custom_circle_avatar.dart';
 import 'favorite_button.dart';
-import 'share_button.dart';
 
 class EventCell extends StatelessWidget {
   const EventCell({@required this.eventId, @required this.onTap});
@@ -121,7 +120,7 @@ class EventCell extends StatelessWidget {
       cubit: context.watch<AuthenticationBloc>(),
       builder: (context, state) {
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 80),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -133,10 +132,6 @@ class EventCell extends StatelessWidget {
               FavoriteButton(
                 eventId: event?.id,
                 isSignedIn: state is AuthenticationSuccess,
-                size: _size,
-              ),
-              ShareButton(
-                eventId: event?.id,
                 size: _size,
               ),
             ],

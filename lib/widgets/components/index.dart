@@ -15,4 +15,3 @@ export 'event_cell.dart';
 export 'favorite_button.dart';
 export 'follow_button.dart';
 export 'scrollable_layout_builder.dart';
-export 'share_button.dart';
