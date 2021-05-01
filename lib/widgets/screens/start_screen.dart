@@ -15,10 +15,9 @@ class StartScreen extends StatefulWidget {
 
 class _StartScreenState extends State<StartScreen> {
   int _currentIndex = 0;
-  static final _homeTabStateKey = GlobalKey<HomeTabState>();
 
   final List<Widget> _tabs = [
-    HomeTab(key: _homeTabStateKey),
+    HomeTab(),
     SearchTab(),
     FavoriteTab(),
     NotificationTab(),
@@ -88,8 +87,8 @@ class _StartScreenState extends State<StartScreen> {
             type: BottomNavigationBarType.fixed,
             onTap: (index) {
               if (index == 0 && _currentIndex == index) {
-                // ホームアイコンがタップされた & 現在ホームタブを表示中のとき
-                _homeTabStateKey.currentState.scrollToTop();
+                // ホームタブ表示中にホームアイコンがタップされたとき
+                homeTabScrollToTop();
               }
               setState(() {
                 _currentIndex = index;
