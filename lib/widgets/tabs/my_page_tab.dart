@@ -25,42 +25,21 @@ class MyPageTab extends StatelessWidget {
             const SizedBox(height: 20),
             _SignInButton(),
             const SizedBox(height: 20),
-            _goToUser2Button(context),
-            const SizedBox(height: 20),
-            _createDummyEventsButton(context),
+            _createDummyPostsButton(context),
           ],
         ),
       ),
     );
   }
 
-  // TODO(Fukky21): 後で削除する(_goToUser2Button)
-  Widget _goToUser2Button(BuildContext context) {
+  // TODO(fukky21): 後で削除する
+  Widget _createDummyPostsButton(BuildContext context) {
     return CustomRaisedButton(
       width: 300,
-      labelText: 'GO TO TEST USER2',
-      onPressed: () {
-        Navigator.pushNamed(
-          context,
-          ShowUserScreen.route,
-          arguments: ShowUserScreenArguments(
-            uid: 'PuxczFjpfjUdbD2kkspZSkW3YKl1',
-          ),
-        );
-      },
-    );
-  }
-
-  // TODO(Fukky21): 後で削除する(_createDummyEventsButton)
-  Widget _createDummyEventsButton(BuildContext context) {
-    return CustomRaisedButton(
-      width: 300,
-      labelText: 'ダミー募集を作成',
+      labelText: 'ダミーの投稿を作成',
       onPressed: () async {
-        if (await showConfirmModal(context, 'ダミーイベントを作成しますか？')) {
-          await context
-              .read<FirebaseEventRepository>()
-              .createDummyEvents(context);
+        if (await showConfirmModal(context, 'ダミー投稿を作成しますか？')) {
+          await context.read<FirebasePostRepository>().createDummyPosts();
         }
       },
     );

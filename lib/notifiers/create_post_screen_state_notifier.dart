@@ -14,7 +14,7 @@ class CreatePostScreenStateNotifier with ChangeNotifier {
     notifyListeners();
 
     try {
-      await postRepository.create(body: body, replyToNumber: replyToNumber);
+      await postRepository.createPost(body: body, replyToNumber: replyToNumber);
       state = CreatePostSuccess();
       notifyListeners();
     } on Exception catch (e) {

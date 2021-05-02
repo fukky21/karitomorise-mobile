@@ -11,7 +11,7 @@ class FirebasePostRepository {
   final FirebaseAuth firebaseAuth;
   final FirebaseFirestore firebaseFirestore;
 
-  Future<void> create({@required String body, int replyToNumber}) async {
+  Future<void> createPost({@required String body, int replyToNumber}) async {
     final currentUser = firebaseAuth.currentUser;
     final now = DateTime.now();
 
@@ -66,6 +66,19 @@ class FirebasePostRepository {
           <String, int>{'current_post_count': currentPostCount + 1},
         );
     });
+  }
+
+  // TODO(fukky21): 後で削除する
+  Future<void> createDummyPosts() async {
+    const count = 10;
+    const firstIndex = 0; // bodyに入る数値を変更する
+
+    for (var i = firstIndex; i < count + firstIndex; i++) {
+      await createPost(
+        body: 'これはダミー投稿${i + 1}です。これはダミー投稿${i + 1}です。これはダミー投稿${i + 1}です。',
+      );
+      debugPrint('ダミー投稿${i + 1}を作成しました');
+    }
   }
 
   /// 例: 2021-03-26-10-00
