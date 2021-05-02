@@ -153,7 +153,7 @@ class _SignInButton extends StatelessWidget {
                     width: double.infinity,
                     height: 50,
                     child: Text(
-                      isAnonymous ? 'サインイン' : 'サインアウト',
+                      isAnonymous ? 'サインインする' : 'サインアウトする',
                       style: Theme.of(context).textTheme.subtitle1.copyWith(
                             color: isAnonymous
                                 ? Theme.of(context).primaryColor
