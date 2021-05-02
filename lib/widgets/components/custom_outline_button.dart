@@ -25,7 +25,17 @@ class CustomOutlineButton extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: OutlineButton(
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          elevation: 0,
+          side: BorderSide(
+            width: 1,
+            color: isDanger
+                ? Theme.of(context).errorColor
+                : Theme.of(context).primaryColor,
+          ),
+        ),
+        onPressed: onPressed,
         child: AutoSizeText(
           labelText ?? '',
           style: TextStyle(
@@ -39,19 +49,6 @@ class CustomOutlineButton extends StatelessWidget {
           textAlign: TextAlign.center,
           overflow: TextOverflow.ellipsis,
         ),
-        borderSide: BorderSide(
-          width: 1,
-          color: isDanger
-              ? Theme.of(context).errorColor
-              : Theme.of(context).primaryColor,
-        ),
-        highlightColor: isDanger
-            ? Theme.of(context).errorColor
-            : Theme.of(context).primaryColor,
-        highlightedBorderColor: isDanger
-            ? Theme.of(context).errorColor
-            : Theme.of(context).primaryColor,
-        onPressed: onPressed,
       ),
     );
   }

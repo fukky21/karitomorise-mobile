@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'firebase_public_repository.dart';
+
 class FirebasePostRepository {
   FirebasePostRepository({
     @required this.firebaseAuth,
@@ -11,9 +13,26 @@ class FirebasePostRepository {
   final FirebaseAuth firebaseAuth;
   final FirebaseFirestore firebaseFirestore;
 
+  static const collectionName = 'posts';
+  static const documentVersionFieldName = 'document_version';
+  static const numberFieldName = 'number';
+  static const uidFieldName = 'uid';
+  static const bodyFieldName = 'body';
+  static const bodyUnigramTokenMap = 'body_unigram_token_map';
+  static const bodyBigramTokenMap = 'body_bigram_token_map';
+  static const timeBlockFieldName = 'time_block';
+  static const replyToNumberFieldName = 'reply_to_number';
+  static const replyFromNumbers = 'reply_from_numbers';
+  static const createdAtFieldName = 'created_at';
+  static const updatedAtFieldName = 'updated_at';
+
   Future<void> createPost({@required String body, int replyToNumber}) async {
     final currentUser = firebaseAuth.currentUser;
     final now = DateTime.now();
+    final publicCollectionName = FirebasePublicRepository.collectionName;
+    final dynamicDocumentName = FirebasePublicRepository.dynamicDocumentName;
+    final currentPostCountFieldName =
+        FirebasePublicRepository.currentPostCountFieldName;
 
     String uid;
     if (currentUser != null && !currentUser.isAnonymous) {
@@ -21,9 +40,12 @@ class FirebasePostRepository {
     }
 
     await firebaseFirestore.runTransaction((transaction) async {
-      final ref = firebaseFirestore.collection('public').doc('_data');
+      final ref = firebaseFirestore
+          .collection(publicCollectionName)
+          .doc(dynamicDocumentName);
       final snapshot = await transaction.get(ref);
-      final currentPostCount = snapshot.data()['current_post_count'] as int;
+      final currentPostCount =
+          snapshot.data()[currentPostCountFieldName] as int;
 
       final unigramTokenMap = <String, bool>{};
       final bigramTokenMap = <String, bool>{};
@@ -46,24 +68,24 @@ class FirebasePostRepository {
 
       transaction
         ..set(
-          firebaseFirestore.collection('posts').doc(),
+          firebaseFirestore.collection(collectionName).doc(),
           <String, dynamic>{
-            'number': currentPostCount + 1,
-            'document_version': 1,
-            'uid': uid,
-            'body': body,
-            'body_unigram_token_map': unigramTokenMap,
-            'body_bigram_token_map': bigramTokenMap,
-            'time_block': _getTimeBlock(now),
-            'reply_to_number': replyToNumber,
-            'reply_from_numbers': <int>[],
-            'created_at': now,
-            'updated_at': now,
+            documentVersionFieldName: 1,
+            numberFieldName: currentPostCount + 1,
+            uidFieldName: uid,
+            bodyFieldName: body,
+            bodyUnigramTokenMap: unigramTokenMap,
+            bodyBigramTokenMap: bigramTokenMap,
+            timeBlockFieldName: _getTimeBlock(now),
+            replyToNumberFieldName: replyToNumber,
+            replyFromNumbers: <int>[],
+            createdAtFieldName: now,
+            updatedAtFieldName: now,
           },
         )
         ..update(
           ref,
-          <String, int>{'current_post_count': currentPostCount + 1},
+          <String, int>{currentPostCountFieldName: currentPostCount + 1},
         );
     });
   }

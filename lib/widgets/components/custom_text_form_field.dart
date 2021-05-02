@@ -1,29 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextFormField extends StatelessWidget {
   const CustomTextFormField({
     this.controller,
     this.keyboardType,
     this.maxLength,
-    this.maxLengthEnforced = true,
+    this.maxLengthEnforcement = MaxLengthEnforcement.enforced,
     this.maxLines = 1,
     this.obscureText = false,
     this.labelText,
-    this.hintText,
     this.errorText,
     this.validator,
+    this.onChanged,
   });
 
   final TextEditingController controller;
   final TextInputType keyboardType;
   final int maxLength;
-  final bool maxLengthEnforced;
+  final MaxLengthEnforcement maxLengthEnforcement;
   final int maxLines;
   final bool obscureText;
   final String labelText;
-  final String hintText;
   final String errorText;
   final String Function(String) validator;
+  final void Function(String) onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,6 @@ class CustomTextFormField extends StatelessWidget {
         ],
       );
     }
-
     return _textFormField();
   }
 
@@ -52,15 +52,15 @@ class CustomTextFormField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       maxLength: maxLength,
-      maxLengthEnforced: maxLengthEnforced,
+      maxLengthEnforcement: maxLengthEnforcement,
       maxLines: maxLines,
       obscureText: obscureText,
       decoration: InputDecoration(
-        hintText: hintText,
         errorText: errorText,
         border: const OutlineInputBorder(),
       ),
       validator: validator,
+      onChanged: onChanged,
     );
   }
 }

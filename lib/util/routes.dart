@@ -6,12 +6,6 @@ class Routes {
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     try {
       switch (routeSettings.name) {
-        case CreateEventScreen.route:
-          return MaterialPageRoute<dynamic>(
-            settings: routeSettings,
-            fullscreenDialog: true,
-            builder: (_) => CreateEventScreen(),
-          );
         case CreatePostScreen.route:
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
@@ -19,10 +13,11 @@ class Routes {
             builder: (_) => CreatePostScreen(),
           );
         case EditUserScreen.route:
+          final args = routeSettings.arguments as EditUserScreenArguments;
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             fullscreenDialog: true,
-            builder: (_) => EditUserScreen(),
+            builder: (_) => EditUserScreen(args: args),
           );
         case SearchResultScreen.route:
           final args = routeSettings.arguments as SearchResultScreenArguments;
@@ -40,35 +35,6 @@ class Routes {
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             builder: (_) => SelectAvatarScreen(),
-          );
-        case SelectMonsterHunterSeriesScreen.route:
-          return MaterialPageRoute<dynamic>(
-            settings: routeSettings,
-            builder: (_) => SelectMonsterHunterSeriesScreen(),
-          );
-        case SelectWeaponScreen.route:
-          return MaterialPageRoute<dynamic>(
-            settings: routeSettings,
-            builder: (_) => SelectWeaponScreen(),
-          );
-        case ShowEventCommentsScreen.route:
-          final args =
-              routeSettings.arguments as ShowEventCommentsScreenArguments;
-          return MaterialPageRoute<dynamic>(
-            settings: routeSettings,
-            builder: (_) => ShowEventCommentsScreen(args: args),
-          );
-        case ShowEventScreen.route:
-          final args = routeSettings.arguments as ShowEventScreenArguments;
-          return MaterialPageRoute<dynamic>(
-            settings: routeSettings,
-            builder: (_) => ShowEventScreen(args: args),
-          );
-        case ShowUserScreen.route:
-          final args = routeSettings.arguments as ShowUserScreenArguments;
-          return MaterialPageRoute<dynamic>(
-            settings: routeSettings,
-            builder: (_) => ShowUserScreen(args: args),
           );
         case SignInScreen.route:
           return MaterialPageRoute<dynamic>(

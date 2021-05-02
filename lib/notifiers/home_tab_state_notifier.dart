@@ -26,12 +26,13 @@ class HomeTabStateNotifier with ChangeNotifier {
           Post(
             id: 5000,
             user: AppUser(
-              displayName: '名無しのハンター',
-              avatar: UserAvatar.agnaktor,
+              id: null,
+              name: '名無しのハンター',
+              avatar: AppUserAvatar.agnaktor,
             ),
-            anchorId: 4900,
+            replyToNumber: 4900,
             body: '本文です本文です本文です本文です本文です本文です本文です本文です',
-            replyIdList: [5001, 5002 - i],
+            replyFromNumbers: [5001, 5002 - i],
             createdAt: DateTime.now(),
           ),
         );
@@ -57,12 +58,13 @@ class HomeTabStateNotifier with ChangeNotifier {
             Post(
               id: 5000,
               user: AppUser(
-                displayName: '名無しのハンター',
-                avatar: UserAvatar.agnaktor,
+                id: null,
+                name: '名無しのハンター',
+                avatar: AppUserAvatar.agnaktor,
               ),
-              anchorId: 4900,
+              replyToNumber: 4900,
               body: 'これは追加分です',
-              replyIdList: [5001, 5002 - i],
+              replyFromNumbers: [5001, 5002],
               createdAt: DateTime.now(),
             ),
           );

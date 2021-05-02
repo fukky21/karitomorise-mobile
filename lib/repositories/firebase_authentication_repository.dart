@@ -24,7 +24,10 @@ class FirebaseAuthenticationRepository {
     return null;
   }
 
-  Future<void> signInWithEmailAndPassword(String email, String password) async {
+  Future<void> signInWithEmailAndPassword({
+    @required String email,
+    @required String password,
+  }) async {
     await firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -39,7 +42,10 @@ class FirebaseAuthenticationRepository {
     await firebaseAuth.signOut();
   }
 
-  Future<void> signUpWithEmailAndPassword(String email, String password) async {
+  Future<void> signUpWithEmailAndPassword({
+    @required String email,
+    @required String password,
+  }) async {
     final credential = await firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,

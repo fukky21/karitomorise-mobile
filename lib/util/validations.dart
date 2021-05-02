@@ -1,26 +1,32 @@
+import 'package:flutter/material.dart';
+
 class Validations {
-  static String blank(String text) {
+  static String blank({@required String text}) {
     if (text.isEmpty) {
       return '入力してください';
     }
     return null;
   }
 
-  static String maxLength(String text, int maxLength) {
+  static String maxLength({@required String text, @required int maxLength}) {
     if (text.length > maxLength) {
       return '$maxLength文字以内で入力してください';
     }
     return null;
   }
 
-  static String rangeLength(String text, int minLength, int maxLength) {
+  static String rangeLength({
+    @required String text,
+    @required int minLength,
+    @required int maxLength,
+  }) {
     if (text.length < minLength || text.length > maxLength) {
       return '$minLength文字以上$maxLength文字以内で入力してください';
     }
     return null;
   }
 
-  static String emailFormat(String email) {
+  static String emailFormat({@required String email}) {
     /// メールアドレスの正規表現
     /// https://techacademy.jp/magazine/33601
     const format =
@@ -31,7 +37,7 @@ class Validations {
     return null;
   }
 
-  static String passwordFormat(String password) {
+  static String passwordFormat({@required String password}) {
     /// 半角英小文字大文字数字をそれぞれ1種類以上含む8文字以上20文字以下の正規表現
     /// https://qiita.com/mpyw/items/886218e7b418dfed254b
     const format = r'^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[a-zA-Z\d]{8,20}$';
@@ -41,7 +47,10 @@ class Validations {
     return null;
   }
 
-  static String confirmPassword(String password, String confirmPassword) {
+  static String confirmPassword({
+    @required String password,
+    @required String confirmPassword,
+  }) {
     if (password != confirmPassword) {
       return 'パスワードとパスワード(確認)が一致しません';
     }

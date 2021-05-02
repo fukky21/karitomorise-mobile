@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../models/index.dart';
-import '../../utils/index.dart';
+import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 
 class SelectAvatarScreen extends StatelessWidget {
-  static const route = 'select_avatar';
+  static const route = '/select_avatar';
   static const _appBarTitle = 'プロフィール画像';
 
+  // 表示順序を変えたいときはここを変更する
   static const _avatars = [
-    UserAvatar.arzuros, // アオアシラ
-    UserAvatar.agnaktor, // アグナコトル
-    UserAvatar.azureRathalos, // リオレウス亜種
-    UserAvatar.balefulGigginox, // ギギネブラ亜種
-    UserAvatar.akantor, // アカムトルム
+    AppUserAvatar.arzuros, // アオアシラ
+    AppUserAvatar.agnaktor, // アグナコトル
+    AppUserAvatar.azureRathalos, // リオレウス亜種
+    AppUserAvatar.balefulGigginox, // ギギネブラ亜種
+    AppUserAvatar.akantor, // アカムトルム
   ];
 
   @override
@@ -27,7 +28,7 @@ class SelectAvatarScreen extends StatelessWidget {
               decoration: const BoxDecoration(color: AppColors.grey20),
               child: ListTile(
                 leading: CustomCircleAvatar(
-                  filePath: _avatars[index].iconFilePath,
+                  filePath: _avatars[index].filePath,
                   radius: 25,
                 ),
                 title: Text(_avatars[index].name),

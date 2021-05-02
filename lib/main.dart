@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'localizations/index.dart';
 import 'notifiers/index.dart';
 import 'repositories/index.dart';
-import 'utils/index.dart';
+import 'util/index.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

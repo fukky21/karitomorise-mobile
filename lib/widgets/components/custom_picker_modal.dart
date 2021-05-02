@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../utils/index.dart';
+import '../../util/index.dart';
 
 class CustomPickerModal extends StatefulWidget {
   const CustomPickerModal({
@@ -52,17 +52,17 @@ class _CustomPickerModalState extends State<CustomPickerModal> {
                   horizontal: 16,
                   vertical: 5,
                 ),
-                child: const Text('キャンセル'),
                 onPressed: () => Navigator.pop(context),
+                child: const Text('キャンセル'),
               ),
               CupertinoButton(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                child: const Text('完了'),
                 onPressed: () {
                   widget.completeButtonEvent();
                   Navigator.pop(context);
                 },
+                child: const Text('完了'),
               ),
             ],
           ),
@@ -80,8 +80,8 @@ class _CustomPickerModalState extends State<CustomPickerModal> {
                 child: CupertinoPicker(
                   scrollController: scrollController,
                   itemExtent: 40,
-                  children: widget.items,
                   onSelectedItemChanged: widget.onSelectedItemChanged,
+                  children: widget.items,
                 ),
               ),
             ),

@@ -7,15 +7,15 @@ class Post {
     @required this.id,
     @required this.user,
     @required this.body,
-    @required this.anchorId,
-    @required this.replyIdList,
+    @required this.replyToNumber,
+    @required this.replyFromNumbers,
     @required this.createdAt,
   });
 
   final int id;
   final AppUser user;
   final String body;
-  final int anchorId;
-  final List<int> replyIdList;
+  final int replyToNumber;
+  final List<int> replyFromNumbers;
   final DateTime createdAt;
 }

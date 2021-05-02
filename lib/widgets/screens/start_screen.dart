@@ -4,7 +4,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../notifiers/index.dart';
-import '../../utils/index.dart';
+import '../../util/index.dart';
 import '../../widgets/tabs/index.dart';
 
 class StartScreen extends StatefulWidget {
@@ -21,7 +21,6 @@ class _StartScreenState extends State<StartScreen> {
   final List<Widget> _tabs = [
     HomeTab(),
     SearchTab(),
-    FavoriteTab(),
     NotificationTab(),
     MyPageTab(),
   ];
@@ -55,13 +54,6 @@ class _StartScreenState extends State<StartScreen> {
                     size: _iconSize,
                   ),
                   label: 'さがす',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    FontAwesomeIcons.solidHeart,
-                    size: _iconSize,
-                  ),
-                  label: 'お気に入り',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(

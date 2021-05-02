@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:karitomorise/repositories/firebase_authentication_repository.dart';
+
+import '../repositories/index.dart';
 
 class SignInScreenStateNotifier with ChangeNotifier {
   SignInScreenStateNotifier({@required this.authRepository});
@@ -17,9 +18,12 @@ class SignInScreenStateNotifier with ChangeNotifier {
     notifyListeners();
 
     try {
-      await authRepository.signInWithEmailAndPassword(email, password);
+      await authRepository.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      // AuthenticationNotifierへの変更通知をScreenの方で行うこと！
+      // Screenの方でAuthenticationNotifier.init()を実行する
 
       state = SignInSuccess();
       notifyListeners();

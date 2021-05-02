@@ -10,8 +10,8 @@ void showErrorModal(BuildContext context, String message) {
         content: Text(message),
         actions: <Widget>[
           CupertinoDialogAction(
-            child: const Text('OK'),
             onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
           ),
         ],
       );
@@ -34,19 +34,19 @@ Future<bool> showConfirmModal(
         content: Text(message),
         actions: <Widget>[
           CupertinoDialogAction(
-            child: const Text('キャンセル'),
             onPressed: () {
               isConfirmed = false;
               Navigator.pop(context);
             },
+            child: const Text('キャンセル'),
           ),
           CupertinoDialogAction(
-            child: Text(okButtonText),
             isDestructiveAction: isDestructiveAction,
             onPressed: () {
               isConfirmed = true;
               Navigator.pop(context);
             },
+            child: Text(okButtonText),
           ),
         ],
       );

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../utils/index.dart';
+import '../../util/index.dart';
 
 class DateTimePickerModal extends StatelessWidget {
   const DateTimePickerModal({
@@ -29,17 +29,17 @@ class DateTimePickerModal extends StatelessWidget {
               CupertinoButton(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                child: const Text('キャンセル'),
                 onPressed: () => Navigator.pop(context),
+                child: const Text('キャンセル'),
               ),
               CupertinoButton(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                child: const Text('完了'),
                 onPressed: () {
                   completeButtonEvent();
                   Navigator.pop(context);
                 },
+                child: const Text('完了'),
               ),
             ],
           ),

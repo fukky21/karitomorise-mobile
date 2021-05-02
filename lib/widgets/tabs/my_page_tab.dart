@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/index.dart';
 import '../../notifiers/index.dart';
 import '../../repositories/index.dart';
-import '../../utils/index.dart';
+import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 import '../../widgets/screens/index.dart';
 
@@ -72,8 +71,11 @@ class _AccountCard extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(
                   context,
-                  ShowUserScreen.route,
-                  arguments: ShowUserScreenArguments(uid: user.id),
+                  EditUserScreen.route,
+                  arguments: EditUserScreenArguments(
+                    name: user.name,
+                    avatar: user.avatar,
+                  ),
                 );
               },
               child: Container(
@@ -88,13 +90,13 @@ class _AccountCard extends StatelessWidget {
                         child: Row(
                           children: [
                             CustomCircleAvatar(
-                              filePath: user.avatar?.iconFilePath,
+                              filePath: user.avatar?.filePath,
                               radius: _height / 2 - 10,
                             ),
                             const SizedBox(width: 10),
                             Flexible(
                               child: Text(
-                                user.displayName ?? 'Unknown',
+                                user.name ?? 'Unknown',
                                 maxLines: 2,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,

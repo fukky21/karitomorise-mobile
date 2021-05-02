@@ -1,7 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
-import '../../utils/index.dart';
+import '../../util/index.dart';
 
 class CustomRaisedButton extends StatelessWidget {
   const CustomRaisedButton({
@@ -27,7 +27,14 @@ class CustomRaisedButton extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: RaisedButton(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          primary: isDanger
+              ? Theme.of(context).errorColor
+              : Theme.of(context).primaryColor,
+          elevation: 0,
+        ),
+        onPressed: onPressed,
         child: AutoSizeText(
           labelText ?? '',
           style: TextStyle(
@@ -39,12 +46,6 @@ class CustomRaisedButton extends StatelessWidget {
           textAlign: TextAlign.center,
           overflow: TextOverflow.ellipsis,
         ),
-        color: isDanger
-            ? Theme.of(context).errorColor
-            : Theme.of(context).primaryColor,
-        elevation: 0,
-        highlightElevation: 0,
-        onPressed: onPressed,
       ),
     );
   }

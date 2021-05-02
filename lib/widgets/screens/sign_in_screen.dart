@@ -1,12 +1,11 @@
 import 'package:big_tip/big_tip.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../notifiers/index.dart';
 import '../../repositories/index.dart';
-import '../../utils/index.dart';
+import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 import 'sign_up_screen.dart';
 
@@ -82,7 +81,6 @@ class _SignInScreenState extends State<SignInScreen> {
                       CustomRaisedButton(
                         labelText: 'ENTER',
                         onPressed: () async {
-                          // ここでAuthenticationNotifierに変更を通知するのを忘れずに！
                           await context.read<AuthenticationNotifier>().init();
                           Navigator.of(context).pop();
                         },
@@ -111,7 +109,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            'assets/icons/karitomorise_icon.png',
+                            'assets/karitomorise_logo.png',
                             width: screenWidth * 0.4,
                           ),
                           const SizedBox(height: 30),
@@ -197,8 +195,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
   String _emailValidator(String email) {
     final errorMessages = <String>[]
-      ..add(Validations.blank(email))
-      ..add(Validations.emailFormat(email));
+      ..add(Validations.blank(text: email))
+      ..add(Validations.emailFormat(email: email));
     for (final errorMessage in errorMessages) {
       if (errorMessage != null) {
         return errorMessage;
@@ -209,8 +207,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
   String _passwordValidator(String password) {
     final errorMessages = <String>[]
-      ..add(Validations.blank(password))
-      ..add(Validations.passwordFormat(password));
+      ..add(Validations.blank(text: password))
+      ..add(Validations.passwordFormat(password: password));
     for (final errorMessage in errorMessages) {
       if (errorMessage != null) {
         return errorMessage;

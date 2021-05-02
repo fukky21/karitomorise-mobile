@@ -28,12 +28,13 @@ class AuthenticationNotifier with ChangeNotifier {
         if (currentUser.isAnonymous) {
           // 匿名ユーザーの場合
           user = AppUser(
-            displayName: '名無しのハンター',
-            avatar: UserAvatar.unknown,
+            id: null,
+            name: '名無しのハンター',
+            avatar: AppUserAvatar.unknown,
           );
         } else {
           // 匿名ユーザーではない場合
-          user = await userRepository.getUser(currentUser.uid);
+          user = await userRepository.getUser(id: currentUser.uid);
         }
         state = AuthenticationSuccess(currentUser: currentUser, user: user);
         notifyListeners();
@@ -45,12 +46,14 @@ class AuthenticationNotifier with ChangeNotifier {
           state = AuthenticationSuccess(
             currentUser: currentUser,
             user: AppUser(
-              displayName: '名無しのハンター',
-              avatar: UserAvatar.unknown,
+              id: null,
+              name: '名無しのハンター',
+              avatar: AppUserAvatar.unknown,
             ),
           );
           notifyListeners();
         } else {
+          // ここには来ないはず
           state = AuthenticationFailure();
           notifyListeners();
         }
@@ -67,7 +70,6 @@ class AuthenticationNotifier with ChangeNotifier {
     notifyListeners();
 
     try {
-      // 現在のユーザーからサインアウトして匿名ユーザーでサインインする
       await authRepository.signOut();
       await authRepository.signInAnonymously();
       final currentUser = authRepository.getCurrentUser();
@@ -75,12 +77,14 @@ class AuthenticationNotifier with ChangeNotifier {
         state = AuthenticationSuccess(
           currentUser: currentUser,
           user: AppUser(
-            displayName: '名無しのハンター',
-            avatar: UserAvatar.unknown,
+            id: null,
+            name: '名無しのハンター',
+            avatar: AppUserAvatar.unknown,
           ),
         );
         notifyListeners();
       } else {
+        // ここには来ないはず
         state = AuthenticationFailure();
         notifyListeners();
       }

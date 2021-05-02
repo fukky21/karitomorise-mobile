@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../blocs/search_result_screen_bloc/index.dart';
+import '../../models/index.dart';
+import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 import 'search_screen.dart';
-import 'show_event_screen.dart';
 
 class SearchResultScreenArguments {
   SearchResultScreenArguments({@required this.keyword});
@@ -40,81 +38,85 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SearchResultScreenBloc>(
-      create: (context) => SearchResultScreenBloc(context: context)
-        ..add(Initialized(keyword: widget?.args?.keyword ?? '')),
-      child: Scaffold(
-        appBar: searchAppBar(
-          context,
-          actions: [
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              child: IconButton(
-                icon: const Icon(FontAwesomeIcons.slidersH),
-                onPressed: () {
-                  // TODO(Fukky21): 絞り込み機能を実装する
-                },
-              ),
+    final post = Post(
+      id: 5000,
+      user: AppUser(
+        id: null,
+        name: '名無しのハンター',
+        avatar: AppUserAvatar.agnaktor,
+      ),
+      replyToNumber: 4900,
+      body: '検索結果です検索結果です検索結果です検索結果です検索結果です検索結果です',
+      replyFromNumbers: [5001, 5002],
+      createdAt: DateTime.now(),
+    );
+
+    final cells = <Widget>[];
+    for (var i = 0; i < 10; i++) {
+      cells.add(PostCell(post: post));
+    }
+
+    return Scaffold(
+      appBar: _appBar(
+        context,
+        keyword: widget.args?.keyword ?? '',
+        onTap: () {
+          FocusScope.of(context).requestFocus(_focusNode);
+          Navigator.pushNamed(
+            context,
+            SearchScreen.route,
+            arguments: SearchScreenArguments(
+              initialValue: widget.args?.keyword,
             ),
-          ],
-          initialValue: widget?.args?.keyword ?? '',
-          onTap: () {
-            FocusScope.of(context).requestFocus(_focusNode);
-            Navigator.pushNamed(
-              context,
-              SearchScreen.route,
-              arguments: SearchScreenArguments(
-                initialValue: widget?.args?.keyword,
-              ),
-            );
+          );
+        },
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // TODO(fukky21): リフレッシュ機能を実装する
+        },
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: cells.length,
+          itemBuilder: (context, index) {
+            return cells[index];
           },
-        ),
-        body: BlocBuilder<SearchResultScreenBloc, SearchResultScreenState>(
-          builder: (context, state) {
-            if (state is SearchFailure) {
-              return const Center(
-                child: Text('エラーが発生しました'),
-              );
-            }
-            if (state is SearchSuccess) {
-              if (state.events.isEmpty) {
-                return const Center(
-                  child: Text('直近の募集はありません'),
-                );
-              }
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context
-                      .read<SearchResultScreenBloc>()
-                      .add(Initialized(keyword: widget?.args?.keyword ?? ''));
-                },
-                child: ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: state.events.length,
-                  itemBuilder: (context, index) {
-                    return EventCell(
-                      eventId: state.events[index].id,
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          ShowEventScreen.route,
-                          arguments: ShowEventScreenArguments(
-                            eventId: state.events[index].id,
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  separatorBuilder: (context, _) => CustomDivider(),
-                ),
-              );
-            }
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          },
+          separatorBuilder: (context, _) => CustomDivider(),
         ),
       ),
     );
   }
+}
+
+PreferredSizeWidget _appBar(
+  BuildContext context, {
+  @required String keyword,
+  @required void Function() onTap,
+}) {
+  return PreferredSize(
+    preferredSize: const Size.fromHeight(50),
+    child: AppBar(
+      titleSpacing: 0,
+      title: Material(
+        color: AppColors.transparent,
+        child: SizedBox(
+          height: 40,
+          child: TextFormField(
+            initialValue: keyword,
+            decoration: const InputDecoration(border: InputBorder.none),
+            onTap: onTap,
+          ),
+        ),
+      ),
+      backgroundColor: AppColors.grey10,
+      elevation: 0,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(0.3),
+        child: Container(
+          color: Theme.of(context).dividerColor,
+          height: 0.3,
+        ),
+      ),
+    ),
+  );
 }
