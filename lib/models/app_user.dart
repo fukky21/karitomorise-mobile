@@ -31,6 +31,7 @@ class AppUser {
 }
 
 enum UserAvatar {
+  unknown,
   agnaktor,
   akantor,
   arzuros,
@@ -40,15 +41,17 @@ enum UserAvatar {
 
 extension UserAvatarExtension on UserAvatar {
   static final _ids = {
-    UserAvatar.agnaktor: 1,
-    UserAvatar.akantor: 2,
-    UserAvatar.arzuros: 3,
-    UserAvatar.azureRathalos: 4,
-    UserAvatar.balefulGigginox: 5,
+    UserAvatar.unknown: 1,
+    UserAvatar.agnaktor: 2,
+    UserAvatar.akantor: 3,
+    UserAvatar.arzuros: 4,
+    UserAvatar.azureRathalos: 5,
+    UserAvatar.balefulGigginox: 6,
   };
   int get id => _ids[this];
 
   static final _names = {
+    UserAvatar.unknown: 'Unknown',
     UserAvatar.agnaktor: 'アグナコトル',
     UserAvatar.akantor: 'アカムトルム',
     UserAvatar.arzuros: 'アオアシラ',
@@ -59,6 +62,7 @@ extension UserAvatarExtension on UserAvatar {
 
   static const _rootPath = 'assets/icons/monsters';
   static final _iconFilePaths = {
+    UserAvatar.unknown: '$_rootPath/unknown.png',
     UserAvatar.agnaktor: '$_rootPath/agnaktor.png',
     UserAvatar.akantor: '$_rootPath/akantor.png',
     UserAvatar.arzuros: '$_rootPath/arzuros.png',

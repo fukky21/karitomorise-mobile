@@ -16,6 +16,7 @@ class FirebaseAuthenticationRepository {
       return CurrentUser(
         uid: currentUser.uid,
         email: currentUser.email,
+        isAnonymous: currentUser.isAnonymous,
         createdAt: currentUser.metadata.creationTime,
         updatedAt: currentUser.metadata.lastSignInTime,
       );
@@ -28,6 +29,10 @@ class FirebaseAuthenticationRepository {
       email: email,
       password: password,
     );
+  }
+
+  Future<void> signInAnonymously() async {
+    await firebaseAuth.signInAnonymously();
   }
 
   Future<void> signOut() async {

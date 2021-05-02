@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/index.dart';
+import '../../notifiers/index.dart';
 import '../../utils/index.dart';
-import '../../view_models/home_tab_view_model/index.dart';
 import '../../widgets/components/index.dart';
 import '../../widgets/screens/index.dart';
 
@@ -42,18 +42,18 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => HomeTabViewModel(),
+      create: (_) => HomeTabStateNotifier(),
       child: Scaffold(
         appBar: simpleAppBar(context, title: _appBarTitle),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, CreateEventScreen.route);
+            Navigator.pushNamed(context, CreatePostScreen.route);
           },
           child: const Icon(Icons.add, color: AppColors.white),
         ),
-        body: Consumer<HomeTabViewModel>(
-          builder: (context, viewModel, _) {
-            final state = viewModel?.state ?? HomeTabLoading();
+        body: Consumer<HomeTabStateNotifier>(
+          builder: (context, notifier, _) {
+            final state = notifier?.state ?? HomeTabLoading();
 
             if (state is HomeTabLoadFailure) {
               return Center(
@@ -67,7 +67,7 @@ class _HomeTabState extends State<HomeTab> {
                       CustomRaisedButton(
                         labelText: '再読み込み',
                         onPressed: () async {
-                          await context.read<HomeTabViewModel>().init();
+                          await context.read<HomeTabStateNotifier>().init();
                         },
                       ),
                     ],
@@ -96,7 +96,7 @@ class _HomeTabState extends State<HomeTab> {
                         CustomRaisedButton(
                           labelText: '再読み込み',
                           onPressed: () async {
-                            await context.read<HomeTabViewModel>().init();
+                            await notifier.init();
                           },
                         ),
                       ],
@@ -107,14 +107,14 @@ class _HomeTabState extends State<HomeTab> {
 
               return RefreshIndicator(
                 onRefresh: () async {
-                  await context.read<HomeTabViewModel>().init();
+                  await notifier.init();
                 },
                 child: ListView.separated(
                   controller: _scrollController,
                   itemBuilder: (context, index) {
                     if (index == cells.length) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        context.read<HomeTabViewModel>().fetch();
+                        notifier.fetch();
                       });
                       return Center(
                         child: Container(

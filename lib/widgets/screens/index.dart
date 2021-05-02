@@ -1,4 +1,5 @@
 export 'create_event_screen.dart';
+export 'create_post_screen.dart';
 export 'edit_user_screen.dart';
 export 'error_screen.dart';
 export 'search_result_screen.dart';

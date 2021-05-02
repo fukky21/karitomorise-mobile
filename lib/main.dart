@@ -3,14 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-import 'blocs/authentication_bloc/index.dart';
 import 'localizations/index.dart';
-import 'providers/index.dart';
+import 'notifiers/index.dart';
 import 'repositories/index.dart';
 import 'utils/index.dart';
 
@@ -18,71 +16,50 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
+  Flavor flavor;
+  const flavorStr = String.fromEnvironment('FLAVOR');
+  if (flavorStr == 'development') {
+    flavor = Flavor.development;
+  } else if (flavorStr == 'staging') {
+    flavor = Flavor.staging;
+  } else if (flavorStr == 'production') {
+    flavor = Flavor.production;
+  } else {
+    throw Exception('--dart-define=FLAVOR=xxx should be specified.');
+  }
+
   final firebaseAuth = FirebaseAuth.instance;
   final firebaseFirestore = FirebaseFirestore.instance;
+
+  final authRepository = FirebaseAuthenticationRepository(
+    firebaseAuth: firebaseAuth,
+  );
+  final publicRepository = FirebasePublicRepository(
+    firebaseFirestore: firebaseFirestore,
+  );
+  final userRepository = FirebaseUserRepository(
+    firebaseAuth: firebaseAuth,
+    firebaseFirestore: firebaseFirestore,
+  );
+  final postRepository = FirebasePostRepository(
+    firebaseAuth: firebaseAuth,
+    firebaseFirestore: firebaseFirestore,
+  );
 
   runApp(
     MultiProvider(
       providers: [
-        Provider<Flavor>(
-          create: (_) {
-            const flavorStr = String.fromEnvironment('FLAVOR');
-            if (flavorStr == 'development') {
-              return Flavor.development;
-            }
-            if (flavorStr == 'staging') {
-              return Flavor.staging;
-            }
-            if (flavorStr == 'production') {
-              return Flavor.production;
-            }
-            throw Exception('--dart-define=FLAVOR=xxx should be specified.');
-          },
-        ),
-        Provider<FirebaseAuthenticationRepository>(
-          create: (_) => FirebaseAuthenticationRepository(
-            firebaseAuth: firebaseAuth,
-          ),
-        ),
-        Provider<FirebaseUserRepository>(
-          create: (_) => FirebaseUserRepository(
-            firebaseAuth: firebaseAuth,
-            firebaseFirestore: firebaseFirestore,
-          ),
-        ),
-        Provider<FirebaseEventRepository>(
-          create: (_) => FirebaseEventRepository(
-            firebaseAuth: firebaseAuth,
-            firebaseFirestore: firebaseFirestore,
-          ),
-        ),
-        Provider<FirebaseEventCommentRepository>(
-          create: (_) => FirebaseEventCommentRepository(
-            firebaseAuth: firebaseAuth,
-            firebaseFirestore: firebaseFirestore,
-          ),
-        ),
-        Provider<FirebasePublicRepository>(
-          create: (_) => FirebasePublicRepository(
-            firebaseFirestore: firebaseFirestore,
-          ),
-        ),
+        Provider<Flavor>.value(value: flavor),
+        Provider<FirebaseAuthenticationRepository>.value(value: authRepository),
+        Provider<FirebasePublicRepository>.value(value: publicRepository),
+        Provider<FirebaseUserRepository>.value(value: userRepository),
+        Provider<FirebasePostRepository>.value(value: postRepository),
       ],
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider<UsersProvider>(
-            create: (context) => UsersProvider(context: context),
-          ),
-          ChangeNotifierProvider<EventsProvider>(
-            create: (_) => EventsProvider(),
-          ),
-          ChangeNotifierProvider<FollowingProvider>(
-            create: (context) => FollowingProvider(context: context),
-          ),
-          ChangeNotifierProvider<FavoritesProvider>(
-            create: (context) => FavoritesProvider(context: context),
-          ),
-        ],
+      child: ChangeNotifierProvider(
+        create: (context) => AuthenticationNotifier(
+          authRepository: context.read<FirebaseAuthenticationRepository>(),
+          userRepository: context.read<FirebaseUserRepository>(),
+        ),
         child: MyApp(),
       ),
     ),
@@ -92,25 +69,20 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthenticationBloc>(
-      create: (context) {
-        return AuthenticationBloc(context: context)..add(AppStarted());
-      },
-      child: KeyboardDismissOnTap(
-        child: MaterialApp(
-          title: '狩友Rise',
-          theme: defaultTheme,
-          onGenerateRoute: Routes.generateRoute,
-          onUnknownRoute: Routes.errorRoute,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            DefaultCupertinoLocalizations.delegate,
-            JapaneseCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('ja', 'JP')],
-          locale: const Locale('ja', 'JP'),
-        ),
+    return KeyboardDismissOnTap(
+      child: MaterialApp(
+        title: '狩友Rise',
+        theme: defaultTheme,
+        onGenerateRoute: Routes.generateRoute,
+        onUnknownRoute: Routes.errorRoute,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          DefaultCupertinoLocalizations.delegate,
+          JapaneseCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('ja', 'JP')],
+        locale: const Locale('ja', 'JP'),
       ),
     );
   }

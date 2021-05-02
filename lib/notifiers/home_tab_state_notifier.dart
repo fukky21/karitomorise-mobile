@@ -1,10 +1,10 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/index.dart';
-import 'home_tab_state.dart';
+import '../models/index.dart';
 
-class HomeTabViewModel with ChangeNotifier {
-  HomeTabViewModel() {
+class HomeTabStateNotifier with ChangeNotifier {
+  HomeTabStateNotifier() {
     init();
   }
 
@@ -78,3 +78,18 @@ class HomeTabViewModel with ChangeNotifier {
     }
   }
 }
+
+abstract class HomeTabState extends Equatable {
+  @override
+  List<Object> get props => const [];
+}
+
+class HomeTabLoading extends HomeTabState {}
+
+class HomeTabLoadSuccess extends HomeTabState {
+  HomeTabLoadSuccess({@required this.posts});
+
+  final List<Post> posts;
+}
+
+class HomeTabLoadFailure extends HomeTabState {}

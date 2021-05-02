@@ -12,6 +12,12 @@ class Routes {
             fullscreenDialog: true,
             builder: (_) => CreateEventScreen(),
           );
+        case CreatePostScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => CreatePostScreen(),
+          );
         case EditUserScreen.route:
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,

@@ -136,16 +136,3 @@ class SearchTab extends StatelessWidget {
     return Column(children: parts);
   }
 }
-
-/*
-Material(
-          color: AppColors.grey20,
-          child: InkWell(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
- */
