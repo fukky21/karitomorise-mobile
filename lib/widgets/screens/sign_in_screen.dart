@@ -4,9 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
-import '../../blocs/sign_in_screen_bloc/index.dart';
-import '../../models/index.dart';
-import '../../providers/index.dart';
+import '../../notifiers/index.dart';
+import '../../repositories/index.dart';
 import '../../utils/index.dart';
 import '../../widgets/components/index.dart';
 import 'sign_up_screen.dart';
@@ -39,160 +38,138 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SignInScreenBloc>(
-      create: (context) => SignInScreenBloc(context: context),
-      child: BlocBuilder<SignInScreenBloc, SignInScreenState>(
-        builder: (context, state) {
-          if (state is SignInFailure) {
-            if (state.type == SignInFailureType.other) {
-              return Scaffold(
-                appBar: transparentAppBar(context),
-                body: const Center(
-                  child: BigTip(
-                    title: Text('エラーが発生しました'),
-                    child: Icon(Icons.error_outline_sharp),
-                  ),
-                ),
+    return ChangeNotifierProvider(
+      create: (context) => SignInScreenStateNotifier(
+        authRepository: context.read<FirebaseAuthenticationRepository>(),
+      ),
+      child: Consumer<SignInScreenStateNotifier>(
+        builder: (context, notifier, _) {
+          final state = notifier?.state;
+          final screenWidth = MediaQuery.of(context).size.width;
+
+          void _signInButtonEvent() {
+            FocusScope.of(context).unfocus();
+            if (_formKey.currentState.validate()) {
+              notifier.signInWithEmailAndPassword(
+                email: _emailController.text,
+                password: _passwordController.text,
               );
             }
           }
-          if (state is SignInSuccess) {
-            return _signInSuccessView(context, state);
-          }
-          return _defaultView(context, state);
-        },
-      ),
-    );
-  }
 
-  Widget _signInSuccessView(BuildContext context, SignInSuccess state) {
-    return Consumer<UsersProvider>(
-      builder: (context, provider, _) {
-        final _user = provider.get(uid: state.uid);
-        if (_user == null) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        return Scaffold(
-          body: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CustomCircleAvatar(
-                    filePath: _user.avatar?.iconFilePath,
-                    radius: 50,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    _user.displayName ?? 'Unknown',
-                    style: Theme.of(context).textTheme.headline5,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 50),
-                  CustomRaisedButton(
-                    labelText: 'ENTER',
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _defaultView(BuildContext context, SignInScreenState state) {
-    final _screenWidth = MediaQuery.of(context).size.width;
-
-    void _signInButtonEvent() {
-      FocusScope.of(context).unfocus();
-      if (_formKey.currentState.validate()) {
-        context.read<SignInScreenBloc>().add(
-              SignInOnPressed(
-                email: _emailController.text,
-                password: _passwordController.text,
+          if (state is SignInFailure && state.type == SignInFailureType.other) {
+            return Scaffold(
+              appBar: transparentAppBar(context),
+              body: const Center(
+                child: BigTip(
+                  title: Text('エラーが発生しました'),
+                  child: Icon(Icons.error_outline_sharp),
+                ),
               ),
             );
-      }
-    }
+          }
 
-    return ModalProgressHUD(
-      inAsyncCall: state is SignInInProgress,
-      child: Form(
-        key: _formKey,
-        child: Scaffold(
-          appBar: transparentAppBar(context),
-          body: ScrollableLayoutBuilder(
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 50,
+          if (state is SignInSuccess) {
+            return Scaffold(
+              body: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('サインインしました'),
+                      const SizedBox(height: 50),
+                      CustomRaisedButton(
+                        labelText: 'ENTER',
+                        onPressed: () async {
+                          // ここでAuthenticationNotifierに変更を通知するのを忘れずに！
+                          await context.read<AuthenticationNotifier>().init();
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/icons/karitomorise_icon.png',
-                      width: _screenWidth * 0.4,
+              ),
+            );
+          }
+
+          return ModalProgressHUD(
+            inAsyncCall: state is SignInInProgress,
+            child: Form(
+              key: _formKey,
+              child: Scaffold(
+                appBar: transparentAppBar(context),
+                body: ScrollableLayoutBuilder(
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 50,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/icons/karitomorise_icon.png',
+                            width: screenWidth * 0.4,
+                          ),
+                          const SizedBox(height: 30),
+                          CustomTextFormField(
+                            labelText: 'メールアドレス',
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            errorText: _emailErrorText(state),
+                            validator: _emailValidator,
+                          ),
+                          const SizedBox(height: 30),
+                          CustomTextFormField(
+                            labelText: 'パスワード',
+                            controller: _passwordController,
+                            obscureText: true,
+                            errorText: _passwordErrorText(state),
+                            validator: _passwordValidator,
+                          ),
+                          const SizedBox(height: 30),
+                          CustomRaisedButton(
+                            labelText: 'サインイン',
+                            onPressed: _signInButtonEvent,
+                          ),
+                          const SizedBox(height: 30),
+                          CustomDivider(),
+                          const SizedBox(height: 30),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              CustomOutlineButton(
+                                width: screenWidth * 0.45,
+                                labelText: 'パスワードを\nお忘れの方',
+                                maxLines: 2,
+                                onPressed: () {
+                                  // TODO(Fukky21): パスワードをお忘れの方画面を実装
+                                },
+                              ),
+                              CustomOutlineButton(
+                                width: screenWidth * 0.45,
+                                labelText: 'アカウントを作成',
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    SignUpScreen.route,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 30),
-                    CustomTextFormField(
-                      labelText: 'メールアドレス',
-                      hintText: 'xxxxx@example.com',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      errorText: _emailErrorText(state),
-                      validator: _emailValidator,
-                    ),
-                    const SizedBox(height: 30),
-                    CustomTextFormField(
-                      labelText: 'パスワード',
-                      controller: _passwordController,
-                      obscureText: true,
-                      errorText: _passwordErrorText(state),
-                      validator: _passwordValidator,
-                    ),
-                    const SizedBox(height: 30),
-                    CustomRaisedButton(
-                      labelText: 'サインイン',
-                      onPressed: _signInButtonEvent,
-                    ),
-                    const SizedBox(height: 30),
-                    CustomDivider(),
-                    const SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CustomOutlineButton(
-                          width: _screenWidth * 0.45,
-                          labelText: 'パスワードを\nお忘れの方',
-                          maxLines: 2,
-                          onPressed: () {
-                            // TODO(Fukky21): パスワードをお忘れの方画面を実装
-                          },
-                        ),
-                        CustomOutlineButton(
-                          width: _screenWidth * 0.45,
-                          labelText: 'アカウントを作成',
-                          onPressed: () {
-                            Navigator.pushNamed(context, SignUpScreen.route);
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

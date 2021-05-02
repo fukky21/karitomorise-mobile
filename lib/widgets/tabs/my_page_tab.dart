@@ -140,7 +140,7 @@ class _SignInButton extends StatelessWidget {
                 color: AppColors.grey20,
                 child: InkWell(
                   onTap: () async {
-                    if (state is AuthenticationSuccess) {
+                    if (!isAnonymous) {
                       if (await showConfirmModal(context, 'サインアウトしますか？')) {
                         await notifier.signOut();
                       }
