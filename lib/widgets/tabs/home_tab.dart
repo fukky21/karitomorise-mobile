@@ -66,7 +66,7 @@ class _HomeTabState extends State<HomeTab> {
                       CustomRaisedButton(
                         labelText: '再読み込み',
                         onPressed: () async {
-                          await context.read<HomeTabStateNotifier>().init();
+                          await notifier.init();
                         },
                       ),
                     ],

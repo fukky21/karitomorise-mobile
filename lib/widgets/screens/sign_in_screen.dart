@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/index.dart';
 import '../../notifiers/index.dart';
 import '../../repositories/index.dart';
 import '../../util/index.dart';
@@ -46,13 +47,19 @@ class _SignInScreenState extends State<SignInScreen> {
           final state = notifier?.state;
           final screenWidth = MediaQuery.of(context).size.width;
 
-          void _signInButtonEvent() {
+          Future<void> _signInButtonEvent() async {
             FocusScope.of(context).unfocus();
             if (_formKey.currentState.validate()) {
-              notifier.signInWithEmailAndPassword(
+              await notifier
+                  .signInWithEmailAndPassword(
                 email: _emailController.text,
                 password: _passwordController.text,
-              );
+              )
+                  .then((value) async {
+                if (value) {
+                  await context.read<AuthenticationNotifier>().signIn();
+                }
+              });
             }
           }
 
@@ -70,24 +77,47 @@ class _SignInScreenState extends State<SignInScreen> {
 
           if (state is SignInSuccess) {
             return Scaffold(
-              body: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('サインインしました'),
-                      const SizedBox(height: 50),
-                      CustomRaisedButton(
-                        labelText: 'ENTER',
-                        onPressed: () async {
-                          await context.read<AuthenticationNotifier>().init();
-                          Navigator.of(context).pop();
-                        },
+              body: Consumer<AuthenticationNotifier>(
+                builder: (context, notifier, _) {
+                  final authState =
+                      notifier?.state ?? AuthenticationInProgress();
+
+                  if (authState is AuthenticationSuccess) {
+                    final user = authState.user;
+
+                    return Scaffold(
+                      body: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CustomCircleAvatar(
+                                filePath: user.avatar.filePath,
+                                radius: 50,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                user.name ?? 'Unknown',
+                                style: Theme.of(context).textTheme.headline5,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 50),
+                              CustomRaisedButton(
+                                labelText: 'ENTER',
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                ),
+                    );
+                  }
+
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
               ),
             );
           }

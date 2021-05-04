@@ -10,7 +10,7 @@ class EditUserScreenStateNotifier with ChangeNotifier {
   EditUserScreenState state;
   final FirebaseUserRepository userRepository;
 
-  Future<void> updateUser({
+  Future<bool> updateUser({
     @required String name,
     @required AppUserAvatar avatar,
   }) async {
@@ -21,10 +21,12 @@ class EditUserScreenStateNotifier with ChangeNotifier {
       await userRepository.updateUser(name: name, avatar: avatar);
       state = UpdateUserSuccess();
       notifyListeners();
+      return true;
     } on Exception catch (e) {
       debugPrint(e.toString());
       state = UpdateUserFailure();
       notifyListeners();
+      return false;
     }
   }
 }

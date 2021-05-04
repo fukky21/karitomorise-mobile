@@ -22,42 +22,63 @@ class AuthenticationNotifier with ChangeNotifier {
 
     try {
       final currentUser = authRepository.getCurrentUser();
-      if (currentUser != null) {
-        // サインイン中の場合
-        AppUser user;
-        if (currentUser.isAnonymous) {
-          // 匿名ユーザーの場合
-          user = AppUser(
+      if (currentUser != null && currentUser.isAnonymous) {
+        // 匿名アカウントでサインイン中の場合
+        state = AuthenticationSuccess(
+          currentUser: currentUser,
+          user: AppUser(
             id: null,
             name: '名無しのハンター',
             avatar: AppUserAvatar.unknown,
-          );
-        } else {
-          // 匿名ユーザーではない場合
-          user = await userRepository.getUser(id: currentUser.uid);
-        }
+          ),
+        );
+      } else if (currentUser != null && !currentUser.isAnonymous) {
+        // 通常アカウントでサインイン中の場合
+        final user = await userRepository.getUser(id: currentUser.uid);
         state = AuthenticationSuccess(currentUser: currentUser, user: user);
-        notifyListeners();
       } else {
-        // サインインしていない場合は匿名でサインインする
+        // サインインしていない場合
         await authRepository.signInAnonymously();
-        final currentUser = authRepository.getCurrentUser();
-        if (currentUser != null) {
-          state = AuthenticationSuccess(
-            currentUser: currentUser,
-            user: AppUser(
-              id: null,
-              name: '名無しのハンター',
-              avatar: AppUserAvatar.unknown,
-            ),
-          );
-          notifyListeners();
-        } else {
-          // ここには来ないはず
-          state = AuthenticationFailure();
-          notifyListeners();
-        }
+        final anonymousUser = authRepository.getCurrentUser();
+        state = AuthenticationSuccess(
+          currentUser: anonymousUser,
+          user: AppUser(
+            id: null,
+            name: '名無しのハンター',
+            avatar: AppUserAvatar.unknown,
+          ),
+        );
       }
+      notifyListeners();
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+      state = AuthenticationFailure();
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateUser() async {
+    try {
+      final currentUser = authRepository.getCurrentUser();
+      final user = await userRepository.getUser(id: currentUser.uid);
+      state = AuthenticationSuccess(currentUser: currentUser, user: user);
+      notifyListeners();
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+      state = AuthenticationFailure();
+      notifyListeners();
+    }
+  }
+
+  Future<void> signIn() async {
+    state = AuthenticationInProgress();
+    notifyListeners();
+
+    try {
+      final currentUser = authRepository.getCurrentUser();
+      final user = await userRepository.getUser(id: currentUser.uid);
+      state = AuthenticationSuccess(currentUser: currentUser, user: user);
+      notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
       state = AuthenticationFailure();
@@ -73,21 +94,15 @@ class AuthenticationNotifier with ChangeNotifier {
       await authRepository.signOut();
       await authRepository.signInAnonymously();
       final currentUser = authRepository.getCurrentUser();
-      if (currentUser != null) {
-        state = AuthenticationSuccess(
-          currentUser: currentUser,
-          user: AppUser(
-            id: null,
-            name: '名無しのハンター',
-            avatar: AppUserAvatar.unknown,
-          ),
-        );
-        notifyListeners();
-      } else {
-        // ここには来ないはず
-        state = AuthenticationFailure();
-        notifyListeners();
-      }
+      state = AuthenticationSuccess(
+        currentUser: currentUser,
+        user: AppUser(
+          id: null,
+          name: '名無しのハンター',
+          avatar: AppUserAvatar.unknown,
+        ),
+      );
+      notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
       state = AuthenticationFailure();

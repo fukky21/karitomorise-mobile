@@ -10,7 +10,7 @@ class SignInScreenStateNotifier with ChangeNotifier {
   final FirebaseAuthenticationRepository authRepository;
   SignInScreenState state;
 
-  Future<void> signInWithEmailAndPassword({
+  Future<bool> signInWithEmailAndPassword({
     @required String email,
     @required String password,
   }) async {
@@ -22,11 +22,9 @@ class SignInScreenStateNotifier with ChangeNotifier {
         email: email,
         password: password,
       );
-
-      // Screenの方でAuthenticationNotifier.init()を実行する
-
       state = SignInSuccess();
       notifyListeners();
+      return true;
     } on FirebaseAuthException catch (e) {
       debugPrint(e.code);
       if (e.code == 'invalid-email') {
@@ -39,10 +37,12 @@ class SignInScreenStateNotifier with ChangeNotifier {
         state = SignInFailure(type: SignInFailureType.other);
       }
       notifyListeners();
+      return false;
     } on Exception catch (e) {
       debugPrint(e.toString());
       state = SignInFailure(type: SignInFailureType.other);
       notifyListeners();
+      return false;
     }
   }
 }
