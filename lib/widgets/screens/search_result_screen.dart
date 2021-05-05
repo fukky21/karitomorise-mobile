@@ -100,7 +100,10 @@ PreferredSizeWidget _appBar(
           height: 40,
           child: TextFormField(
             initialValue: keyword,
-            decoration: const InputDecoration(border: InputBorder.none),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(bottom: 10),
+            ),
             onTap: onTap,
           ),
         ),

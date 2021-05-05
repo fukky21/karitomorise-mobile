@@ -86,6 +86,7 @@ PreferredSizeWidget _appBar(
             decoration: const InputDecoration(
               hintText: '直近の投稿を検索',
               border: InputBorder.none,
+              contentPadding: EdgeInsets.only(bottom: 10),
             ),
             onFieldSubmitted: onFieldSubmitted,
           ),
