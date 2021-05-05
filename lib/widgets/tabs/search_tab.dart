@@ -1,25 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../notifiers/index.dart';
+import '../../repositories/index.dart';
 import '../../widgets/components/index.dart';
 import '../../widgets/screens/index.dart';
 
 class SearchTab extends StatelessWidget {
   static const _appBarTitle = 'さがす';
 
-  final hotwords = [
-    'ナルヒメ',
-    'ラージャン',
-    '百竜夜行',
-    'ナルヒメ',
-    'ラージャン',
-    '百竜夜行',
-    'ナルヒメ',
-    'ラージャン',
-    '百竜夜行',
-    'ナルヒメ',
-    'ラージャン',
-    '百竜夜行',
-  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,31 +22,69 @@ class SearchTab extends StatelessWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // TODO(fukky21): ホットワードをリフレッシュする
-        },
-        child: ScrollableLayoutBuilder(
-          alwaysScrollable: true,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  alignment: Alignment.centerLeft,
+      body: ChangeNotifierProvider(
+        create: (context) => SearchTabStateNotifier(
+          publicRepository: context.read<FirebasePublicRepository>(),
+        ),
+        child: Consumer<SearchTabStateNotifier>(
+          builder: (context, notifier, _) {
+            final state = notifier?.state ?? SearchTabLoading();
+
+            if (state is SearchTabLoadFailure) {
+              return Center(
+                child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
-                  margin: const EdgeInsets.only(bottom: 5),
-                  child: const Text(
-                    '🔥HOTワード🔥',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('エラーが発生しました'),
+                      const SizedBox(height: 30),
+                      CustomRaisedButton(
+                        labelText: '再読み込み',
+                        onPressed: () async {
+                          await notifier.init();
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 15),
-                _hotwordCellList(context, hotwords),
-              ],
-            ),
-          ),
+              );
+            }
+
+            if (state is SearchTabLoadSuccess) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await notifier.init();
+                },
+                child: ScrollableLayoutBuilder(
+                  alwaysScrollable: true,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          margin: const EdgeInsets.only(bottom: 5),
+                          child: const Text(
+                            '🔥HOTワード🔥',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        _hotwordCellList(context, state.hotwords),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
         ),
       ),
     );
