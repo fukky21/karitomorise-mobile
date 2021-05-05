@@ -39,12 +39,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   @override
   Widget build(BuildContext context) {
     final post = Post(
-      id: 5000,
-      user: AppUser(
-        id: null,
-        name: '名無しのハンター',
-        avatar: AppUserAvatar.agnaktor,
-      ),
+      id: 'tmp',
+      number: 5000,
+      uid: null,
       replyToNumber: 4900,
       body: '検索結果です検索結果です検索結果です検索結果です検索結果です検索結果です',
       replyFromNumbers: [5001, 5002],

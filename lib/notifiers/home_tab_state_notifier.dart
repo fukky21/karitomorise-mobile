@@ -1,15 +1,24 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../models/index.dart';
+import '../notifiers/index.dart';
+import '../repositories/index.dart';
 
 class HomeTabStateNotifier with ChangeNotifier {
-  HomeTabStateNotifier() {
+  HomeTabStateNotifier({
+    @required this.postRepository,
+    @required this.usersNotifier,
+  }) {
     init();
   }
 
+  final FirebasePostRepository postRepository;
+  final UsersNotifier usersNotifier;
   HomeTabState state = HomeTabLoading();
   List<Post> _posts = [];
+  QueryDocumentSnapshot _lastVisible;
   bool _isFetching = false;
 
   Future<void> init() async {
@@ -18,27 +27,25 @@ class HomeTabStateNotifier with ChangeNotifier {
 
     try {
       _posts = [];
+      _lastVisible = null;
 
-      // TODO(fukky21): 初期化処理を実装する
-      await Future<void>.delayed(const Duration(seconds: 3));
-      for (var i = 0; i < 10; i++) {
-        _posts.add(
-          Post(
-            id: 5000,
-            user: AppUser(
-              id: null,
-              name: '名無しのハンター',
-              avatar: AppUserAvatar.agnaktor,
-            ),
-            replyToNumber: 4900,
-            body: '本文です本文です本文です本文です本文です本文です本文です本文です',
-            replyFromNumbers: [5001, 5002 - i],
-            createdAt: DateTime.now(),
-          ),
-        );
+      final result = await postRepository.getNewPosts();
+      final newPosts = result['posts'] as List<Post>;
+      _lastVisible = result['last_visible'] as QueryDocumentSnapshot;
+
+      for (final newPost in newPosts) {
+        if (_posts.where((post) => post.id == newPost.id).isEmpty) {
+          // まだ追加されていない場合は追加する
+          _posts.add(newPost);
+          await usersNotifier.add(uid: newPost.uid);
+        } else {
+          // すでに追加されている場合は、最後まで取得したと判定する
+          state = HomeTabLoadSuccess(posts: _posts, isFetchabled: false);
+          notifyListeners();
+          return;
+        }
       }
-
-      state = HomeTabLoadSuccess(posts: _posts);
+      state = HomeTabLoadSuccess(posts: _posts, isFetchabled: true);
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -51,25 +58,25 @@ class HomeTabStateNotifier with ChangeNotifier {
     if (!_isFetching) {
       _isFetching = true;
       try {
-        // TODO(fukky21): 追加で投稿を取得する処理を実装する
-        await Future<void>.delayed(const Duration(seconds: 3));
-        for (var i = 0; i < 10; i++) {
-          _posts.add(
-            Post(
-              id: 5000,
-              user: AppUser(
-                id: null,
-                name: '名無しのハンター',
-                avatar: AppUserAvatar.agnaktor,
-              ),
-              replyToNumber: 4900,
-              body: 'これは追加分です',
-              replyFromNumbers: [5001, 5002],
-              createdAt: DateTime.now(),
-            ),
-          );
+        final result = await postRepository.getNewPosts(
+          lastVisible: _lastVisible,
+        );
+        final newPosts = result['posts'] as List<Post>;
+        _lastVisible = result['last_visible'] as QueryDocumentSnapshot;
+
+        for (final newPost in newPosts) {
+          if (_posts.where((post) => post.id == newPost.id).isEmpty) {
+            // まだ追加されていない場合は追加する
+            _posts.add(newPost);
+            await usersNotifier.add(uid: newPost.uid);
+          } else {
+            // すでに追加されている場合は、最後まで取得したと判定する
+            state = HomeTabLoadSuccess(posts: _posts, isFetchabled: false);
+            notifyListeners();
+            return;
+          }
         }
-        state = HomeTabLoadSuccess(posts: _posts);
+        state = HomeTabLoadSuccess(posts: _posts, isFetchabled: true);
         notifyListeners();
       } on Exception catch (e) {
         debugPrint(e.toString());
@@ -89,9 +96,10 @@ abstract class HomeTabState extends Equatable {
 class HomeTabLoading extends HomeTabState {}
 
 class HomeTabLoadSuccess extends HomeTabState {
-  HomeTabLoadSuccess({@required this.posts});
+  HomeTabLoadSuccess({@required this.posts, @required this.isFetchabled});
 
   final List<Post> posts;
+  final bool isFetchabled;
 }
 
 class HomeTabLoadFailure extends HomeTabState {}

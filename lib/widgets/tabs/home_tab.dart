@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../notifiers/index.dart';
+import '../../repositories/index.dart';
 import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 import '../../widgets/screens/index.dart';
@@ -41,7 +42,10 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => HomeTabStateNotifier(),
+      create: (_) => HomeTabStateNotifier(
+        postRepository: context.read<FirebasePostRepository>(),
+        usersNotifier: context.read<UsersNotifier>(),
+      ),
       child: Scaffold(
         appBar: simpleAppBar(context, title: _appBarTitle),
         floatingActionButton: FloatingActionButton(
@@ -112,15 +116,19 @@ class _HomeTabState extends State<HomeTab> {
                   controller: _scrollController,
                   itemBuilder: (context, index) {
                     if (index == cells.length) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        notifier.fetch();
-                      });
-                      return Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          child: const CircularProgressIndicator(),
-                        ),
-                      );
+                      if (state.isFetchabled) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          notifier.fetch();
+                        });
+                        return Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            child: const CircularProgressIndicator(),
+                          ),
+                        );
+                      } else {
+                        return Container();
+                      }
                     }
                     return cells[index];
                   },

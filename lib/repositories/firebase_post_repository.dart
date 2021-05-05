@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../models/index.dart';
 import 'firebase_public_repository.dart';
 
 class FirebasePostRepository {
@@ -18,11 +19,11 @@ class FirebasePostRepository {
   static const numberFieldName = 'number';
   static const uidFieldName = 'uid';
   static const bodyFieldName = 'body';
-  static const bodyUnigramTokenMap = 'body_unigram_token_map';
-  static const bodyBigramTokenMap = 'body_bigram_token_map';
+  static const bodyUnigramTokenMapFieldName = 'body_unigram_token_map';
+  static const bodyBigramTokenMapFieldName = 'body_bigram_token_map';
   static const timeBlockFieldName = 'time_block';
   static const replyToNumberFieldName = 'reply_to_number';
-  static const replyFromNumbers = 'reply_from_numbers';
+  static const replyFromNumbersFieldName = 'reply_from_numbers';
   static const createdAtFieldName = 'created_at';
   static const updatedAtFieldName = 'updated_at';
 
@@ -74,11 +75,11 @@ class FirebasePostRepository {
             numberFieldName: currentPostCount + 1,
             uidFieldName: uid,
             bodyFieldName: body,
-            bodyUnigramTokenMap: unigramTokenMap,
-            bodyBigramTokenMap: bigramTokenMap,
+            bodyUnigramTokenMapFieldName: unigramTokenMap,
+            bodyBigramTokenMapFieldName: bigramTokenMap,
             timeBlockFieldName: _getTimeBlock(now),
             replyToNumberFieldName: replyToNumber,
-            replyFromNumbers: <int>[],
+            replyFromNumbersFieldName: <int>[],
             createdAtFieldName: now,
             updatedAtFieldName: now,
           },
@@ -88,6 +89,37 @@ class FirebasePostRepository {
           <String, int>{currentPostCountFieldName: currentPostCount + 1},
         );
     });
+  }
+
+  Future<Map<String, dynamic>> getNewPosts({
+    QueryDocumentSnapshot lastVisible,
+  }) async {
+    var query = firebaseFirestore
+        .collection(collectionName)
+        .orderBy(createdAtFieldName, descending: true);
+
+    if (lastVisible != null) {
+      query = query.startAfterDocument(lastVisible);
+    }
+    query = query.limit(10);
+
+    final snapshot = await query.get();
+    final docs = snapshot.docs;
+
+    QueryDocumentSnapshot newLastVisible;
+    final posts = <Post>[];
+    if (docs.isNotEmpty) {
+      newLastVisible = docs[docs.length - 1]; // どこまでデータを取得したか保持しておく
+      for (final doc in docs) {
+        final post = _getPostFromDocument(doc);
+        posts.add(post);
+      }
+    }
+
+    return <String, dynamic>{
+      'last_visible': newLastVisible,
+      'posts': posts,
+    };
   }
 
   // TODO(fukky21): 後で削除する
@@ -101,6 +133,25 @@ class FirebasePostRepository {
       );
       debugPrint('ダミー投稿${i + 1}を作成しました');
     }
+  }
+
+  Post _getPostFromDocument(QueryDocumentSnapshot doc) {
+    final data = doc.data();
+
+    final replyFromNumbers = <int>[];
+    for (final number in data[replyFromNumbersFieldName] as List<dynamic>) {
+      replyFromNumbers.add(number as int);
+    }
+
+    return Post(
+      id: doc.id,
+      number: data[numberFieldName] as int,
+      uid: data[uidFieldName] as String,
+      body: data[bodyFieldName] as String,
+      replyToNumber: data[replyToNumberFieldName] as int,
+      replyFromNumbers: replyFromNumbers,
+      createdAt: (data[createdAtFieldName] as Timestamp)?.toDate(),
+    );
   }
 
   /// 例: 2021-03-26-10-00

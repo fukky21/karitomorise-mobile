@@ -54,14 +54,17 @@ Future<void> main() async {
         Provider<FirebasePublicRepository>.value(value: publicRepository),
         Provider<FirebaseUserRepository>.value(value: userRepository),
         Provider<FirebasePostRepository>.value(value: postRepository),
-      ],
-      child: ChangeNotifierProvider(
-        create: (context) => AuthenticationNotifier(
-          authRepository: context.read<FirebaseAuthenticationRepository>(),
-          userRepository: context.read<FirebaseUserRepository>(),
+        ChangeNotifierProvider(
+          create: (context) => AuthenticationNotifier(
+            authRepository: authRepository,
+            userRepository: userRepository,
+          ),
         ),
-        child: MyApp(),
-      ),
+        ChangeNotifierProvider(
+          create: (context) => UsersNotifier(userRepository: userRepository),
+        ),
+      ],
+      child: MyApp(),
     ),
   );
 }

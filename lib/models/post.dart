@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-import 'app_user.dart';
-
 class Post {
   Post({
     @required this.id,
-    @required this.user,
+    @required this.number,
+    @required this.uid,
     @required this.body,
     @required this.replyToNumber,
     @required this.replyFromNumbers,
     @required this.createdAt,
   });
 
-  final int id;
-  final AppUser user;
+  final String id;
+  final int number;
+  final String uid;
   final String body;
   final int replyToNumber;
   final List<int> replyFromNumbers;

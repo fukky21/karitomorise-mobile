@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../models/index.dart';
+import '../../notifiers/index.dart';
 import '../../util/index.dart';
 import 'custom_circle_avatar.dart';
 import 'custom_outline_button.dart';
@@ -50,7 +52,7 @@ class PostCell extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            post?.id?.toString() ?? '',
+            post?.number?.toString() ?? '',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(
@@ -63,9 +65,9 @@ class PostCell extends StatelessWidget {
   }
 
   Widget _body(BuildContext context) {
-    Widget _anchorButton = Container();
+    Widget _replyToButton = Container();
     if (post?.replyToNumber != null) {
-      _anchorButton = Container(
+      _replyToButton = Container(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: CustomOutlineButton(
           labelText: '>>${post.replyToNumber}',
@@ -78,34 +80,38 @@ class PostCell extends StatelessWidget {
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CustomCircleAvatar(
-            filePath: post?.user?.avatar?.filePath,
-            radius: 25,
-          ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  post?.user?.name ?? 'Unknown',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                _anchorButton,
-                Text(post?.body ?? '(本文なし)'),
-              ],
+    return Consumer<UsersNotifier>(builder: (context, notifier, _) {
+      final user = notifier?.get(uid: post?.uid);
+
+      return Container(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomCircleAvatar(
+              filePath: user?.avatar?.filePath,
+              radius: 25,
             ),
-          ),
-        ],
-      ),
-    );
+            const SizedBox(width: 5),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user?.name ?? 'Unknown',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  _replyToButton,
+                  Text(post?.body ?? '(本文なし)'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _footer(BuildContext context) {
