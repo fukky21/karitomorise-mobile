@@ -122,6 +122,77 @@ class FirebasePostRepository {
     };
   }
 
+  Future<List<Post>> getPostsByKeyword({@required String keyword}) async {
+    final words = <String>[]; // 例: [リオレウス, リオレイア]
+    // 半角/全角スペースで文字列を分割する
+    keyword.split(RegExp(r' |　')).forEach(
+      (word) {
+        if (word.isNotEmpty) {
+          words.add(word.toLowerCase());
+        }
+      },
+    );
+    final tokens = <String>[]; // 例: [リオ, オレ, レウ, ウス, 珠]
+    for (final word in words) {
+      if (word.length == 1) {
+        if (!tokens.contains(word)) {
+          // 重複して追加するとqueryエラーが発生するので注意
+          tokens.add(word);
+        }
+      } else {
+        for (var i = 0; i < word.length - 1; i++) {
+          final token = word.substring(i, i + 2);
+          if (!tokens.contains(token)) {
+            // 重複して追加するとqueryエラーが発生するので注意
+            tokens.add(token);
+          }
+        }
+      }
+    }
+
+    Query query = firebaseFirestore.collection(collectionName);
+
+    for (final token in tokens) {
+      if (token.length == 1) {
+        query = query.where(
+          '$bodyUnigramTokenMapFieldName.$token',
+          isEqualTo: true,
+        );
+      } else {
+        query = query.where(
+          '$bodyBigramTokenMapFieldName.$token',
+          isEqualTo: true,
+        );
+      }
+    }
+
+    // 3時間前までの時刻ブロックに所属する投稿のみを対象にする
+    final now = DateTime.now();
+    query = query.where(
+      timeBlockFieldName,
+      whereIn: <String>[
+        _getTimeBlock(now),
+        _getTimeBlock(now.add(const Duration(hours: 1) * -1)),
+        _getTimeBlock(now.add(const Duration(hours: 2) * -1)),
+        _getTimeBlock(now.add(const Duration(hours: 3) * -1)),
+      ],
+    );
+
+    final snapshot = await query.get();
+    final docs = snapshot.docs;
+
+    final posts = <Post>[];
+    for (final doc in docs) {
+      final post = _getPostFromDocument(doc);
+      posts.add(post);
+    }
+
+    // numberでソートする
+    posts.sort((a, b) => b.number.compareTo(a.number));
+
+    return posts;
+  }
+
   // TODO(fukky21): 後で削除する
   Future<void> createDummyPosts() async {
     const count = 10;

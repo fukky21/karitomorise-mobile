@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../models/index.dart';
+import '../../notifiers/index.dart';
+import '../../repositories/index.dart';
 import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 import 'search_screen.dart';
@@ -38,47 +40,99 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final post = Post(
-      id: 'tmp',
-      number: 5000,
-      uid: null,
-      replyToNumber: 4900,
-      body: '検索結果です検索結果です検索結果です検索結果です検索結果です検索結果です',
-      replyFromNumbers: [5001, 5002],
-      createdAt: DateTime.now(),
-    );
-
-    final cells = <Widget>[];
-    for (var i = 0; i < 10; i++) {
-      cells.add(PostCell(post: post));
-    }
-
-    return Scaffold(
-      appBar: _appBar(
-        context,
+    return ChangeNotifierProvider(
+      create: (context) => SearchResultScreenStateNotifier(
+        postRepository: context.read<FirebasePostRepository>(),
         keyword: widget.args?.keyword ?? '',
-        onTap: () {
-          FocusScope.of(context).requestFocus(_focusNode);
-          Navigator.pushNamed(
-            context,
-            SearchScreen.route,
-            arguments: SearchScreenArguments(
-              initialValue: widget.args?.keyword,
-            ),
-          );
-        },
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // TODO(fukky21): リフレッシュ機能を実装する
-        },
-        child: ListView.separated(
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: cells.length,
-          itemBuilder: (context, index) {
-            return cells[index];
+      child: Scaffold(
+        appBar: _appBar(
+          context,
+          keyword: widget.args?.keyword ?? '',
+          onTap: () {
+            FocusScope.of(context).requestFocus(_focusNode);
+            Navigator.pushNamed(
+              context,
+              SearchScreen.route,
+              arguments: SearchScreenArguments(
+                initialValue: widget.args?.keyword,
+              ),
+            );
           },
-          separatorBuilder: (context, _) => CustomDivider(),
+        ),
+        body: Consumer<SearchResultScreenStateNotifier>(
+          builder: (context, notifier, _) {
+            final state = notifier?.state ?? SearchResultScreenLoading();
+
+            if (state is SearchResultScreenLoadFailure) {
+              return Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('エラーが発生しました'),
+                      const SizedBox(height: 30),
+                      CustomRaisedButton(
+                        labelText: '再読み込み',
+                        onPressed: () async {
+                          await notifier.init();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            if (state is SearchResultScreenLoadSuccess) {
+              final posts = state.posts ?? [];
+              final cells = <Widget>[];
+              for (final post in posts) {
+                cells.add(PostCell(post: post));
+              }
+
+              if (cells.isEmpty) {
+                // 検索結果が0件のとき
+                return Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('直近の投稿の検索結果は0件です'),
+                        const SizedBox(height: 30),
+                        CustomRaisedButton(
+                          labelText: '再読み込み',
+                          onPressed: () async {
+                            await notifier.init();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  // TODO(fukky21): リフレッシュ機能を実装する
+                },
+                child: ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: cells.length,
+                  itemBuilder: (context, index) {
+                    return cells[index];
+                  },
+                  separatorBuilder: (context, _) => CustomDivider(),
+                ),
+              );
+            }
+
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
         ),
       ),
     );
