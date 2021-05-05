@@ -9,12 +9,12 @@ class CreatePostScreenStateNotifier with ChangeNotifier {
   CreatePostScreenState state;
   final FirebasePostRepository postRepository;
 
-  Future<void> createPost({@required String body, int replyToNumber}) async {
+  Future<void> createPost({@required String body, int replyToId}) async {
     state = CreatePostInProgress();
     notifyListeners();
 
     try {
-      await postRepository.createPost(body: body, replyToNumber: replyToNumber);
+      await postRepository.createPost(body: body, replyToId: replyToId);
       state = CreatePostSuccess();
       notifyListeners();
     } on Exception catch (e) {

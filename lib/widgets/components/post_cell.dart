@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/index.dart';
 import '../../notifiers/index.dart';
 import '../../util/index.dart';
+import '../../widgets/screens/index.dart';
 import 'custom_circle_avatar.dart';
 import 'custom_outline_button.dart';
 
@@ -52,7 +53,7 @@ class PostCell extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            post?.number?.toString() ?? '',
+            post?.id?.toString() ?? '',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(
@@ -66,11 +67,11 @@ class PostCell extends StatelessWidget {
 
   Widget _body(BuildContext context) {
     Widget _replyToButton = Container();
-    if (post?.replyToNumber != null) {
+    if (post?.replyToId != null) {
       _replyToButton = Container(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: CustomOutlineButton(
-          labelText: '>>${post.replyToNumber}',
+          labelText: '>>${post.replyToId}',
           width: 80,
           height: 35,
           onPressed: () {
@@ -116,7 +117,7 @@ class PostCell extends StatelessWidget {
 
   Widget _footer(BuildContext context) {
     Widget _replyCountButton = Container();
-    if (post?.replyFromNumbers != null && post.replyFromNumbers.isNotEmpty) {
+    if (post?.replyFromIdList != null && post.replyFromIdList.isNotEmpty) {
       _replyCountButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
           primary: Theme.of(context).primaryColor,
@@ -126,7 +127,7 @@ class PostCell extends StatelessWidget {
         onPressed: () {
           // TODO(fukky21): 返信一覧画面へ遷移する
         },
-        child: Text('${post.replyFromNumbers.length}'),
+        child: Text('${post.replyFromIdList.length}'),
       );
     }
 
@@ -139,7 +140,11 @@ class PostCell extends StatelessWidget {
           width: 100,
           height: 40,
           onPressed: () {
-            // TODO(fukky21): 返信ボタン機能を実装する
+            Navigator.pushNamed(
+              context,
+              CreatePostScreen.route,
+              arguments: CreatePostScreenArguments(replyToId: post?.id),
+            );
           },
         ),
       ],

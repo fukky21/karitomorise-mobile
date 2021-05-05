@@ -9,8 +9,17 @@ import '../../repositories/index.dart';
 import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 
+class CreatePostScreenArguments {
+  CreatePostScreenArguments({@required this.replyToId});
+
+  final int replyToId;
+}
+
 class CreatePostScreen extends StatefulWidget {
+  const CreatePostScreen({@required this.args});
+
   static const route = '/create_post';
+  final CreatePostScreenArguments args;
 
   @override
   _CreatePostScreenState createState() => _CreatePostScreenState();
@@ -86,6 +95,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           vertical: 30,
                         ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               padding: const EdgeInsets.all(10),
@@ -136,6 +146,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               ),
                             ),
                             const SizedBox(height: 7),
+                            _replyToId(),
                             CustomTextFormField(
                               controller: _controller,
                               maxLength: _bodyMaxLength,
@@ -184,7 +195,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ? () {
                 FocusScope.of(context).unfocus();
                 if (_formKey.currentState.validate()) {
-                  notifier.createPost(body: _controller.text);
+                  notifier.createPost(
+                    body: _controller.text,
+                    replyToId: widget.args?.replyToId,
+                  );
                 }
               }
             : null,
@@ -199,6 +213,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
       ),
     );
+  }
+
+  Widget _replyToId() {
+    if (widget.args?.replyToId != null) {
+      return Container(
+        padding: const EdgeInsets.only(top: 5, left: 10, bottom: 10),
+        child: Text(
+          '>>${widget.args.replyToId}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+    return Container();
   }
 
   String _bodyValidator(String text) {

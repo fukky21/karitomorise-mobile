@@ -16,18 +16,17 @@ class FirebasePostRepository {
 
   static const collectionName = 'posts';
   static const documentVersionFieldName = 'document_version';
-  static const numberFieldName = 'number';
   static const uidFieldName = 'uid';
   static const bodyFieldName = 'body';
   static const bodyUnigramTokenMapFieldName = 'body_unigram_token_map';
   static const bodyBigramTokenMapFieldName = 'body_bigram_token_map';
   static const timeBlockFieldName = 'time_block';
-  static const replyToNumberFieldName = 'reply_to_number';
-  static const replyFromNumbersFieldName = 'reply_from_numbers';
+  static const replyToIdFieldName = 'reply_to_id';
+  static const replyFromIdListFieldName = 'reply_from_id_list';
   static const createdAtFieldName = 'created_at';
   static const updatedAtFieldName = 'updated_at';
 
-  Future<void> createPost({@required String body, int replyToNumber}) async {
+  Future<void> createPost({@required String body, int replyToId}) async {
     final currentUser = firebaseAuth.currentUser;
     final now = DateTime.now();
     final publicCollectionName = FirebasePublicRepository.collectionName;
@@ -47,6 +46,7 @@ class FirebasePostRepository {
       final snapshot = await transaction.get(ref);
       final currentPostCount =
           snapshot.data()[currentPostCountFieldName] as int;
+      final newPostCount = currentPostCount + 1;
 
       final unigramTokenMap = <String, bool>{};
       final bigramTokenMap = <String, bool>{};
@@ -67,27 +67,37 @@ class FirebasePostRepository {
         }
       }
 
-      transaction
-        ..set(
-          firebaseFirestore.collection(collectionName).doc(),
+      transaction.set(
+        firebaseFirestore.collection(collectionName).doc('$newPostCount'),
+        <String, dynamic>{
+          documentVersionFieldName: 1,
+          uidFieldName: uid,
+          bodyFieldName: body,
+          bodyUnigramTokenMapFieldName: unigramTokenMap,
+          bodyBigramTokenMapFieldName: bigramTokenMap,
+          timeBlockFieldName: _getTimeBlock(now),
+          replyToIdFieldName: replyToId,
+          replyFromIdListFieldName: <int>[],
+          createdAtFieldName: now,
+          updatedAtFieldName: now,
+        },
+      );
+
+      if (replyToId != null) {
+        transaction.update(
+          firebaseFirestore.collection(collectionName).doc('$replyToId'),
           <String, dynamic>{
-            documentVersionFieldName: 1,
-            numberFieldName: currentPostCount + 1,
-            uidFieldName: uid,
-            bodyFieldName: body,
-            bodyUnigramTokenMapFieldName: unigramTokenMap,
-            bodyBigramTokenMapFieldName: bigramTokenMap,
-            timeBlockFieldName: _getTimeBlock(now),
-            replyToNumberFieldName: replyToNumber,
-            replyFromNumbersFieldName: <int>[],
-            createdAtFieldName: now,
-            updatedAtFieldName: now,
+            replyFromIdListFieldName: FieldValue.arrayUnion(
+              <int>[newPostCount],
+            ),
           },
-        )
-        ..update(
-          ref,
-          <String, int>{currentPostCountFieldName: currentPostCount + 1},
         );
+      }
+
+      transaction.update(
+        ref,
+        <String, int>{currentPostCountFieldName: newPostCount},
+      );
     });
   }
 
@@ -187,8 +197,8 @@ class FirebasePostRepository {
       posts.add(post);
     }
 
-    // numberでソートする
-    posts.sort((a, b) => b.number.compareTo(a.number));
+    // idでソートする
+    posts.sort((a, b) => b.id.compareTo(a.id));
 
     return posts;
   }
@@ -209,18 +219,17 @@ class FirebasePostRepository {
   Post _getPostFromDocument(QueryDocumentSnapshot doc) {
     final data = doc.data();
 
-    final replyFromNumbers = <int>[];
-    for (final number in data[replyFromNumbersFieldName] as List<dynamic>) {
-      replyFromNumbers.add(number as int);
+    final replyFromIdList = <int>[];
+    for (final id in data[replyFromIdListFieldName] as List<dynamic>) {
+      replyFromIdList.add(id as int);
     }
 
     return Post(
-      id: doc.id,
-      number: data[numberFieldName] as int,
+      id: int.parse(doc.id),
       uid: data[uidFieldName] as String,
       body: data[bodyFieldName] as String,
-      replyToNumber: data[replyToNumberFieldName] as int,
-      replyFromNumbers: replyFromNumbers,
+      replyToId: data[replyToIdFieldName] as int,
+      replyFromIdList: replyFromIdList,
       createdAt: (data[createdAtFieldName] as Timestamp)?.toDate(),
     );
   }

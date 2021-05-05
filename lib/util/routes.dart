@@ -7,10 +7,11 @@ class Routes {
     try {
       switch (routeSettings.name) {
         case CreatePostScreen.route:
+          final args = routeSettings.arguments as CreatePostScreenArguments;
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             fullscreenDialog: true,
-            builder: (_) => CreatePostScreen(),
+            builder: (_) => CreatePostScreen(args: args),
           );
         case EditUserScreen.route:
           final args = routeSettings.arguments as EditUserScreenArguments;
