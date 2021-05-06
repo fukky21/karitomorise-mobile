@@ -129,7 +129,11 @@ class PostCell extends StatelessWidget {
           shape: const CircleBorder(side: BorderSide.none),
         ),
         onPressed: () {
-          // TODO(fukky21): 返信一覧画面へ遷移する
+          Navigator.pushNamed(
+            context,
+            ShowReplyScreen.route,
+            arguments: ShowReplyScreenArguments(post: post),
+          );
         },
         child: Text('${post.replyFromIdList.length}'),
       );

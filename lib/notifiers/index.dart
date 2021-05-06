@@ -4,6 +4,7 @@ export 'edit_user_screen_state_notifier.dart';
 export 'home_tab_state_notifier.dart';
 export 'search_result_screen_state_notifier.dart';
 export 'search_tab_state_notifier.dart';
+export 'show_reply_screen_state_notifier.dart';
 export 'sign_in_screen_state_notifier.dart';
 export 'thread_screen_state_notifier.dart';
 export 'users_notifier.dart';

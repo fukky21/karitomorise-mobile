@@ -4,6 +4,7 @@ export 'error_screen.dart';
 export 'search_result_screen.dart';
 export 'search_screen.dart';
 export 'select_avatar_screen.dart';
+export 'show_reply_screen.dart';
 export 'sign_in_screen.dart';
 export 'sign_up_screen.dart';
 export 'start_screen.dart';

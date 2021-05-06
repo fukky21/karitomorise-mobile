@@ -223,6 +223,22 @@ class FirebasePostRepository {
     return _func(id: replyToId, posts: []);
   }
 
+  Future<List<Post>> getReplies({@required List<int> replyFromIdList}) async {
+    final posts = <Post>[];
+
+    for (final id in replyFromIdList) {
+      final doc =
+          await firebaseFirestore.collection(collectionName).doc('$id').get();
+      final post = _getPostFromDocument(doc);
+      posts.add(post);
+    }
+
+    // idでソートする
+    posts.sort((a, b) => a.id.compareTo(b.id));
+
+    return posts;
+  }
+
   // TODO(fukky21): 後で削除する
   Future<void> createDummyPosts() async {
     const count = 10;

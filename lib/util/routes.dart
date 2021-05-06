@@ -37,6 +37,13 @@ class Routes {
             settings: routeSettings,
             builder: (_) => SelectAvatarScreen(),
           );
+        case ShowReplyScreen.route:
+          final args = routeSettings.arguments as ShowReplyScreenArguments;
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => ShowReplyScreen(args: args),
+          );
         case SignInScreen.route:
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
