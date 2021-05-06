@@ -53,6 +53,13 @@ class Routes {
             settings: routeSettings,
             builder: (_) => StartScreen(),
           );
+        case ThreadScreen.route:
+          final args = routeSettings.arguments as ThreadScreenArguments;
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => ThreadScreen(args: args),
+          );
         default:
           return errorRoute(routeSettings);
       }

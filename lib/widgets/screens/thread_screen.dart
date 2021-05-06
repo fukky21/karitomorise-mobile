@@ -3,13 +3,83 @@ import 'package:provider/provider.dart';
 
 import '../../models/index.dart';
 import '../../notifiers/index.dart';
+import '../../repositories/index.dart';
 import '../../util/index.dart';
-import '../../widgets/screens/index.dart';
-import 'custom_circle_avatar.dart';
-import 'custom_outline_button.dart';
+import '../../widgets/components/index.dart';
 
-class PostCell extends StatelessWidget {
-  const PostCell({@required this.post});
+class ThreadScreenArguments {
+  ThreadScreenArguments({@required this.post});
+
+  final Post post;
+}
+
+class ThreadScreen extends StatelessWidget {
+  const ThreadScreen({@required this.args});
+
+  static const route = '/thread';
+  final ThreadScreenArguments args;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: simpleAppBar(context),
+      body: ChangeNotifierProvider(
+        create: (context) => ThreadScreenStateNotifier(
+          sourcePost: args.post,
+          postRepository: context.read<FirebasePostRepository>(),
+        ),
+        child: Consumer<ThreadScreenStateNotifier>(
+          builder: (context, notifier, _) {
+            final state = notifier?.state ?? ThreadScreenLoading();
+
+            if (state is ThreadScreenLoadFailure) {
+              return Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('エラーが発生しました'),
+                      const SizedBox(height: 30),
+                      CustomRaisedButton(
+                        labelText: '再読み込み',
+                        onPressed: () async {
+                          await notifier.init();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            if (state is ThreadScreenLoadSuccess) {
+              final posts = state.posts;
+
+              final cells = <Widget>[];
+              for (final post in posts) {
+                cells.add(_ThreadCell(post: post));
+              }
+
+              return ListView.separated(
+                itemBuilder: (context, index) => cells[index],
+                separatorBuilder: (context, _) => CustomDivider(),
+                itemCount: cells.length,
+              );
+            }
+
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ThreadCell extends StatelessWidget {
+  const _ThreadCell({@required this.post});
 
   final Post post;
 
@@ -24,7 +94,6 @@ class PostCell extends StatelessWidget {
         children: [
           _header(context),
           _body(context),
-          _footer(context),
         ],
       ),
     );
@@ -74,13 +143,7 @@ class PostCell extends StatelessWidget {
           labelText: '>>${post.replyToId}',
           width: 80,
           height: 35,
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              ThreadScreen.route,
-              arguments: ThreadScreenArguments(post: post),
-            );
-          },
+          onPressed: null,
         ),
       );
     }
@@ -117,41 +180,5 @@ class PostCell extends StatelessWidget {
         ),
       );
     });
-  }
-
-  Widget _footer(BuildContext context) {
-    Widget _replyCountButton = Container();
-    if (post?.replyFromIdList != null && post.replyFromIdList.isNotEmpty) {
-      _replyCountButton = ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          primary: Theme.of(context).primaryColor,
-          onPrimary: AppColors.white,
-          shape: const CircleBorder(side: BorderSide.none),
-        ),
-        onPressed: () {
-          // TODO(fukky21): 返信一覧画面へ遷移する
-        },
-        child: Text('${post.replyFromIdList.length}'),
-      );
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        _replyCountButton,
-        CustomOutlineButton(
-          labelText: '返信する',
-          width: 100,
-          height: 40,
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              CreatePostScreen.route,
-              arguments: CreatePostScreenArguments(replyToId: post?.id),
-            );
-          },
-        ),
-      ],
-    );
   }
 }

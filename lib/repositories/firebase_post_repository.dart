@@ -203,6 +203,26 @@ class FirebasePostRepository {
     return posts;
   }
 
+  Future<List<Post>> getThread({@required int replyToId}) async {
+    // 再帰的に返信を取得する
+    Future<List<Post>> _func({
+      @required int id,
+      @required List<Post> posts,
+    }) async {
+      final doc =
+          await firebaseFirestore.collection(collectionName).doc('$id').get();
+      final post = _getPostFromDocument(doc);
+      posts.add(post);
+      if (post.replyToId == null) {
+        return posts;
+      } else {
+        return _func(id: post.replyToId, posts: posts);
+      }
+    }
+
+    return _func(id: replyToId, posts: []);
+  }
+
   // TODO(fukky21): 後で削除する
   Future<void> createDummyPosts() async {
     const count = 10;
@@ -216,7 +236,7 @@ class FirebasePostRepository {
     }
   }
 
-  Post _getPostFromDocument(QueryDocumentSnapshot doc) {
+  Post _getPostFromDocument(DocumentSnapshot doc) {
     final data = doc.data();
 
     final replyFromIdList = <int>[];
