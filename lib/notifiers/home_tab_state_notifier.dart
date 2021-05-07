@@ -73,6 +73,7 @@ class HomeTabStateNotifier with ChangeNotifier {
             // すでに追加されている場合は、最後まで取得したと判定する
             state = HomeTabLoadSuccess(posts: _posts, isFetchabled: false);
             notifyListeners();
+            _isFetching = false; // fetchは終了したのでfalseにする
             return;
           }
         }
