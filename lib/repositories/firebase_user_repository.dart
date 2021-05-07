@@ -23,10 +23,13 @@ class FirebaseUserRepository {
   static const createdAtFieldName = 'created_at';
   static const updatedAtFieldName = 'updated_at';
 
-  Future<void> createUser({
-    @required String id,
-    @required String name,
-  }) async {
+  // FirebaseAuthenticationRepositoryの方でサインアップしてから実行すること
+  Future<void> createUser({@required String name}) async {
+    final currentUser = firebaseAuth.currentUser;
+    if (currentUser == null || currentUser.isAnonymous) {
+      throw Exception('currentUser is null OR currentUser is anonymous');
+    }
+
     var avatarId = 1 + math.Random().nextInt(AppUserAvatar.values.length);
 
     // アイコンにUnknownが選ばれないようにする
@@ -36,7 +39,7 @@ class FirebaseUserRepository {
 
     final now = DateTime.now();
 
-    await firebaseFirestore.collection(collectionName).doc(id).set(
+    await firebaseFirestore.collection(collectionName).doc(currentUser.uid).set(
       <String, dynamic>{
         documentVersionFieldName: 1,
         nameFieldName: name,

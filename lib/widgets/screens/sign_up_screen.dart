@@ -1,8 +1,12 @@
+import 'package:big_tip/big_tip.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:provider/provider.dart';
 
+import '../../notifiers/index.dart';
+import '../../repositories/index.dart';
 import '../../util/index.dart';
 import '../../widgets/components/index.dart';
 
@@ -54,87 +58,140 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    void _signUpButtonEvent() {
-      FocusScope.of(context).unfocus();
-      if (_formKey.currentState.validate()) {
-        if (!_isAgreed) {
-          return showErrorModal(context, '利用規約に同意していません');
-        }
-        // TODO(fukky21): サインアップ機能を実装する
-      }
-    }
+    return ChangeNotifierProvider(
+      create: (context) => SignUpScreenStateNotifier(
+        authRepository: context.read<FirebaseAuthenticationRepository>(),
+        userRepository: context.read<FirebaseUserRepository>(),
+      ),
+      child: Consumer<SignUpScreenStateNotifier>(
+        builder: (context, notifier, _) {
+          final state = notifier?.state;
 
-    return ModalProgressHUD(
-      inAsyncCall: false,
-      child: Form(
-        key: _formKey,
-        child: Scaffold(
-          appBar: simpleAppBar(context, title: _appBarTitle),
-          body: ScrollableLayoutBuilder(
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 50),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
+          if (state is SignUpFailure && state.type == SignUpFailureType.other) {
+            return Scaffold(
+              appBar: simpleAppBar(context, title: _appBarTitle),
+              body: const Center(
+                child: BigTip(
+                  title: Text('エラーが発生しました'),
+                  child: Icon(Icons.error_outline_sharp),
+                ),
+              ),
+            );
+          }
+
+          if (state is SignUpSuccess) {
+            return Scaffold(
+              appBar: simpleAppBar(context, title: _appBarTitle),
+              body: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('アカウントを作成しました。'),
+                      const SizedBox(height: 15),
+                      const Text('以下のアドレスに確認メールを送信しました。'),
+                      const SizedBox(height: 15),
+                      Text(
+                        state?.email ?? '',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return ModalProgressHUD(
+            inAsyncCall: state is SignUpInProgress,
+            child: Form(
+              key: _formKey,
+              child: Scaffold(
+                appBar: simpleAppBar(context, title: _appBarTitle),
+                body: ScrollableLayoutBuilder(
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 50),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CustomTextFormField(
-                            labelText: 'メールアドレス',
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            //errorText: _emailErrorText(),
-                            validator: _emailValidator,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: Column(
+                              children: [
+                                CustomTextFormField(
+                                  labelText: 'メールアドレス',
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  errorText: _emailErrorText(state),
+                                  validator: _emailValidator,
+                                ),
+                                const SizedBox(height: 30),
+                                CustomTextFormField(
+                                  labelText: 'パスワード',
+                                  controller: _passwordController,
+                                  obscureText: true,
+                                  maxLength: _passwordMaxLength,
+                                  errorText: _passwordErrorText(state),
+                                  validator: _passwordValidator,
+                                ),
+                                const SizedBox(height: 30),
+                                const BulletTexts(
+                                  texts: _passwordNotes,
+                                ),
+                                const SizedBox(height: 30),
+                                CustomTextFormField(
+                                  labelText: 'パスワード(確認)',
+                                  controller: _confirmPasswordController,
+                                  obscureText: true,
+                                  maxLength: _passwordMaxLength,
+                                  validator: _confirmPasswordValidator,
+                                ),
+                                const SizedBox(height: 30),
+                                CustomTextFormField(
+                                  labelText: 'ユーザー名',
+                                  controller: _nameController,
+                                  maxLength: _nameMaxLength,
+                                  validator: _nameValidator,
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 30),
-                          CustomTextFormField(
-                            labelText: 'パスワード',
-                            controller: _passwordController,
-                            obscureText: true,
-                            maxLength: _passwordMaxLength,
-                            //errorText: _passwordErrorText(),
-                            validator: _passwordValidator,
-                          ),
+                          _termsOfServiceCell(),
                           const SizedBox(height: 30),
-                          const BulletTexts(
-                            texts: _passwordNotes,
-                          ),
-                          const SizedBox(height: 30),
-                          CustomTextFormField(
-                            labelText: 'パスワード(確認)',
-                            controller: _confirmPasswordController,
-                            obscureText: true,
-                            maxLength: _passwordMaxLength,
-                            validator: _confirmPasswordValidator,
-                          ),
-                          const SizedBox(height: 30),
-                          CustomTextFormField(
-                            labelText: 'ユーザー名',
-                            controller: _nameController,
-                            maxLength: _nameMaxLength,
-                            validator: _nameValidator,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: CustomRaisedButton(
+                              labelText: 'アカウントを作成',
+                              onPressed: () {
+                                FocusScope.of(context).unfocus();
+                                if (_formKey.currentState.validate()) {
+                                  if (!_isAgreed) {
+                                    return showErrorModal(
+                                      context,
+                                      '利用規約に同意していません',
+                                    );
+                                  }
+                                  notifier.signUp(
+                                    email: _emailController.text,
+                                    password: _passwordController.text,
+                                    name: _nameController.text,
+                                  );
+                                }
+                              },
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    _termsOfServiceCell(),
-                    const SizedBox(height: 30),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: CustomRaisedButton(
-                        labelText: 'アカウントを作成',
-                        onPressed: _signUpButtonEvent,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -195,26 +252,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // String _emailErrorText(SignUpScreenState state) {
-  //   if (state is SignUpFailure) {
-  //     if (state.type == SignUpFailureType.emailAlreadyInUse) {
-  //       return 'このアドレスは登録済です';
-  //     }
-  //     if (state.type == SignUpFailureType.invalidEmail) {
-  //       return 'このアドレスは不正です';
-  //     }
-  //   }
-  //   return null;
-  // }
-  //
-  // String _passwordErrorText(SignUpScreenState state) {
-  //   if (state is SignUpFailure) {
-  //     if (state.type == SignUpFailureType.weakPassword) {
-  //       return 'パスワード強度が低いです';
-  //     }
-  //   }
-  //   return null;
-  // }
+  String _emailErrorText(SignUpScreenState state) {
+    if (state is SignUpFailure) {
+      if (state.type == SignUpFailureType.emailAlreadyInUse) {
+        return 'このアドレスは登録済です';
+      }
+      if (state.type == SignUpFailureType.invalidEmail) {
+        return 'このアドレスは不正です';
+      }
+    }
+    return null;
+  }
+
+  String _passwordErrorText(SignUpScreenState state) {
+    if (state is SignUpFailure) {
+      if (state.type == SignUpFailureType.weakPassword) {
+        return 'パスワード強度が低いです';
+      }
+    }
+    return null;
+  }
 
   String _emailValidator(String email) {
     final errorMessages = <String>[
