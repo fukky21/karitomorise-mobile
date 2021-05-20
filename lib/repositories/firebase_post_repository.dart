@@ -2,111 +2,85 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../models/index.dart';
-import 'firebase_public_repository.dart';
+import '../models/post.dart';
 
 class FirebasePostRepository {
-  FirebasePostRepository({
-    @required this.firebaseAuth,
-    @required this.firebaseFirestore,
-  });
-
-  final FirebaseAuth firebaseAuth;
-  final FirebaseFirestore firebaseFirestore;
-
-  static const collectionName = 'posts';
-  static const documentVersionFieldName = 'document_version';
-  static const uidFieldName = 'uid';
-  static const bodyFieldName = 'body';
-  static const bodyUnigramTokenMapFieldName = 'body_unigram_token_map';
-  static const bodyBigramTokenMapFieldName = 'body_bigram_token_map';
-  static const timeBlockFieldName = 'time_block';
-  static const replyToIdFieldName = 'reply_to_id';
-  static const replyFromIdListFieldName = 'reply_from_id_list';
-  static const createdAtFieldName = 'created_at';
-  static const updatedAtFieldName = 'updated_at';
+  final _firebaseAuth = FirebaseAuth.instance;
+  final _firebaseFirestore = FirebaseFirestore.instance;
 
   Future<void> createPost({@required String body, int replyToId}) async {
-    final currentUser = firebaseAuth.currentUser;
+    final currentUser = _firebaseAuth.currentUser;
     final now = DateTime.now();
-    final publicCollectionName = FirebasePublicRepository.collectionName;
-    final dynamicDocumentName = FirebasePublicRepository.dynamicDocumentName;
-    final currentPostCountFieldName =
-        FirebasePublicRepository.currentPostCountFieldName;
 
-    String uid;
-    if (currentUser != null && !currentUser.isAnonymous) {
-      uid = currentUser.uid;
-    }
+    if (currentUser != null) {
+      final uid = currentUser.isAnonymous ? null : currentUser.uid;
+      await _firebaseFirestore.runTransaction((transaction) async {
+        final docRef = _firebaseFirestore.collection('public').doc('dynamic');
+        final snapshot = await transaction.get(docRef);
+        final currentPostCount = snapshot.data()['current_post_count'] as int;
+        final newPostCount = currentPostCount + 1;
 
-    await firebaseFirestore.runTransaction((transaction) async {
-      final ref = firebaseFirestore
-          .collection(publicCollectionName)
-          .doc(dynamicDocumentName);
-      final snapshot = await transaction.get(ref);
-      final currentPostCount =
-          snapshot.data()[currentPostCountFieldName] as int;
-      final newPostCount = currentPostCount + 1;
+        final unigramTokenMap = <String, bool>{};
+        final bigramTokenMap = <String, bool>{};
 
-      final unigramTokenMap = <String, bool>{};
-      final bigramTokenMap = <String, bool>{};
-      if (body.isNotEmpty) {
-        for (var i = 0; i < body.length; i++) {
-          final token = body.substring(i, i + 1).toLowerCase();
-          // 重複して追加しないように注意
-          if (unigramTokenMap[token] == null) {
-            unigramTokenMap[token] = true;
+        if (body.isNotEmpty) {
+          for (var i = 0; i < body.length; i++) {
+            final token = body.substring(i, i + 1).toLowerCase();
+            if (unigramTokenMap[token] == null) {
+              // 重複して追加しないように注意
+              unigramTokenMap[token] = true;
+            }
+          }
+          for (var i = 0; i < body.length - 1; i++) {
+            final token = body.substring(i, i + 2).toLowerCase();
+            if (bigramTokenMap[token] == null) {
+              // 重複して追加しないように注意
+              bigramTokenMap[token] = true;
+            }
           }
         }
-        for (var i = 0; i < body.length - 1; i++) {
-          final token = body.substring(i, i + 2).toLowerCase();
-          // 重複して追加しないように注意
-          if (bigramTokenMap[token] == null) {
-            bigramTokenMap[token] = true;
-          }
-        }
-      }
 
-      transaction.set(
-        firebaseFirestore.collection(collectionName).doc('$newPostCount'),
-        <String, dynamic>{
-          documentVersionFieldName: 1,
-          uidFieldName: uid,
-          bodyFieldName: body,
-          bodyUnigramTokenMapFieldName: unigramTokenMap,
-          bodyBigramTokenMapFieldName: bigramTokenMap,
-          timeBlockFieldName: _getTimeBlock(now),
-          replyToIdFieldName: replyToId,
-          replyFromIdListFieldName: <int>[],
-          createdAtFieldName: now,
-          updatedAtFieldName: now,
-        },
-      );
-
-      if (replyToId != null) {
-        transaction.update(
-          firebaseFirestore.collection(collectionName).doc('$replyToId'),
+        transaction.set(
+          _firebaseFirestore.collection('posts').doc('$newPostCount'),
           <String, dynamic>{
-            replyFromIdListFieldName: FieldValue.arrayUnion(
-              <int>[newPostCount],
-            ),
+            'document_version': 1,
+            'uid': uid,
+            'body': body,
+            'body_unigram_token_map': unigramTokenMap,
+            'body_bigram_token_map': bigramTokenMap,
+            'time_block': _getTimeBlock(now),
+            'reply_to_id': replyToId,
+            'reply_from_id_list': <int>[],
+            'created_at': now,
+            'updated_at': now,
           },
         );
-      }
 
-      transaction.update(
-        ref,
-        <String, int>{currentPostCountFieldName: newPostCount},
-      );
-    });
+        if (replyToId != null) {
+          transaction.update(
+            _firebaseFirestore.collection('posts').doc('$replyToId'),
+            <String, dynamic>{
+              'reply_from_id_list': FieldValue.arrayUnion(
+                <int>[newPostCount],
+              ),
+            },
+          );
+        }
+
+        transaction.update(
+          docRef,
+          <String, int>{'current_post_count': newPostCount},
+        );
+      });
+    }
   }
 
   Future<Map<String, dynamic>> getNewPosts({
     QueryDocumentSnapshot lastVisible,
   }) async {
-    var query = firebaseFirestore
-        .collection(collectionName)
-        .orderBy(createdAtFieldName, descending: true);
+    var query = _firebaseFirestore
+        .collection('posts')
+        .orderBy('created_at', descending: true);
 
     if (lastVisible != null) {
       query = query.startAfterDocument(lastVisible);
@@ -114,14 +88,15 @@ class FirebasePostRepository {
     query = query.limit(10);
 
     final snapshot = await query.get();
-    final docs = snapshot.docs;
+    final snapshots = snapshot.docs;
 
     QueryDocumentSnapshot newLastVisible;
     final posts = <Post>[];
-    if (docs.isNotEmpty) {
-      newLastVisible = docs[docs.length - 1]; // どこまでデータを取得したか保持しておく
-      for (final doc in docs) {
-        final post = _getPostFromDocument(doc);
+    if (snapshots.isNotEmpty) {
+      // どこまでデータを取得したか保持しておく
+      newLastVisible = snapshots[snapshots.length - 1];
+      for (final _snapshot in snapshots) {
+        final post = _parse(_snapshot);
         posts.add(post);
       }
     }
@@ -160,26 +135,20 @@ class FirebasePostRepository {
       }
     }
 
-    Query query = firebaseFirestore.collection(collectionName);
+    Query query = _firebaseFirestore.collection('posts');
 
     for (final token in tokens) {
       if (token.length == 1) {
-        query = query.where(
-          '$bodyUnigramTokenMapFieldName.$token',
-          isEqualTo: true,
-        );
+        query = query.where('body_unigram_token_map.$token', isEqualTo: true);
       } else {
-        query = query.where(
-          '$bodyBigramTokenMapFieldName.$token',
-          isEqualTo: true,
-        );
+        query = query.where('body_bigram_token_map.$token', isEqualTo: true);
       }
     }
 
-    // 3時間前までの時刻ブロックに所属する投稿のみを対象にする
+    // 3時間前までの投稿のみを対象にする
     final now = DateTime.now();
     query = query.where(
-      timeBlockFieldName,
+      'time_block',
       whereIn: <String>[
         _getTimeBlock(now),
         _getTimeBlock(now.add(const Duration(hours: 1) * -1)),
@@ -189,15 +158,15 @@ class FirebasePostRepository {
     );
 
     final snapshot = await query.get();
-    final docs = snapshot.docs;
+    final snapshots = snapshot.docs;
 
     final posts = <Post>[];
-    for (final doc in docs) {
-      final post = _getPostFromDocument(doc);
+    for (final _snapshot in snapshots) {
+      final post = _parse(_snapshot);
       posts.add(post);
     }
 
-    // idでソートする
+    // id順に並び替える
     posts.sort((a, b) => b.id.compareTo(a.id));
 
     return posts;
@@ -205,35 +174,35 @@ class FirebasePostRepository {
 
   Future<List<Post>> getThread({@required int replyToId}) async {
     // 再帰的に返信を取得する
-    Future<List<Post>> _func({
+    Future<List<Post>> _function({
       @required int id,
       @required List<Post> posts,
     }) async {
-      final doc =
-          await firebaseFirestore.collection(collectionName).doc('$id').get();
-      final post = _getPostFromDocument(doc);
+      final snapshot =
+          await _firebaseFirestore.collection('posts').doc('$id').get();
+      final post = _parse(snapshot);
       posts.add(post);
-      if (post.replyToId == null) {
-        return posts;
+      if (post.replyToId != null) {
+        return _function(id: post.replyToId, posts: posts);
       } else {
-        return _func(id: post.replyToId, posts: posts);
+        return posts;
       }
     }
 
-    return _func(id: replyToId, posts: []);
+    return _function(id: replyToId, posts: []);
   }
 
   Future<List<Post>> getReplies({@required List<int> replyFromIdList}) async {
     final posts = <Post>[];
 
     for (final id in replyFromIdList) {
-      final doc =
-          await firebaseFirestore.collection(collectionName).doc('$id').get();
-      final post = _getPostFromDocument(doc);
+      final snapshot =
+          await _firebaseFirestore.collection('posts').doc('$id').get();
+      final post = _parse(snapshot);
       posts.add(post);
     }
 
-    // idでソートする
+    // id順に並び替える
     posts.sort((a, b) => a.id.compareTo(b.id));
 
     return posts;
@@ -252,21 +221,21 @@ class FirebasePostRepository {
     }
   }
 
-  Post _getPostFromDocument(DocumentSnapshot doc) {
-    final data = doc.data();
+  Post _parse(DocumentSnapshot snapshot) {
+    final data = snapshot.data();
 
     final replyFromIdList = <int>[];
-    for (final id in data[replyFromIdListFieldName] as List<dynamic>) {
+    for (final id in data['reply_from_id_list'] as List<dynamic>) {
       replyFromIdList.add(id as int);
     }
 
     return Post(
-      id: int.parse(doc.id),
-      uid: data[uidFieldName] as String,
-      body: data[bodyFieldName] as String,
-      replyToId: data[replyToIdFieldName] as int,
+      id: int.parse(snapshot.id),
+      uid: data['uid'] as String,
+      body: data['body'] as String,
+      replyToId: data['reply_to_id'] as int,
       replyFromIdList: replyFromIdList,
-      createdAt: (data[createdAtFieldName] as Timestamp)?.toDate(),
+      createdAt: (data['created_at'] as Timestamp)?.toDate(),
     );
   }
 

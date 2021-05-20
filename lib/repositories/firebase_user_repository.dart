@@ -5,64 +5,54 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../models/index.dart';
+import '../models/app_user.dart';
 
 class FirebaseUserRepository {
-  FirebaseUserRepository({
-    @required this.firebaseAuth,
-    @required this.firebaseFirestore,
-  });
+  final _firebaseAuth = FirebaseAuth.instance;
+  final _firebaseFirestore = FirebaseFirestore.instance;
 
-  final FirebaseAuth firebaseAuth;
-  final FirebaseFirestore firebaseFirestore;
-
-  static const collectionName = 'users';
-  static const documentVersionFieldName = 'document_version';
-  static const nameFieldName = 'name';
-  static const avatarIdFieldName = 'avatar_id';
-  static const createdAtFieldName = 'created_at';
-  static const updatedAtFieldName = 'updated_at';
-
-  // FirebaseAuthenticationRepositoryの方でサインアップしてから実行すること
+  /// FirebaseAuthenticationRepositoryでサインアップしてから呼ぶ
   Future<void> createUser({@required String name}) async {
-    final currentUser = firebaseAuth.currentUser;
+    final currentUser = _firebaseAuth.currentUser;
     if (currentUser == null || currentUser.isAnonymous) {
-      throw Exception('currentUser is null OR currentUser is anonymous');
+      throw Exception('currentUser is null OR anonymous');
     }
 
+    // ランダムにアバターを選ぶ
     var avatarId = 1 + math.Random().nextInt(AppUserAvatar.values.length);
 
-    // アイコンにUnknownが選ばれないようにする
+    // アバターにUnknownが選ばれないようにする
     if (getAppUserAvatar(id: avatarId) == AppUserAvatar.unknown) {
       avatarId = AppUserAvatar.agnaktor.id;
     }
 
     final now = DateTime.now();
 
-    await firebaseFirestore.collection(collectionName).doc(currentUser.uid).set(
+    await _firebaseFirestore.collection('users').doc(currentUser.uid).set(
       <String, dynamic>{
-        documentVersionFieldName: 1,
-        nameFieldName: name,
-        avatarIdFieldName: avatarId,
-        createdAtFieldName: now,
-        updatedAtFieldName: now,
+        'document_version': 1,
+        'name': name,
+        'avatar_id': avatarId,
+        'created_at': now,
+        'updated_at': now,
       },
     );
   }
 
   Future<AppUser> getUser({@required String id}) async {
-    final doc =
-        await firebaseFirestore.collection(collectionName).doc(id).get();
-    final data = doc.data();
+    final snapshot = await _firebaseFirestore.collection('users').doc(id).get();
 
-    if (data == null) {
-      return null; // ユーザーがすでに削除されている場合
+    if (!snapshot.exists) {
+      // ドキュメントが存在しない場合
+      return null;
     }
 
+    final data = snapshot.data();
+
     return AppUser(
-      id: doc.id,
-      name: data[nameFieldName] as String,
-      avatar: getAppUserAvatar(id: data[avatarIdFieldName] as int),
+      id: snapshot.id,
+      name: data['name'] as String,
+      avatar: getAppUserAvatar(id: data['avatar_id'] as int),
     );
   }
 
@@ -70,22 +60,19 @@ class FirebaseUserRepository {
     @required String name,
     @required AppUserAvatar avatar,
   }) async {
-    final currentUser = firebaseAuth.currentUser;
+    final currentUser = _firebaseAuth.currentUser;
     final now = DateTime.now();
 
-    if (currentUser.isAnonymous) {
+    if (currentUser == null || currentUser.isAnonymous) {
       // ここには来ないはず
-      throw Exception('CurrentUser is anonymous');
+      throw Exception('CurrentUser is null OR anonymous');
     }
 
-    await firebaseFirestore
-        .collection(collectionName)
-        .doc(currentUser.uid)
-        .update(
+    await _firebaseFirestore.collection('users').doc(currentUser.uid).update(
       <String, dynamic>{
-        nameFieldName: name,
-        avatarIdFieldName: avatar?.id,
-        updatedAtFieldName: now,
+        'name': name,
+        'avatar_id': avatar?.id,
+        'updated_at': now,
       },
     );
   }
