@@ -22,7 +22,7 @@ class ShowRepliesViewModel with ChangeNotifier {
 
     try {
       final posts = await _postRepository.getReplies(
-        replyFromIdList: sourcePost.replyFromIdList,
+        replyFromNumbers: sourcePost.replyFromNumbers,
       );
       posts.insert(0, sourcePost); // 自分自身を配列の先頭に入れる
       _state = ShowRepliesScreenLoadSuccess(posts: posts);

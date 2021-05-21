@@ -22,7 +22,7 @@ class ShowThreadViewModel with ChangeNotifier {
 
     try {
       final posts = await _postRepository.getThread(
-        replyToId: sourcePost.replyToId,
+        replyToNumber: sourcePost.replyToNumber,
       );
       posts.insert(0, sourcePost); // 自分自身を配列の先頭に入れる
       _state = ShowThreadScreenLoadSuccess(posts: posts);

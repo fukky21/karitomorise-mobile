@@ -15,9 +15,9 @@ import '../../util/validations.dart';
 import 'create_post_view_model.dart';
 
 class CreatePostScreenArguments {
-  CreatePostScreenArguments({@required this.replyToId});
+  CreatePostScreenArguments({@required this.replyToNumber});
 
-  final int replyToId;
+  final int replyToNumber;
 }
 
 class CreatePostScreen extends StatefulWidget {
@@ -147,7 +147,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               ),
                             ),
                             const SizedBox(height: 7),
-                            _replyToId(),
+                            _replyToNumber(),
                             CustomTextFormField(
                               controller: _controller,
                               maxLength: _bodyMaxLength,
@@ -199,7 +199,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 if (_formKey.currentState.validate()) {
                   viewModel.createPost(
                     body: _controller.text,
-                    replyToId: widget.args?.replyToId,
+                    replyToNumber: widget.args?.replyToNumber,
                   );
                 }
               }
@@ -217,12 +217,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     );
   }
 
-  Widget _replyToId() {
-    if (widget.args?.replyToId != null) {
+  Widget _replyToNumber() {
+    if (widget.args?.replyToNumber != null) {
       return Container(
         padding: const EdgeInsets.only(top: 5, left: 10, bottom: 10),
         child: Text(
-          '>>${widget.args.replyToId}',
+          '>>${widget.args.replyToNumber}',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       );

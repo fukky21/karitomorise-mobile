@@ -123,7 +123,7 @@ class _ThreadCell extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            post?.id?.toString() ?? '',
+            post?.number?.toString() ?? '',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(
@@ -137,11 +137,11 @@ class _ThreadCell extends StatelessWidget {
 
   Widget _body(BuildContext context) {
     Widget _replyToButton = Container();
-    if (post?.replyToId != null) {
+    if (post?.replyToNumber != null) {
       _replyToButton = Container(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: CustomOutlineButton(
-          labelText: '>>${post.replyToId}',
+          labelText: '>>${post.replyToNumber}',
           width: 80,
           height: 35,
           onPressed: null,

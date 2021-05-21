@@ -57,7 +57,7 @@ class PostCell extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            post?.id?.toString() ?? '',
+            post?.number?.toString() ?? '',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(
@@ -71,11 +71,11 @@ class PostCell extends StatelessWidget {
 
   Widget _body(BuildContext context) {
     Widget _replyToButton = Container();
-    if (post?.replyToId != null) {
+    if (post?.replyToNumber != null) {
       _replyToButton = Container(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: CustomOutlineButton(
-          labelText: '>>${post.replyToId}',
+          labelText: '>>${post.replyToNumber}',
           width: 80,
           height: 35,
           onPressed: () {
@@ -123,7 +123,7 @@ class PostCell extends StatelessWidget {
 
   Widget _footer(BuildContext context) {
     Widget _replyCountButton = Container();
-    if (post?.replyFromIdList != null && post.replyFromIdList.isNotEmpty) {
+    if (post?.replyFromNumbers != null && post.replyFromNumbers.isNotEmpty) {
       _replyCountButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
           primary: Theme.of(context).primaryColor,
@@ -137,7 +137,7 @@ class PostCell extends StatelessWidget {
             arguments: ShowRepliesScreenArguments(post: post),
           );
         },
-        child: Text('${post.replyFromIdList.length}'),
+        child: Text('${post.replyFromNumbers.length}'),
       );
     }
 
@@ -153,7 +153,7 @@ class PostCell extends StatelessWidget {
             Navigator.pushNamed(
               context,
               CreatePostScreen.route,
-              arguments: CreatePostScreenArguments(replyToId: post?.id),
+              arguments: CreatePostScreenArguments(replyToNumber: post?.number),
             );
           },
         ),

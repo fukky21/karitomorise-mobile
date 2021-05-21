@@ -8,7 +8,7 @@ class FirebasePostRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firebaseFirestore = FirebaseFirestore.instance;
 
-  Future<void> createPost({@required String body, int replyToId}) async {
+  Future<void> createPost({@required String body, int replyToNumber}) async {
     final currentUser = _firebaseAuth.currentUser;
     final now = DateTime.now();
 
@@ -41,26 +41,32 @@ class FirebasePostRepository {
         }
 
         transaction.set(
-          _firebaseFirestore.collection('posts').doc('$newPostCount'),
+          _firebaseFirestore.collection('posts').doc(),
           <String, dynamic>{
             'document_version': 1,
+            'number': newPostCount,
             'uid': uid,
             'body': body,
             'body_unigram_token_map': unigramTokenMap,
             'body_bigram_token_map': bigramTokenMap,
             'time_block': _getTimeBlock(now),
-            'reply_to_id': replyToId,
-            'reply_from_id_list': <int>[],
+            'reply_to_number': replyToNumber,
+            'reply_from_numbers': <int>[],
             'created_at': now,
             'updated_at': now,
           },
         );
 
-        if (replyToId != null) {
+        if (replyToNumber != null) {
+          final snapshot = await _firebaseFirestore
+              .collection('posts')
+              .where('number', isEqualTo: replyToNumber)
+              .get();
+
           transaction.update(
-            _firebaseFirestore.collection('posts').doc('$replyToId'),
+            snapshot.docs.first.reference,
             <String, dynamic>{
-              'reply_from_id_list': FieldValue.arrayUnion(
+              'reply_from_numbers': FieldValue.arrayUnion(
                 <int>[newPostCount],
               ),
             },
@@ -166,13 +172,13 @@ class FirebasePostRepository {
       posts.add(post);
     }
 
-    // id順に並び替える
-    posts.sort((a, b) => b.id.compareTo(a.id));
+    // number順に並び替える
+    posts.sort((a, b) => b.number.compareTo(a.number));
 
     return posts;
   }
 
-  Future<List<Post>> getThread({@required int replyToId}) async {
+  Future<List<Post>> getThread({@required int replyToNumber}) async {
     // 再帰的に返信を取得する
     Future<List<Post>> _function({
       @required int id,
@@ -182,20 +188,20 @@ class FirebasePostRepository {
           await _firebaseFirestore.collection('posts').doc('$id').get();
       final post = _parse(snapshot);
       posts.add(post);
-      if (post.replyToId != null) {
-        return _function(id: post.replyToId, posts: posts);
+      if (post.replyToNumber != null) {
+        return _function(id: post.replyToNumber, posts: posts);
       } else {
         return posts;
       }
     }
 
-    return _function(id: replyToId, posts: []);
+    return _function(id: replyToNumber, posts: []);
   }
 
-  Future<List<Post>> getReplies({@required List<int> replyFromIdList}) async {
+  Future<List<Post>> getReplies({@required List<int> replyFromNumbers}) async {
     final posts = <Post>[];
 
-    for (final id in replyFromIdList) {
+    for (final id in replyFromNumbers) {
       final snapshot =
           await _firebaseFirestore.collection('posts').doc('$id').get();
       final post = _parse(snapshot);
@@ -203,7 +209,7 @@ class FirebasePostRepository {
     }
 
     // id順に並び替える
-    posts.sort((a, b) => a.id.compareTo(b.id));
+    posts.sort((a, b) => a.number.compareTo(b.number));
 
     return posts;
   }
@@ -224,17 +230,18 @@ class FirebasePostRepository {
   Post _parse(DocumentSnapshot snapshot) {
     final data = snapshot.data();
 
-    final replyFromIdList = <int>[];
-    for (final id in data['reply_from_id_list'] as List<dynamic>) {
-      replyFromIdList.add(id as int);
+    final replyFromNumbers = <int>[];
+    for (final id in data['reply_from_numbers'] as List<dynamic>) {
+      replyFromNumbers.add(id as int);
     }
 
     return Post(
       id: int.parse(snapshot.id),
+      number: data['number'] as int,
       uid: data['uid'] as String,
       body: data['body'] as String,
-      replyToId: data['reply_to_id'] as int,
-      replyFromIdList: replyFromIdList,
+      replyToNumber: data['reply_to_number'] as int,
+      replyFromNumbers: replyFromNumbers,
       createdAt: (data['created_at'] as Timestamp)?.toDate(),
     );
   }

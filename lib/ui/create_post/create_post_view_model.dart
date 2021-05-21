@@ -12,12 +12,15 @@ class CreatePostViewModel with ChangeNotifier {
     return _state;
   }
 
-  Future<void> createPost({@required String body, int replyToId}) async {
+  Future<void> createPost({@required String body, int replyToNumber}) async {
     _state = CreatePostInProgress();
     notifyListeners();
 
     try {
-      await _postRepository.createPost(body: body, replyToId: replyToId);
+      await _postRepository.createPost(
+        body: body,
+        replyToNumber: replyToNumber,
+      );
       _state = CreatePostSuccess();
       notifyListeners();
     } on Exception catch (e) {
