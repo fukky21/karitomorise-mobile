@@ -11,7 +11,7 @@ class Post {
     @required this.createdAt,
   });
 
-  final int id;
+  final String id;
   final String uid;
   final int number;
   final String body;

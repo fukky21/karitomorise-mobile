@@ -116,6 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onRefresh: () async => viewModel.init(),
                 child: ListView.separated(
                   controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     if (index == cells.length) {
                       if (state.isFetchabled) {

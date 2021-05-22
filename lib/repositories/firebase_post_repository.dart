@@ -181,30 +181,35 @@ class FirebasePostRepository {
   Future<List<Post>> getThread({@required int replyToNumber}) async {
     // 再帰的に返信を取得する
     Future<List<Post>> _function({
-      @required int id,
+      @required int number,
       @required List<Post> posts,
     }) async {
-      final snapshot =
-          await _firebaseFirestore.collection('posts').doc('$id').get();
-      final post = _parse(snapshot);
+      final snapshot = await _firebaseFirestore
+          .collection('posts')
+          .where('number', isEqualTo: number)
+          .get();
+
+      final post = _parse(snapshot.docs.first);
       posts.add(post);
       if (post.replyToNumber != null) {
-        return _function(id: post.replyToNumber, posts: posts);
+        return _function(number: post.replyToNumber, posts: posts);
       } else {
         return posts;
       }
     }
 
-    return _function(id: replyToNumber, posts: []);
+    return _function(number: replyToNumber, posts: []);
   }
 
   Future<List<Post>> getReplies({@required List<int> replyFromNumbers}) async {
     final posts = <Post>[];
 
-    for (final id in replyFromNumbers) {
-      final snapshot =
-          await _firebaseFirestore.collection('posts').doc('$id').get();
-      final post = _parse(snapshot);
+    for (final number in replyFromNumbers) {
+      final snapshot = await _firebaseFirestore
+          .collection('posts')
+          .where('number', isEqualTo: number)
+          .get();
+      final post = _parse(snapshot.docs.first);
       posts.add(post);
     }
 
@@ -221,7 +226,7 @@ class FirebasePostRepository {
 
     for (var i = firstIndex; i < count + firstIndex; i++) {
       await createPost(
-        body: 'これはダミー投稿${i + 1}です。これはダミー投稿${i + 1}です。これはダミー投稿${i + 1}です。',
+        body: 'これはダミー投稿${i + 1}です。',
       );
       debugPrint('ダミー投稿${i + 1}を作成しました');
     }
@@ -236,7 +241,7 @@ class FirebasePostRepository {
     }
 
     return Post(
-      id: int.parse(snapshot.id),
+      id: snapshot.id,
       number: data['number'] as int,
       uid: data['uid'] as String,
       body: data['body'] as String,
