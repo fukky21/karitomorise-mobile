@@ -47,28 +47,32 @@ class _StartScreenState extends State<StartScreen> {
                 FontAwesomeIcons.home,
                 size: _iconSize,
               ),
-              label: 'ホーム',
+              label: '',
+              tooltip: 'ホーム',
             ),
             BottomNavigationBarItem(
               icon: Icon(
                 FontAwesomeIcons.search,
                 size: _iconSize,
               ),
-              label: 'さがす',
+              label: '',
+              tooltip: 'さがす',
             ),
             BottomNavigationBarItem(
               icon: Icon(
                 FontAwesomeIcons.solidBell,
                 size: _iconSize,
               ),
-              label: 'お知らせ',
+              label: '',
+              tooltip: 'お知らせ',
             ),
             BottomNavigationBarItem(
               icon: Icon(
                 FontAwesomeIcons.solidUser,
                 size: _iconSize,
               ),
-              label: 'マイページ',
+              label: '',
+              tooltip: 'マイページ',
             ),
           ],
           backgroundColor: AppColors.grey10,
