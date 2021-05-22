@@ -29,7 +29,11 @@ class SignUpViewModel with ChangeNotifier {
         password: password,
       );
       await _userRepository.createUser(name: name);
-      await _authRepository.signOut(); // アカウント作成後にサインイン状態にしない
+
+      // アカウント作成後にサインイン状態にしない
+      await _authRepository.signOut();
+      await _authRepository.signInAnonymously();
+
       _state = SignUpSuccess(email: email);
       notifyListeners();
     } on FirebaseAuthException catch (e) {
