@@ -44,7 +44,7 @@ class HomeViewModel with ChangeNotifier {
           lastVisible: _lastVisible,
         );
         final newPosts = result['posts'] as List<Post>;
-        _lastVisible = result['last_visible'] as QueryDocumentSnapshot;
+        _lastVisible = result['lastVisible'] as QueryDocumentSnapshot;
 
         for (final newPost in newPosts) {
           if (_posts.where((post) => post.id == newPost.id).isEmpty) {

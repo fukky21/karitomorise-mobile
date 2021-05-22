@@ -17,7 +17,7 @@ class FirebasePostRepository {
       await _firebaseFirestore.runTransaction((transaction) async {
         final docRef = _firebaseFirestore.collection('public').doc('dynamic');
         final snapshot = await transaction.get(docRef);
-        final currentPostCount = snapshot.data()['current_post_count'] as int;
+        final currentPostCount = snapshot.data()['currentPostCount'] as int;
         final newPostCount = currentPostCount + 1;
 
         final unigramTokenMap = <String, bool>{};
@@ -43,17 +43,17 @@ class FirebasePostRepository {
         transaction.set(
           _firebaseFirestore.collection('posts').doc(),
           <String, dynamic>{
-            'document_version': 1,
+            'documentVersion': 1,
             'number': newPostCount,
             'uid': uid,
             'body': body,
-            'body_unigram_token_map': unigramTokenMap,
-            'body_bigram_token_map': bigramTokenMap,
-            'time_block': _getTimeBlock(now),
-            'reply_to_number': replyToNumber,
-            'reply_from_numbers': <int>[],
-            'created_at': now,
-            'updated_at': now,
+            'bodyUnigramTokenMap': unigramTokenMap,
+            'bodyBigramTokenMap': bigramTokenMap,
+            'timeBlock': _getTimeBlock(now),
+            'replyToNumber': replyToNumber,
+            'replyFromNumbers': <int>[],
+            'createdAt': now,
+            'updatedAt': now,
           },
         );
 
@@ -66,7 +66,7 @@ class FirebasePostRepository {
           transaction.update(
             snapshot.docs.first.reference,
             <String, dynamic>{
-              'reply_from_numbers': FieldValue.arrayUnion(
+              'replyFromNumbers': FieldValue.arrayUnion(
                 <int>[newPostCount],
               ),
             },
@@ -75,7 +75,7 @@ class FirebasePostRepository {
 
         transaction.update(
           docRef,
-          <String, int>{'current_post_count': newPostCount},
+          <String, int>{'currentPostCount': newPostCount},
         );
       });
     }
@@ -86,7 +86,7 @@ class FirebasePostRepository {
   }) async {
     var query = _firebaseFirestore
         .collection('posts')
-        .orderBy('created_at', descending: true);
+        .orderBy('createdAt', descending: true);
 
     if (lastVisible != null) {
       query = query.startAfterDocument(lastVisible);
@@ -108,7 +108,7 @@ class FirebasePostRepository {
     }
 
     return <String, dynamic>{
-      'last_visible': newLastVisible,
+      'lastVisible': newLastVisible,
       'posts': posts,
     };
   }
@@ -145,16 +145,16 @@ class FirebasePostRepository {
 
     for (final token in tokens) {
       if (token.length == 1) {
-        query = query.where('body_unigram_token_map.$token', isEqualTo: true);
+        query = query.where('bodyUnigramTokenMap.$token', isEqualTo: true);
       } else {
-        query = query.where('body_bigram_token_map.$token', isEqualTo: true);
+        query = query.where('bodyBigramTokenMap.$token', isEqualTo: true);
       }
     }
 
     // 3時間前までの投稿のみを対象にする
     final now = DateTime.now();
     query = query.where(
-      'time_block',
+      'timeBlock',
       whereIn: <String>[
         _getTimeBlock(now),
         _getTimeBlock(now.add(const Duration(hours: 1) * -1)),
@@ -236,7 +236,7 @@ class FirebasePostRepository {
     final data = snapshot.data();
 
     final replyFromNumbers = <int>[];
-    for (final id in data['reply_from_numbers'] as List<dynamic>) {
+    for (final id in data['replyFromNumbers'] as List<dynamic>) {
       replyFromNumbers.add(id as int);
     }
 
@@ -245,9 +245,9 @@ class FirebasePostRepository {
       number: data['number'] as int,
       uid: data['uid'] as String,
       body: data['body'] as String,
-      replyToNumber: data['reply_to_number'] as int,
+      replyToNumber: data['replyToNumber'] as int,
       replyFromNumbers: replyFromNumbers,
-      createdAt: (data['created_at'] as Timestamp)?.toDate(),
+      createdAt: (data['createdAt'] as Timestamp)?.toDate(),
     );
   }
 

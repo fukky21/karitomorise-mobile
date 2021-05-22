@@ -30,11 +30,11 @@ class FirebaseUserRepository {
 
     await _firebaseFirestore.collection('users').doc(currentUser.uid).set(
       <String, dynamic>{
-        'document_version': 1,
+        'documentVersion': 1,
         'name': name,
-        'avatar_id': avatarId,
-        'created_at': now,
-        'updated_at': now,
+        'avatarId': avatarId,
+        'createdAt': now,
+        'updatedAt': now,
       },
     );
   }
@@ -52,7 +52,7 @@ class FirebaseUserRepository {
     return AppUser(
       id: snapshot.id,
       name: data['name'] as String,
-      avatar: getAppUserAvatar(id: data['avatar_id'] as int),
+      avatar: getAppUserAvatar(id: data['avatarId'] as int),
     );
   }
 
@@ -71,8 +71,8 @@ class FirebaseUserRepository {
     await _firebaseFirestore.collection('users').doc(currentUser.uid).update(
       <String, dynamic>{
         'name': name,
-        'avatar_id': avatar?.id,
-        'updated_at': now,
+        'avatarId': avatar?.id,
+        'updatedAt': now,
       },
     );
   }
