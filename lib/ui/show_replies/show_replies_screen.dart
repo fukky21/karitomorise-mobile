@@ -30,7 +30,10 @@ class ShowRepliesScreen extends StatelessWidget {
     return Scaffold(
       appBar: simpleAppBar(context),
       body: ChangeNotifierProvider(
-        create: (_) => ShowRepliesViewModel(sourcePost: args.post)..init(),
+        create: (context) => ShowRepliesViewModel(
+          sourcePost: args.post,
+          usersStore: context.read<UsersStore>(),
+        )..init(),
         child: Consumer<ShowRepliesViewModel>(
           builder: (context, viewModel, _) {
             final state = viewModel.getState() ?? ShowRepliesScreenLoading();
@@ -59,7 +62,7 @@ class ShowRepliesScreen extends StatelessWidget {
 
               final cells = <Widget>[];
               for (final post in posts) {
-                cells.add(_Cell(post: post));
+                cells.add(_ReplyCell(post: post));
               }
 
               return ListView.separated(
@@ -79,8 +82,8 @@ class ShowRepliesScreen extends StatelessWidget {
   }
 }
 
-class _Cell extends StatelessWidget {
-  const _Cell({@required this.post});
+class _ReplyCell extends StatelessWidget {
+  const _ReplyCell({@required this.post});
 
   final Post post;
 
@@ -149,7 +152,16 @@ class _Cell extends StatelessWidget {
       );
     }
 
-    final user = context.watch<UsersStore>().getUser(uid: post?.uid);
+    AppUser user;
+    if (post.uid != null) {
+      user = context.watch<UsersStore>().getUser(uid: post.uid);
+    } else {
+      user = AppUser(
+        id: null,
+        name: '名無しのハンター',
+        avatar: AppUserAvatar.unknown,
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.only(bottom: 10),

@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 
 import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
+import '../../repositories/firebase_user_repository.dart';
 import '../../stores/users_store.dart';
 
 class HomeViewModel with ChangeNotifier {
   HomeViewModel({@required this.usersStore});
 
   final UsersStore usersStore;
+  final _userRepository = FirebaseUserRepository();
   final _postRepository = FirebasePostRepository();
 
   HomeScreenState _state = HomeScreenLoading();
@@ -50,7 +52,12 @@ class HomeViewModel with ChangeNotifier {
           if (_posts.where((post) => post.id == newPost.id).isEmpty) {
             // まだ追加されていない場合は追加する
             _posts.add(newPost);
-            await usersStore.add(uid: newPost.uid);
+
+            // usersStoreに未追加の場合は追加する
+            if (usersStore.getUser(uid: newPost.uid) == null) {
+              final user = await _userRepository.getUser(id: newPost.uid);
+              usersStore.addUser(user: user);
+            }
           } else {
             // すでに追加されている場合は、最後まで取得したと判定する
             _state = HomeScreenLoadSuccess(posts: _posts, isFetchabled: false);

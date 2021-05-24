@@ -12,73 +12,98 @@ class FirebasePostRepository {
     final currentUser = _firebaseAuth.currentUser;
     final now = DateTime.now();
 
-    if (currentUser != null) {
-      final uid = currentUser.isAnonymous ? null : currentUser.uid;
-      await _firebaseFirestore.runTransaction((transaction) async {
-        final docRef = _firebaseFirestore.collection('public').doc('dynamic');
-        final snapshot = await transaction.get(docRef);
-        final currentPostCount = snapshot.data()['currentPostCount'] as int;
-        final newPostCount = currentPostCount + 1;
+    final uid = currentUser.isAnonymous ? null : currentUser.uid;
+    await _firebaseFirestore.runTransaction((transaction) async {
+      final docRef = _firebaseFirestore.collection('public').doc('dynamic');
+      final snapshot = await transaction.get(docRef);
+      final currentPostCount = snapshot.data()['currentPostCount'] as int;
 
-        final unigramTokenMap = <String, bool>{};
-        final bigramTokenMap = <String, bool>{};
+      final unigramTokenMap = <String, bool>{};
+      final bigramTokenMap = <String, bool>{};
 
-        if (body.isNotEmpty) {
-          for (var i = 0; i < body.length; i++) {
-            final token = body.substring(i, i + 1).toLowerCase();
-            if (unigramTokenMap[token] == null) {
-              // 重複して追加しないように注意
-              unigramTokenMap[token] = true;
-            }
-          }
-          for (var i = 0; i < body.length - 1; i++) {
-            final token = body.substring(i, i + 2).toLowerCase();
-            if (bigramTokenMap[token] == null) {
-              // 重複して追加しないように注意
-              bigramTokenMap[token] = true;
-            }
+      if (body.isNotEmpty) {
+        for (var i = 0; i < body.length; i++) {
+          final token = body.substring(i, i + 1).toLowerCase();
+          if (unigramTokenMap[token] == null) {
+            // 重複して追加しないように注意
+            unigramTokenMap[token] = true;
           }
         }
+        for (var i = 0; i < body.length - 1; i++) {
+          final token = body.substring(i, i + 2).toLowerCase();
+          if (bigramTokenMap[token] == null) {
+            // 重複して追加しないように注意
+            bigramTokenMap[token] = true;
+          }
+        }
+      }
 
-        transaction.set(
-          _firebaseFirestore.collection('posts').doc(),
-          <String, dynamic>{
-            'documentVersion': 1,
-            'number': newPostCount,
-            'uid': uid,
-            'body': body,
-            'bodyUnigramTokenMap': unigramTokenMap,
-            'bodyBigramTokenMap': bigramTokenMap,
-            'timeBlock': _getTimeBlock(now),
-            'replyToNumber': replyToNumber,
-            'replyFromNumbers': <int>[],
-            'createdAt': now,
-            'updatedAt': now,
-          },
-        );
+      transaction.set(
+        _firebaseFirestore.collection('posts').doc(),
+        <String, dynamic>{
+          'documentVersion': 1,
+          'number': currentPostCount + 1,
+          'uid': uid,
+          'body': body,
+          'bodyUnigramTokenMap': unigramTokenMap,
+          'bodyBigramTokenMap': bigramTokenMap,
+          'timeBlock': _getTimeBlock(now),
+          'replyToNumber': replyToNumber,
+          'replyFromNumbers': <int>[],
+          'createdAt': now,
+          'updatedAt': now,
+        },
+      );
 
-        if (replyToNumber != null) {
-          final snapshot = await _firebaseFirestore
-              .collection('posts')
-              .where('number', isEqualTo: replyToNumber)
-              .get();
+      if (replyToNumber != null) {
+        final snapshot = await _firebaseFirestore
+            .collection('posts')
+            .where('number', isEqualTo: replyToNumber)
+            .get();
+        final docs = snapshot.docs;
 
-          transaction.update(
-            snapshot.docs.first.reference,
-            <String, dynamic>{
-              'replyFromNumbers': FieldValue.arrayUnion(
-                <int>[newPostCount],
-              ),
-            },
-          );
+        if (docs.isEmpty) {
+          throw Exception('Post document is not found.');
+        }
+
+        if (docs.length > 1) {
+          throw Exception('The same number post exists.');
         }
 
         transaction.update(
-          docRef,
-          <String, int>{'currentPostCount': newPostCount},
+          docs.first.reference,
+          <String, dynamic>{
+            'replyFromNumbers': FieldValue.arrayUnion(
+              <int>[currentPostCount + 1],
+            ),
+          },
         );
-      });
+      }
+
+      transaction.update(
+        docRef,
+        <String, int>{'currentPostCount': currentPostCount + 1},
+      );
+    });
+  }
+
+  Future<Post> getPost({@required int number}) async {
+    final snapshot = await _firebaseFirestore
+        .collection('posts')
+        .where('number', isEqualTo: number)
+        .get();
+    final docs = snapshot.docs;
+
+    if (docs.isEmpty) {
+      throw Exception('Post document is not found.');
     }
+
+    if (docs.length > 1) {
+      throw Exception('The same number post exists.');
+    }
+
+    final post = _parse(docs.first);
+    return post;
   }
 
   Future<Map<String, dynamic>> getNewPosts({
@@ -87,22 +112,21 @@ class FirebasePostRepository {
     var query = _firebaseFirestore
         .collection('posts')
         .orderBy('createdAt', descending: true);
-
     if (lastVisible != null) {
       query = query.startAfterDocument(lastVisible);
     }
     query = query.limit(10);
 
     final snapshot = await query.get();
-    final snapshots = snapshot.docs;
+    final docs = snapshot.docs;
 
     QueryDocumentSnapshot newLastVisible;
     final posts = <Post>[];
-    if (snapshots.isNotEmpty) {
+    if (docs.isNotEmpty) {
       // どこまでデータを取得したか保持しておく
-      newLastVisible = snapshots[snapshots.length - 1];
-      for (final _snapshot in snapshots) {
-        final post = _parse(_snapshot);
+      newLastVisible = docs[docs.length - 1];
+      for (final doc in docs) {
+        final post = _parse(doc);
         posts.add(post);
       }
     }
@@ -115,7 +139,7 @@ class FirebasePostRepository {
 
   Future<List<Post>> getPostsByKeyword({@required String keyword}) async {
     final words = <String>[]; // 例: [リオレウス, リオレイア]
-    // 半角/全角スペースで文字列を分割する
+    // 半角or全角スペースで文字列を分割する
     keyword.split(RegExp(r' |　')).forEach(
       (word) {
         if (word.isNotEmpty) {
@@ -151,7 +175,7 @@ class FirebasePostRepository {
       }
     }
 
-    // 3時間前までの投稿のみを対象にする
+    // 6時間前までの投稿を対象にする
     final now = DateTime.now();
     query = query.where(
       'timeBlock',
@@ -160,15 +184,18 @@ class FirebasePostRepository {
         _getTimeBlock(now.add(const Duration(hours: 1) * -1)),
         _getTimeBlock(now.add(const Duration(hours: 2) * -1)),
         _getTimeBlock(now.add(const Duration(hours: 3) * -1)),
+        _getTimeBlock(now.add(const Duration(hours: 4) * -1)),
+        _getTimeBlock(now.add(const Duration(hours: 5) * -1)),
+        _getTimeBlock(now.add(const Duration(hours: 6) * -1)),
       ],
     );
 
     final snapshot = await query.get();
-    final snapshots = snapshot.docs;
+    final docs = snapshot.docs;
 
     final posts = <Post>[];
-    for (final _snapshot in snapshots) {
-      final post = _parse(_snapshot);
+    for (final doc in docs) {
+      final post = _parse(doc);
       posts.add(post);
     }
 
@@ -179,7 +206,6 @@ class FirebasePostRepository {
   }
 
   Future<List<Post>> getThread({@required int replyToNumber}) async {
-    // 再帰的に返信を取得する
     Future<List<Post>> _function({
       @required int number,
       @required List<Post> posts,
@@ -188,9 +214,19 @@ class FirebasePostRepository {
           .collection('posts')
           .where('number', isEqualTo: number)
           .get();
+      final docs = snapshot.docs;
 
-      final post = _parse(snapshot.docs.first);
+      if (docs.isEmpty) {
+        throw Exception('Post document is not found.');
+      }
+
+      if (docs.length > 1) {
+        throw Exception('The same number post exists.');
+      }
+
+      final post = _parse(docs.first);
       posts.add(post);
+
       if (post.replyToNumber != null) {
         return _function(number: post.replyToNumber, posts: posts);
       } else {
@@ -198,6 +234,7 @@ class FirebasePostRepository {
       }
     }
 
+    // 再帰的に返信を取得する
     return _function(number: replyToNumber, posts: []);
   }
 
@@ -209,7 +246,17 @@ class FirebasePostRepository {
           .collection('posts')
           .where('number', isEqualTo: number)
           .get();
-      final post = _parse(snapshot.docs.first);
+      final docs = snapshot.docs;
+
+      if (docs.isEmpty) {
+        throw Exception('Post document is not found.');
+      }
+
+      if (docs.length > 1) {
+        throw Exception('The same number post exists.');
+      }
+
+      final post = _parse(docs.first);
       posts.add(post);
     }
 
@@ -232,8 +279,8 @@ class FirebasePostRepository {
     }
   }
 
-  Post _parse(DocumentSnapshot snapshot) {
-    final data = snapshot.data();
+  Post _parse(DocumentSnapshot doc) {
+    final data = doc.data() as Map;
 
     final replyFromNumbers = <int>[];
     for (final id in data['replyFromNumbers'] as List<dynamic>) {
@@ -241,7 +288,7 @@ class FirebasePostRepository {
     }
 
     return Post(
-      id: snapshot.id,
+      id: doc.id,
       number: data['number'] as int,
       uid: data['uid'] as String,
       body: data['body'] as String,
@@ -251,7 +298,7 @@ class FirebasePostRepository {
     );
   }
 
-  /// 例: 2021-03-26-10-00
+  // 例: 2021-03-26-10-00
   String _getTimeBlock(DateTime dateTime) {
     final year = dateTime.year.toString();
     final month = dateTime.month.toString().padLeft(2, '0');

@@ -24,13 +24,15 @@ dependencies:
   auto_size_text: ^2.1.0
   big_tip: ^1.1.1+1
   circular_profile_avatar: ^2.0.0
-  cloud_firestore: ^1.0.1
+  cloud_firestore: ^2.2.0
   cupertino_icons: ^1.0.2
   equatable: ^2.0.0
-  firebase_auth: ^1.0.1
-  firebase_core: ^1.0.1
+  firebase_auth: ^1.2.0
+  firebase_core: ^1.2.0
+  firebase_messaging: ^10.0.0
   flutter:
     sdk: flutter
+  flutter_app_badger: ^1.2.0
   flutter_cupertino_localizations: ^1.0.1
   flutter_keyboard_visibility: ^5.0.0
   font_awesome_flutter: ^8.11.0

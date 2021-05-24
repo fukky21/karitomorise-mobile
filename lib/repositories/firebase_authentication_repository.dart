@@ -44,11 +44,15 @@ class FirebaseAuthenticationRepository {
     @required String email,
     @required String password,
   }) async {
-    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+    await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-    await credential.user.sendEmailVerification(); // 確認メールを送信する
+  }
+
+  Future<void> sendEmailVerification() async {
+    final currentUser = _firebaseAuth.currentUser;
+    await currentUser.sendEmailVerification();
   }
 
   Future<void> deleteCurrentUser() async {

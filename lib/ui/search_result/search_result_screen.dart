@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../stores/users_store.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/post_cell.dart';
@@ -42,8 +43,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => SearchResultViewModel(
+      create: (context) => SearchResultViewModel(
         keyword: widget.args.keyword,
+        usersStore: context.read<UsersStore>(),
       )..init(),
       child: Scaffold(
         appBar: _appBar(

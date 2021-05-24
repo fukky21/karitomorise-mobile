@@ -4,7 +4,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
-import '../../stores/authentication_store.dart';
+import '../../stores/signed_in_user_store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_divider.dart';
@@ -46,7 +46,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => SignInViewModel(
-        authStore: context.read<AuthenticationStore>(),
+        signedInUserStore: context.read<SignedInUserStore>(),
       ),
       child: Consumer<SignInViewModel>(
         builder: (context, viewModel, _) {
@@ -76,43 +76,33 @@ class _SignInScreenState extends State<SignInScreen> {
           }
 
           if (state is SignInSuccess) {
-            final authState = context.watch<AuthenticationStore>().getState();
+            final user = context.read<SignedInUserStore>().getUser();
 
-            if (authState is AuthenticationSuccess) {
-              final user = authState.user;
-
-              return Scaffold(
-                body: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CustomCircleAvatar(
-                          filePath: user.avatar.filePath,
-                          radius: 50,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          user.name ?? 'Unknown',
-                          style: Theme.of(context).textTheme.headline5,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 50),
-                        CustomRaisedButton(
-                          labelText: 'ENTER',
-                          onPressed: () async => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
+            return Scaffold(
+              body: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomCircleAvatar(
+                        filePath: user.avatar.filePath,
+                        radius: 50,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        user.name ?? 'Unknown',
+                        style: Theme.of(context).textTheme.headline5,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 50),
+                      CustomRaisedButton(
+                        labelText: 'ENTER',
+                        onPressed: () async => Navigator.of(context).pop(),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            }
-
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
               ),
             );
           }

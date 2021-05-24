@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:modal_progress_hud/modal_progress_hud.dart';
-import 'package:provider/provider.dart';
 
-import '../../stores/authentication_store.dart';
 import '../../ui/home/home_screen.dart';
 import '../../ui/mypage/mypage_screen.dart';
 import '../../ui/notification/notification_screen.dart';
@@ -17,7 +15,7 @@ class StartScreen extends StatefulWidget {
   _StartScreenState createState() => _StartScreenState();
 }
 
-class _StartScreenState extends State<StartScreen> {
+class _StartScreenState extends State<StartScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
   static const _iconSize = 20.0;
 
@@ -29,66 +27,82 @@ class _StartScreenState extends State<StartScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final authState = context.watch<AuthenticationStore>().getState();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    FlutterAppBadger.removeBadge();
+  }
 
-    return ModalProgressHUD(
-      inAsyncCall: authState is AuthenticationInProgress,
-      child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _tabs,
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(
-                FontAwesomeIcons.home,
-                size: _iconSize,
-              ),
-              label: '',
-              tooltip: 'ホーム',
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // アプリがforegroundに復帰したときにバッジを削除する
+      FlutterAppBadger.removeBadge();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _tabs,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(
+              FontAwesomeIcons.home,
+              size: _iconSize,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                FontAwesomeIcons.search,
-                size: _iconSize,
-              ),
-              label: '',
-              tooltip: 'さがす',
+            label: '',
+            tooltip: 'ホーム',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              FontAwesomeIcons.search,
+              size: _iconSize,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                FontAwesomeIcons.solidBell,
-                size: _iconSize,
-              ),
-              label: '',
-              tooltip: 'お知らせ',
+            label: '',
+            tooltip: 'さがす',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              FontAwesomeIcons.solidBell,
+              size: _iconSize,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                FontAwesomeIcons.solidUser,
-                size: _iconSize,
-              ),
-              label: '',
-              tooltip: 'マイページ',
+            label: '',
+            tooltip: 'お知らせ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              FontAwesomeIcons.solidUser,
+              size: _iconSize,
             ),
-          ],
-          backgroundColor: AppColors.grey10,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          type: BottomNavigationBarType.fixed,
-          onTap: (index) {
-            if (index == 0 && _currentIndex == index) {
-              // ホームタブ表示中にホームアイコンがタップされたとき
-              homeScreenScrollToTop();
-            }
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-        ),
+            label: '',
+            tooltip: 'マイページ',
+          ),
+        ],
+        backgroundColor: AppColors.grey10,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          if (index == 0 && _currentIndex == index) {
+            // ホームタブ表示中にホームアイコンがタップされたとき
+            homeScreenScrollToTop();
+          }
+          setState(() {
+            _currentIndex = index;
+          });
+        },
       ),
     );
   }

@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 
 import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
+import '../../repositories/firebase_user_repository.dart';
+import '../../stores/users_store.dart';
 
 class SearchResultViewModel with ChangeNotifier {
-  SearchResultViewModel({@required this.keyword});
+  SearchResultViewModel({@required this.keyword, @required this.usersStore});
 
   final String keyword;
+  final UsersStore usersStore;
+  final _userRepository = FirebaseUserRepository();
   final _postRepository = FirebasePostRepository();
 
   SearchResultScreenState _state = SearchResultScreenLoading();
@@ -22,6 +26,15 @@ class SearchResultViewModel with ChangeNotifier {
 
     try {
       final posts = await _postRepository.getPostsByKeyword(keyword: keyword);
+
+      for (final post in posts) {
+        // usersStoreに未追加の場合は追加する
+        if (usersStore.getUser(uid: post.uid) == null) {
+          final user = await _userRepository.getUser(id: post.uid);
+          usersStore.addUser(user: user);
+        }
+      }
+
       _state = SearchResultScreenLoadSuccess(posts: posts);
       notifyListeners();
     } on Exception catch (e) {

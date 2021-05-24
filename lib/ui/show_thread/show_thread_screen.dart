@@ -30,7 +30,10 @@ class ShowThreadScreen extends StatelessWidget {
     return Scaffold(
       appBar: simpleAppBar(context),
       body: ChangeNotifierProvider(
-        create: (context) => ShowThreadViewModel(sourcePost: args.post)..init(),
+        create: (context) => ShowThreadViewModel(
+          sourcePost: args.post,
+          usersStore: context.read<UsersStore>(),
+        )..init(),
         child: Consumer<ShowThreadViewModel>(
           builder: (context, viewModel, _) {
             final state = viewModel.getState() ?? ShowThreadScreenLoading();
@@ -149,7 +152,16 @@ class _ThreadCell extends StatelessWidget {
       );
     }
 
-    final user = context.watch<UsersStore>().getUser(uid: post?.uid);
+    AppUser user;
+    if (post.uid != null) {
+      user = context.watch<UsersStore>().getUser(uid: post.uid);
+    } else {
+      user = AppUser(
+        id: null,
+        name: '名無しのハンター',
+        avatar: AppUserAvatar.unknown,
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.only(bottom: 10),

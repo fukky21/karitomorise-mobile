@@ -11,11 +11,11 @@ class FirebaseUserRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firebaseFirestore = FirebaseFirestore.instance;
 
-  /// FirebaseAuthenticationRepositoryでサインアップしてから呼ぶ
+  // FirebaseAuthenticationRepositoryでサインアップしてから実行する
   Future<void> createUser({@required String name}) async {
     final currentUser = _firebaseAuth.currentUser;
     if (currentUser == null || currentUser.isAnonymous) {
-      throw Exception('currentUser is null OR anonymous');
+      throw Exception('currentUser is null or anonymous');
     }
 
     // ランダムにアバターを選ぶ
@@ -33,6 +33,7 @@ class FirebaseUserRepository {
         'documentVersion': 1,
         'name': name,
         'avatarId': avatarId,
+        'fcmTokens': <String>[],
         'createdAt': now,
         'updatedAt': now,
       },
@@ -42,18 +43,15 @@ class FirebaseUserRepository {
   Future<AppUser> getUser({@required String id}) async {
     final snapshot = await _firebaseFirestore.collection('users').doc(id).get();
 
-    if (!snapshot.exists) {
-      // ドキュメントが存在しない場合
-      return null;
+    if (snapshot.exists) {
+      final data = snapshot.data();
+      return AppUser(
+        id: snapshot.id,
+        name: data['name'] as String,
+        avatar: getAppUserAvatar(id: data['avatarId'] as int),
+      );
     }
-
-    final data = snapshot.data();
-
-    return AppUser(
-      id: snapshot.id,
-      name: data['name'] as String,
-      avatar: getAppUserAvatar(id: data['avatarId'] as int),
-    );
+    return null;
   }
 
   Future<void> updateUser({
@@ -64,8 +62,7 @@ class FirebaseUserRepository {
     final now = DateTime.now();
 
     if (currentUser == null || currentUser.isAnonymous) {
-      // ここには来ないはず
-      throw Exception('CurrentUser is null OR anonymous');
+      throw Exception('CurrentUser is null or anonymous');
     }
 
     await _firebaseFirestore.collection('users').doc(currentUser.uid).update(
@@ -75,5 +72,43 @@ class FirebaseUserRepository {
         'updatedAt': now,
       },
     );
+  }
+
+  Future<void> addToken({@required String token}) async {
+    final currentUser = _firebaseAuth.currentUser;
+    if (token != null && currentUser != null && !currentUser.isAnonymous) {
+      final docRef =
+          _firebaseFirestore.collection('users').doc(currentUser.uid);
+      await _firebaseFirestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        if (snapshot.exists) {
+          transaction.update(
+            docRef,
+            <String, dynamic>{
+              'fcmTokens': FieldValue.arrayUnion(<String>[token]),
+            },
+          );
+        }
+      });
+    }
+  }
+
+  Future<void> removeToken({@required String token}) async {
+    final currentUser = _firebaseAuth.currentUser;
+    if (token != null && currentUser != null && !currentUser.isAnonymous) {
+      final docRef =
+          _firebaseFirestore.collection('users').doc(currentUser.uid);
+      await _firebaseFirestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        if (snapshot.exists) {
+          transaction.update(
+            docRef,
+            <String, dynamic>{
+              'fcmTokens': FieldValue.arrayRemove(<String>[token]),
+            },
+          );
+        }
+      });
+    }
   }
 }

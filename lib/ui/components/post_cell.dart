@@ -89,7 +89,16 @@ class PostCell extends StatelessWidget {
       );
     }
 
-    final user = context.watch<UsersStore>().getUser(uid: post?.uid);
+    AppUser user;
+    if (post.uid != null) {
+      user = context.watch<UsersStore>().getUser(uid: post.uid);
+    } else {
+      user = AppUser(
+        id: null,
+        name: '名無しのハンター',
+        avatar: AppUserAvatar.unknown,
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.only(bottom: 10),

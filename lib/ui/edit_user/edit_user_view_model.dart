@@ -2,13 +2,15 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/app_user.dart';
+import '../../repositories/firebase_authentication_repository.dart';
 import '../../repositories/firebase_user_repository.dart';
-import '../../stores/authentication_store.dart';
+import '../../stores/signed_in_user_store.dart';
 
 class EditUserViewModel with ChangeNotifier {
-  EditUserViewModel({@required this.authStore});
+  EditUserViewModel({@required this.signedInUserStore});
 
-  final AuthenticationStore authStore;
+  final SignedInUserStore signedInUserStore;
+  final _authRepository = FirebaseAuthenticationRepository();
   final _userRepository = FirebaseUserRepository();
 
   EditUserScreenState _state;
@@ -26,7 +28,12 @@ class EditUserViewModel with ChangeNotifier {
 
     try {
       await _userRepository.updateUser(name: name, avatar: avatar);
-      await authStore.signedIn(); // ユーザー情報を更新する
+
+      // ユーザー情報を更新する
+      final currentUser = _authRepository.getCurrentUser();
+      final user = await _userRepository.getUser(id: currentUser.uid);
+      signedInUserStore.setUser(user: user);
+
       _state = UpdateUserSuccess();
       notifyListeners();
     } on Exception catch (e) {

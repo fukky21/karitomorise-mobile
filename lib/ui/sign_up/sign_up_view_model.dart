@@ -28,6 +28,7 @@ class SignUpViewModel with ChangeNotifier {
         email: email,
         password: password,
       );
+      await _authRepository.sendEmailVerification();
       await _userRepository.createUser(name: name);
 
       // アカウント作成後にサインイン状態にしない

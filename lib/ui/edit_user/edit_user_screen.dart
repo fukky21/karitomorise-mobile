@@ -4,7 +4,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
-import '../../stores/authentication_store.dart';
+import '../../stores/signed_in_user_store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_text_form_field.dart';
@@ -55,79 +55,81 @@ class _EditUserScreenState extends State<EditUserScreen> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => EditUserViewModel(
-        authStore: context.read<AuthenticationStore>(),
+        signedInUserStore: context.read<SignedInUserStore>(),
       ),
-      child: Consumer<EditUserViewModel>(builder: (context, viewModel, _) {
-        final state = viewModel.getState();
+      child: Consumer<EditUserViewModel>(
+        builder: (context, viewModel, _) {
+          final state = viewModel.getState();
 
-        if (state is UpdateUserFailure) {
-          return Scaffold(
-            appBar: simpleAppBar(context),
-            body: const Center(
-              child: Text('エラーが発生しました'),
-            ),
-          );
-        }
+          if (state is UpdateUserFailure) {
+            return Scaffold(
+              appBar: simpleAppBar(context),
+              body: const Center(
+                child: Text('エラーが発生しました'),
+              ),
+            );
+          }
 
-        if (state is UpdateUserSuccess) {
-          return Scaffold(
-            appBar: simpleAppBar(context),
-            body: const Center(
-              child: Text('変更しました'),
-            ),
-          );
-        }
+          if (state is UpdateUserSuccess) {
+            return Scaffold(
+              appBar: simpleAppBar(context),
+              body: const Center(
+                child: Text('変更しました'),
+              ),
+            );
+          }
 
-        return ModalProgressHUD(
-          inAsyncCall: state is UpdateUserInProgress,
-          child: Scaffold(
-            appBar: simpleAppBar(
-              context,
-              title: _appBarTitle,
-              actions: [_updateButton(state: state, viewModel: viewModel)],
-            ),
-            body: Form(
-              key: _formKey,
-              child: ScrollableLayoutBuilder(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 50,
-                  ),
-                  child: Column(
-                    children: [
-                      CustomCircleAvatar(
-                        filePath: _avatar?.filePath,
-                        radius: 50,
-                        onTap: () async {
-                          final result = await Navigator.pushNamed(
-                            context,
-                            SelectAvatarScreen.route,
-                          ) as AppUserAvatar;
-                          if (result != null) {
-                            if (mounted) {
-                              setState(() {
-                                _avatar = result;
-                              });
+          return ModalProgressHUD(
+            inAsyncCall: state is UpdateUserInProgress,
+            child: Scaffold(
+              appBar: simpleAppBar(
+                context,
+                title: _appBarTitle,
+                actions: [_updateButton(state: state, viewModel: viewModel)],
+              ),
+              body: Form(
+                key: _formKey,
+                child: ScrollableLayoutBuilder(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 50,
+                    ),
+                    child: Column(
+                      children: [
+                        CustomCircleAvatar(
+                          filePath: _avatar?.filePath,
+                          radius: 50,
+                          onTap: () async {
+                            final result = await Navigator.pushNamed(
+                              context,
+                              SelectAvatarScreen.route,
+                            ) as AppUserAvatar;
+                            if (result != null) {
+                              if (mounted) {
+                                setState(() {
+                                  _avatar = result;
+                                });
+                              }
                             }
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 30),
-                      CustomTextFormField(
-                        labelText: 'ユーザー名',
-                        controller: _controller,
-                        maxLength: _nameMaxLength,
-                        validator: _nameValidator,
-                      ),
-                    ],
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                        CustomTextFormField(
+                          labelText: 'ユーザー名',
+                          controller: _controller,
+                          maxLength: _nameMaxLength,
+                          validator: _nameValidator,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 
