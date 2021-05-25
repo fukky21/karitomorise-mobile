@@ -45,6 +45,12 @@ class _SearchingScreenState extends State<SearchingScreen> {
       appBar: _appBar(
         context,
         controller: _controller,
+        clearButtonEvent: () {
+          _controller.clear();
+          setState(() {
+            _currentInput = '';
+          });
+        },
         onChanged: (text) {
           setState(() {
             _currentInput = text;
@@ -125,6 +131,7 @@ class _SearchingScreenState extends State<SearchingScreen> {
 PreferredSizeWidget _appBar(
   BuildContext context, {
   @required TextEditingController controller,
+  @required void Function() clearButtonEvent,
   @required void Function(String) onChanged,
   @required void Function(String) onFieldSubmitted,
 }) {
@@ -135,7 +142,7 @@ PreferredSizeWidget _appBar(
       actions: [
         IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => controller.clear(),
+          onPressed: clearButtonEvent,
         )
       ],
       title: Material(
