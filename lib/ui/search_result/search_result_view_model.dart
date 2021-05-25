@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
 import '../../repositories/firebase_user_repository.dart';
+import '../../repositories/shared_preference_repository.dart';
 import '../../stores/users_store.dart';
 
 class SearchResultViewModel with ChangeNotifier {
@@ -13,6 +14,7 @@ class SearchResultViewModel with ChangeNotifier {
   final UsersStore usersStore;
   final _userRepository = FirebaseUserRepository();
   final _postRepository = FirebasePostRepository();
+  final _prefRepository = SharedPreferenceRepository();
 
   SearchResultScreenState _state = SearchResultScreenLoading();
 
@@ -25,6 +27,9 @@ class SearchResultViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
+      // 検索履歴に保存する
+      await _prefRepository.addSearchKeyword(keyword: keyword);
+
       final posts = await _postRepository.getPostsByKeyword(keyword: keyword);
 
       for (final post in posts) {

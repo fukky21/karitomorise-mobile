@@ -1,21 +1,24 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+import '../../repositories/shared_preference_repository.dart';
+
 class SearchingViewModel with ChangeNotifier {
+  final _prefRepository = SharedPreferenceRepository();
+
   SearchingScreenState _state = SearchingScreenLoading();
 
   SearchingScreenState getState() {
     return _state;
   }
 
-  Future<void> init() async {
+  Future<void> init({String keyword}) async {
     _state = SearchingScreenLoading();
     notifyListeners();
 
     try {
-      // TODO(fukky21): 検索履歴を取得する
-      await Future<void>.delayed(const Duration(seconds: 2));
-      _state = SearchingScreenLoadSuccess();
+      final histories = await _prefRepository.getSearchHistories();
+      _state = SearchingScreenLoadSuccess(histories: histories);
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -32,6 +35,10 @@ abstract class SearchingScreenState extends Equatable {
 
 class SearchingScreenLoading extends SearchingScreenState {}
 
-class SearchingScreenLoadSuccess extends SearchingScreenState {}
+class SearchingScreenLoadSuccess extends SearchingScreenState {
+  SearchingScreenLoadSuccess({@required this.histories});
+
+  final List<String> histories;
+}
 
 class SearchingScreenLoadFailure extends SearchingScreenState {}

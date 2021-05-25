@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../ui/components/custom_divider.dart';
 import '../../ui/search_result/search_result_screen.dart';
+import '../../ui/searching/searching_view_model.dart';
 import '../../util/app_colors.dart';
 
 class SearchingScreenArguments {
@@ -21,11 +24,13 @@ class SearchingScreen extends StatefulWidget {
 
 class _SearchingScreenState extends State<SearchingScreen> {
   TextEditingController _controller;
+  String _currentInput;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.args?.initialValue ?? '');
+    _currentInput = _controller.text;
   }
 
   @override
@@ -40,6 +45,11 @@ class _SearchingScreenState extends State<SearchingScreen> {
       appBar: _appBar(
         context,
         controller: _controller,
+        onChanged: (text) {
+          setState(() {
+            _currentInput = text;
+          });
+        },
         onFieldSubmitted: (text) async {
           // TODO(fukky21): スペースだけのときでも遷移できてしまうので修正する
           if (text.isNotEmpty) {
@@ -53,8 +63,60 @@ class _SearchingScreenState extends State<SearchingScreen> {
           }
         },
       ),
-      body: const Center(
-        child: Text('SEARCHING'),
+      body: ChangeNotifierProvider(
+        create: (_) => SearchingViewModel()..init(),
+        child: Consumer<SearchingViewModel>(
+          builder: (context, viewModel, _) {
+            final state = viewModel.getState() ?? SearchingScreenLoading();
+
+            if (state is SearchingScreenLoadSuccess) {
+              final histories = state.histories;
+
+              // historiesをdeep copyして利用する
+              final suggestions = [...histories]
+                ..retainWhere((s) => s.contains(_currentInput ?? ''));
+
+              if (histories.isNotEmpty) {
+                return Scrollbar(
+                  child: ListView.separated(
+                    itemBuilder: (context, index) {
+                      return Ink(
+                        decoration: const BoxDecoration(
+                          color: AppColors.grey20,
+                        ),
+                        child: ListTile(
+                          title: Text(suggestions[index] ?? ''),
+                          onTap: () async {
+                            FocusScope.of(context).unfocus();
+                            await Navigator.pushNamed(
+                              context,
+                              SearchResultScreen.route,
+                              arguments: SearchResultScreenArguments(
+                                keyword: suggestions[index] ?? '',
+                              ),
+                            );
+                            // 検索結果画面から戻ってくるとき、この画面はスルーする
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, _) => CustomDivider(),
+                    itemCount: suggestions.length,
+                  ),
+                );
+              } else {
+                return const Center(
+                  child: Text('検索履歴はありません'),
+                );
+              }
+            }
+
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        ),
       ),
     );
   }
@@ -63,6 +125,7 @@ class _SearchingScreenState extends State<SearchingScreen> {
 PreferredSizeWidget _appBar(
   BuildContext context, {
   @required TextEditingController controller,
+  @required void Function(String) onChanged,
   @required void Function(String) onFieldSubmitted,
 }) {
   return PreferredSize(
@@ -88,6 +151,7 @@ PreferredSizeWidget _appBar(
               border: InputBorder.none,
               contentPadding: EdgeInsets.only(bottom: 10),
             ),
+            onChanged: onChanged,
             onFieldSubmitted: onFieldSubmitted,
           ),
         ),
