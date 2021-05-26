@@ -12,7 +12,7 @@ class SearchingViewModel with ChangeNotifier {
     return _state;
   }
 
-  Future<void> init({String keyword}) async {
+  Future<void> init() async {
     _state = SearchingScreenLoading();
     notifyListeners();
 
@@ -25,6 +25,11 @@ class SearchingViewModel with ChangeNotifier {
       _state = SearchingScreenLoadFailure();
       notifyListeners();
     }
+  }
+
+  Future<void> deleteSearchKeyword({@required String keyword}) async {
+    await _prefRepository.deleteSearchKeyword(keyword: keyword);
+    await init();
   }
 }
 

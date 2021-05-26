@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 
 import '../../ui/components/custom_divider.dart';
@@ -86,25 +87,13 @@ class _SearchingScreenState extends State<SearchingScreen> {
                 return Scrollbar(
                   child: ListView.separated(
                     itemBuilder: (context, index) {
-                      return Ink(
-                        decoration: const BoxDecoration(
-                          color: AppColors.grey20,
-                        ),
-                        child: ListTile(
-                          title: Text(suggestions[index] ?? ''),
-                          onTap: () async {
-                            FocusScope.of(context).unfocus();
-                            await Navigator.pushNamed(
-                              context,
-                              SearchResultScreen.route,
-                              arguments: SearchResultScreenArguments(
-                                keyword: suggestions[index] ?? '',
-                              ),
-                            );
-                            // 検索結果画面から戻ってくるとき、この画面はスルーする
-                            Navigator.of(context).pop();
-                          },
-                        ),
+                      return _SearchHistoryCell(
+                        keyword: suggestions[index],
+                        deleteEvent: () async {
+                          await viewModel.deleteSearchKeyword(
+                            keyword: suggestions[index] ?? '',
+                          );
+                        },
                       );
                     },
                     separatorBuilder: (context, _) => CustomDivider(),
@@ -112,8 +101,10 @@ class _SearchingScreenState extends State<SearchingScreen> {
                   ),
                 );
               } else {
-                return const Center(
-                  child: Text('検索履歴はありません'),
+                return Center(
+                  child: _currentInput.isEmpty
+                      ? const Text('検索履歴はありません')
+                      : Container(),
                 );
               }
             }
@@ -174,4 +165,48 @@ PreferredSizeWidget _appBar(
       ),
     ),
   );
+}
+
+class _SearchHistoryCell extends StatelessWidget {
+  const _SearchHistoryCell({
+    @required this.keyword,
+    @required this.deleteEvent,
+  });
+
+  final String keyword;
+  final void Function() deleteEvent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Slidable(
+      actionPane: const SlidableScrollActionPane(),
+      secondaryActions: [
+        IconSlideAction(
+          icon: Icons.delete,
+          color: Theme.of(context).errorColor,
+          onTap: deleteEvent,
+        ),
+      ],
+      child: Ink(
+        decoration: const BoxDecoration(
+          color: AppColors.grey20,
+        ),
+        child: ListTile(
+          title: Text(keyword ?? ''),
+          onTap: () async {
+            FocusScope.of(context).unfocus();
+            await Navigator.pushNamed(
+              context,
+              SearchResultScreen.route,
+              arguments: SearchResultScreenArguments(
+                keyword: keyword ?? '',
+              ),
+            );
+            // 検索結果画面から戻ってくるとき、この画面はスルーする
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+    );
+  }
 }

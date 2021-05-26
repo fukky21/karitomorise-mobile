@@ -17,4 +17,12 @@ class SharedPreferenceRepository {
 
     await prefs.setStringList('searchHistories', searchHistories);
   }
+
+  Future<void> deleteSearchKeyword({@required String keyword}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final searchHistories = prefs.getStringList('searchHistories') ?? []
+      ..removeWhere((history) => history == keyword);
+
+    await prefs.setStringList('searchHistories', searchHistories);
+  }
 }
