@@ -3,13 +3,11 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
-import '../../repositories/firebase_post_repository.dart';
 import '../../stores/signed_in_user_store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_modal.dart';
-import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/scrollable_layout_builder.dart';
 import '../../ui/edit_email/edit_email_screen.dart';
 import '../../ui/edit_user/edit_user_screen.dart';
@@ -29,6 +27,7 @@ class MypageScreen extends StatelessWidget {
       ),
       child: Consumer<MypageViewModel>(
         builder: (context, viewModel, _) {
+          final signedInUser = context.watch<SignedInUserStore>().getUser();
           final state = viewModel.getState();
 
           return ModalProgressHUD(
@@ -41,12 +40,12 @@ class MypageScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      _AccountCard(),
+                      _AccountCard(signedInUser: signedInUser),
                       const SizedBox(height: 40),
                       CustomDivider(),
-                      _EditEmailCell(),
+                      _EditEmailCell(isAnonymous: signedInUser.id == null),
                       CustomDivider(),
-                      _EditPasswordCell(),
+                      _EditPasswordCell(isAnonymous: signedInUser.id == null),
                       CustomDivider(),
                       _DeleteSearchHistoriesCell(),
                       CustomDivider(),
@@ -60,10 +59,9 @@ class MypageScreen extends StatelessWidget {
                       CustomDivider(),
                       const SizedBox(height: 40),
                       _SignInButton(
+                        isAnonymous: signedInUser.id == null,
                         signOutEvent: () async => viewModel.signOut(),
                       ),
-                      const SizedBox(height: 20),
-                      _createDummyPostsButton(context),
                     ],
                   ),
                 ),
@@ -74,96 +72,83 @@ class MypageScreen extends StatelessWidget {
       ),
     );
   }
-
-  // TODO(fukky21): 後で削除する
-  Widget _createDummyPostsButton(BuildContext context) {
-    final postRepository = FirebasePostRepository();
-
-    return CustomRaisedButton(
-      width: 300,
-      labelText: 'ダミーの投稿を作成',
-      onPressed: () async {
-        if (await showConfirmModal(context, 'ダミー投稿を作成しますか？')) {
-          await postRepository.createDummyPosts();
-        }
-      },
-    );
-  }
 }
 
 class _AccountCard extends StatelessWidget {
+  const _AccountCard({@required this.signedInUser});
+
+  final AppUser signedInUser;
+
   @override
   Widget build(BuildContext context) {
     final _width = MediaQuery.of(context).size.width * 0.9;
     const _height = 80.0;
 
-    final signedInUser = context.watch<SignedInUserStore>().getUser();
-
-    if (signedInUser.id != null) {
-      return Card(
-        color: AppColors.grey20,
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(15),
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              EditUserScreen.route,
-              arguments: EditUserScreenArguments(
-                name: signedInUser.name,
-                avatar: signedInUser.avatar,
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            width: _width,
-            height: _height,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  child: Flexible(
-                    child: Row(
-                      children: [
-                        CustomCircleAvatar(
-                          filePath: signedInUser.avatar?.filePath,
-                          radius: _height / 2 - 10,
+    return Card(
+      color: AppColors.grey20,
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(15),
+        onTap: signedInUser.id != null
+            ? () {
+                Navigator.pushNamed(
+                  context,
+                  EditUserScreen.route,
+                  arguments: EditUserScreenArguments(
+                    name: signedInUser.name,
+                    avatar: signedInUser.avatar,
+                  ),
+                );
+              }
+            : null,
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          width: _width,
+          height: _height,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                child: Flexible(
+                  child: Row(
+                    children: [
+                      CustomCircleAvatar(
+                        filePath: signedInUser.avatar?.filePath,
+                        radius: _height / 2 - 10,
+                      ),
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: Text(
+                          signedInUser.name ?? 'Unknown',
+                          maxLines: 2,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Text(
-                            signedInUser.name ?? 'Unknown',
-                            maxLines: 2,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.only(left: 5),
-                  child: const Icon(Icons.chevron_right_sharp),
-                ),
-              ],
-            ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 5),
+                child: signedInUser.id != null
+                    ? const Icon(Icons.chevron_right_sharp)
+                    : Container(),
+              ),
+            ],
           ),
         ),
-      );
-    }
-
-    return Container();
+      ),
+    );
   }
 }
 
 class _EditEmailCell extends StatelessWidget {
+  const _EditEmailCell({@required this.isAnonymous});
+
+  final bool isAnonymous;
+
   @override
   Widget build(BuildContext context) {
     return Ink(
@@ -174,7 +159,11 @@ class _EditEmailCell extends StatelessWidget {
         title: const Text('メールアドレスの変更'),
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () {
-          Navigator.pushNamed(context, EditEmailScreen.route);
+          if (isAnonymous) {
+            Navigator.pushNamed(context, SignInScreen.route);
+          } else {
+            Navigator.pushNamed(context, EditEmailScreen.route);
+          }
         },
       ),
     );
@@ -182,6 +171,10 @@ class _EditEmailCell extends StatelessWidget {
 }
 
 class _EditPasswordCell extends StatelessWidget {
+  const _EditPasswordCell({@required this.isAnonymous});
+
+  final bool isAnonymous;
+
   @override
   Widget build(BuildContext context) {
     return Ink(
@@ -191,7 +184,13 @@ class _EditPasswordCell extends StatelessWidget {
       child: ListTile(
         title: const Text('パスワードの変更'),
         trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () async {},
+        onTap: () {
+          if (isAnonymous) {
+            Navigator.pushNamed(context, SignInScreen.route);
+          } else {
+            // TODO(fukky21): パスワード変更画面へ遷移する
+          }
+        },
       ),
     );
   }
@@ -207,7 +206,9 @@ class _DeleteSearchHistoriesCell extends StatelessWidget {
       child: ListTile(
         title: const Text('検索履歴の全削除'),
         trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () async {},
+        onTap: () async {
+          // TODO(fukky21): 検索履歴の全削除機能を実装
+        },
       ),
     );
   }
@@ -223,7 +224,9 @@ class _ShowBasicUsageCell extends StatelessWidget {
       child: ListTile(
         title: const Text('基本的な使い方'),
         trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () async {},
+        onTap: () {
+          // TODO(fukky21): 基本的な使い方画面へ遷移
+        },
       ),
     );
   }
@@ -239,7 +242,9 @@ class _ShowPrivacyPolicyCell extends StatelessWidget {
       child: ListTile(
         title: const Text('プライバシーポリシー'),
         trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () async {},
+        onTap: () {
+          // TODO(fukky21): プライバシーポリシー画面へ遷移
+        },
       ),
     );
   }
@@ -255,7 +260,9 @@ class _ShowContactCell extends StatelessWidget {
       child: ListTile(
         title: const Text('お問い合わせ'),
         trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () async {},
+        onTap: () {
+          // TODO(fukky21): お問い合わせ画面へ遷移
+        },
       ),
     );
   }
@@ -271,22 +278,25 @@ class _DeleteAccountCell extends StatelessWidget {
       child: ListTile(
         title: const Text('アカウントを削除する'),
         trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () async {},
+        onTap: () {
+          // TODO(fukky21): アカウント削除画面へ遷移
+        },
       ),
     );
   }
 }
 
 class _SignInButton extends StatelessWidget {
-  const _SignInButton({@required this.signOutEvent});
+  const _SignInButton({
+    @required this.isAnonymous,
+    @required this.signOutEvent,
+  });
 
+  final bool isAnonymous;
   final Future<void> Function() signOutEvent;
 
   @override
   Widget build(BuildContext context) {
-    final signedInUser = context.watch<SignedInUserStore>().getUser();
-    final isAnonymous = signedInUser.id == null;
-
     return Column(
       children: [
         CustomDivider(),
