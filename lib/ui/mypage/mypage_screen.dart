@@ -10,6 +10,8 @@ import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_modal.dart';
 import '../../ui/components/custom_raised_button.dart';
+import '../../ui/components/scrollable_layout_builder.dart';
+import '../../ui/edit_email/edit_email_screen.dart';
 import '../../ui/edit_user/edit_user_screen.dart';
 import '../../ui/mypage/mypage_view_model.dart';
 import '../../ui/sign_in/sign_in_screen.dart';
@@ -33,19 +35,37 @@ class MypageScreen extends StatelessWidget {
             inAsyncCall: state?.loading ?? false,
             child: Scaffold(
               appBar: simpleAppBar(context, title: _appBarTitle),
-              body: Container(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _AccountCard(),
-                    const SizedBox(height: 20),
-                    _SignInButton(
-                      signOutEvent: () async => viewModel.signOut(),
-                    ),
-                    const SizedBox(height: 20),
-                    _createDummyPostsButton(context),
-                  ],
+              body: ScrollableLayoutBuilder(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _AccountCard(),
+                      const SizedBox(height: 40),
+                      CustomDivider(),
+                      _EditEmailCell(),
+                      CustomDivider(),
+                      _EditPasswordCell(),
+                      CustomDivider(),
+                      _DeleteSearchHistoriesCell(),
+                      CustomDivider(),
+                      _ShowBasicUsageCell(),
+                      CustomDivider(),
+                      _ShowPrivacyPolicyCell(),
+                      CustomDivider(),
+                      _ShowContactCell(),
+                      CustomDivider(),
+                      _DeleteAccountCell(),
+                      CustomDivider(),
+                      const SizedBox(height: 40),
+                      _SignInButton(
+                        signOutEvent: () async => viewModel.signOut(),
+                      ),
+                      const SizedBox(height: 20),
+                      _createDummyPostsButton(context),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -140,6 +160,120 @@ class _AccountCard extends StatelessWidget {
     }
 
     return Container();
+  }
+}
+
+class _EditEmailCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('メールアドレスの変更'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () {
+          Navigator.pushNamed(context, EditEmailScreen.route);
+        },
+      ),
+    );
+  }
+}
+
+class _EditPasswordCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('パスワードの変更'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {},
+      ),
+    );
+  }
+}
+
+class _DeleteSearchHistoriesCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('検索履歴の全削除'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {},
+      ),
+    );
+  }
+}
+
+class _ShowBasicUsageCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('基本的な使い方'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {},
+      ),
+    );
+  }
+}
+
+class _ShowPrivacyPolicyCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('プライバシーポリシー'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {},
+      ),
+    );
+  }
+}
+
+class _ShowContactCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('お問い合わせ'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {},
+      ),
+    );
+  }
+}
+
+class _DeleteAccountCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('アカウントを削除する'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {},
+      ),
+    );
   }
 }
 

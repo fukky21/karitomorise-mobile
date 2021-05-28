@@ -55,6 +55,19 @@ class FirebaseAuthenticationRepository {
     await currentUser.sendEmailVerification();
   }
 
+  Future<void> updateEmail({
+    @required String newEmail,
+    @required String password,
+  }) async {
+    final currentUser = _firebaseAuth.currentUser;
+    final currentEmail = currentUser.email;
+
+    // 一度サインインし直す
+    await signInWithEmailAndPassword(email: currentEmail, password: password);
+
+    await currentUser.updateEmail(newEmail);
+  }
+
   Future<void> deleteCurrentUser() async {
     await _firebaseAuth.currentUser.delete();
   }
