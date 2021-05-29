@@ -59,8 +59,6 @@ class MypageScreen extends StatelessWidget {
                       CustomDivider(),
                       _ShowLicenceCell(),
                       CustomDivider(),
-                      _ShowContactCell(),
-                      CustomDivider(),
                       _DeleteAccountCell(),
                       CustomDivider(),
                       const SizedBox(height: 40),
@@ -277,24 +275,6 @@ class _ShowLicenceCell extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () {
           Navigator.pushNamed(context, ShowLicenseScreen.route);
-        },
-      ),
-    );
-  }
-}
-
-class _ShowContactCell extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Ink(
-      decoration: const BoxDecoration(
-        color: AppColors.grey20,
-      ),
-      child: ListTile(
-        title: const Text('お問い合わせ'),
-        trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () {
-          // TODO(fukky21): お問い合わせ画面へ遷移
         },
       ),
     );
