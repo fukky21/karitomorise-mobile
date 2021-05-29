@@ -10,6 +10,7 @@ import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_modal.dart';
 import '../../ui/components/scrollable_layout_builder.dart';
 import '../../ui/edit_email/edit_email_screen.dart';
+import '../../ui/edit_password/edit_password_screen.dart';
 import '../../ui/edit_user/edit_user_screen.dart';
 import '../../ui/mypage/mypage_view_model.dart';
 import '../../ui/sign_in/sign_in_screen.dart';
@@ -188,7 +189,7 @@ class _EditPasswordCell extends StatelessWidget {
           if (isAnonymous) {
             Navigator.pushNamed(context, SignInScreen.route);
           } else {
-            // TODO(fukky21): パスワード変更画面へ遷移する
+            Navigator.pushNamed(context, EditPasswordScreen.route);
           }
         },
       ),
