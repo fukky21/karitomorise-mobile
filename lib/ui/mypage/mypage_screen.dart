@@ -15,6 +15,7 @@ import '../../ui/edit_email/edit_email_screen.dart';
 import '../../ui/edit_password/edit_password_screen.dart';
 import '../../ui/edit_user/edit_user_screen.dart';
 import '../../ui/mypage/mypage_view_model.dart';
+import '../../ui/show_license/show_license_screen.dart';
 import '../../ui/sign_in/sign_in_screen.dart';
 import '../../util/app_colors.dart';
 
@@ -55,6 +56,8 @@ class MypageScreen extends StatelessWidget {
                       _ShowBasicUsageCell(),
                       CustomDivider(),
                       _ShowPrivacyPolicyCell(),
+                      CustomDivider(),
+                      _ShowLicenceCell(),
                       CustomDivider(),
                       _ShowContactCell(),
                       CustomDivider(),
@@ -256,6 +259,24 @@ class _ShowPrivacyPolicyCell extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () {
           // TODO(fukky21): プライバシーポリシー画面へ遷移
+        },
+      ),
+    );
+  }
+}
+
+class _ShowLicenceCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('ライセンス'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () {
+          Navigator.pushNamed(context, ShowLicenseScreen.route);
         },
       ),
     );

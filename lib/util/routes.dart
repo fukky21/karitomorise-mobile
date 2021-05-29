@@ -12,6 +12,7 @@ import '../ui/search/search_screen.dart';
 import '../ui/search_result/search_result_screen.dart';
 import '../ui/searching/searching_screen.dart';
 import '../ui/select_avatar/select_avatar_screen.dart';
+import '../ui/show_license/show_license_screen.dart';
 import '../ui/show_replies/show_replies_screen.dart';
 import '../ui/show_thread/show_thread_screen.dart';
 import '../ui/sign_in/sign_in_screen.dart';
@@ -84,6 +85,11 @@ class Routes {
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             builder: (_) => SelectAvatarScreen(),
+          );
+        case ShowLicenseScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            builder: (_) => ShowLicenseScreen(),
           );
         case ShowRepliesScreen.route:
           final args = routeSettings.arguments as ShowRepliesScreenArguments;
