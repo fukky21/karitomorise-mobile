@@ -3,11 +3,13 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
+import '../../repositories/shared_preference_repository.dart';
 import '../../stores/signed_in_user_store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_modal.dart';
+import '../../ui/components/custom_snack_bar.dart';
 import '../../ui/components/scrollable_layout_builder.dart';
 import '../../ui/edit_email/edit_email_screen.dart';
 import '../../ui/edit_password/edit_password_screen.dart';
@@ -198,6 +200,8 @@ class _EditPasswordCell extends StatelessWidget {
 }
 
 class _DeleteSearchHistoriesCell extends StatelessWidget {
+  final _prefRepository = SharedPreferenceRepository();
+
   @override
   Widget build(BuildContext context) {
     return Ink(
@@ -208,7 +212,14 @@ class _DeleteSearchHistoriesCell extends StatelessWidget {
         title: const Text('検索履歴の全削除'),
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () async {
-          // TODO(fukky21): 検索履歴の全削除機能を実装
+          if (await showConfirmModal(context, '検索履歴を全て削除しますか？')) {
+            try {
+              await _prefRepository.deleteAllSearchHistories();
+              showSnackBar(context, '検索履歴を全て削除しました');
+            } on Exception catch (e) {
+              debugPrint(e.toString());
+            }
+          }
         },
       ),
     );

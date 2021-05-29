@@ -25,4 +25,9 @@ class SharedPreferenceRepository {
 
     await prefs.setStringList('searchHistories', searchHistories);
   }
+
+  Future<void> deleteAllSearchHistories() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('searchHistories', []);
+  }
 }
