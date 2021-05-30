@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/app_user.dart';
 import '../../repositories/shared_preference_repository.dart';
 import '../../stores/signed_in_user_store.dart';
+import '../../ui/basic_usage/basic_usage_screen.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_divider.dart';
@@ -238,7 +239,7 @@ class _ShowBasicUsageCell extends StatelessWidget {
         title: const Text('基本的な使い方'),
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () {
-          // TODO(fukky21): 基本的な使い方画面へ遷移
+          Navigator.pushNamed(context, BasicUsageScreen.route);
         },
       ),
     );

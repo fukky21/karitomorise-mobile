@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ui/basic_usage/basic_usage_screen.dart';
 import '../ui/create_post/create_post_screen.dart';
 import '../ui/edit_email/edit_email_screen.dart';
 import '../ui/edit_password/edit_password_screen.dart';
@@ -23,6 +24,12 @@ class Routes {
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     try {
       switch (routeSettings.name) {
+        case BasicUsageScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => BasicUsageScreen(),
+          );
         case CreatePostScreen.route:
           final args = routeSettings.arguments as CreatePostScreenArguments;
           return MaterialPageRoute<dynamic>(
