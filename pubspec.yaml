@@ -45,6 +45,7 @@ dependencies:
   shared_preferences: ^2.0.5
 
 dev_dependencies:
+  flutter_native_splash: ^1.1.8+4
   flutter_test:
     sdk: flutter
   pedantic_mono: any
@@ -91,3 +92,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_native_splash:
+  color: "#1F1F1F"
+  image: assets/karitomorise_logo.png
