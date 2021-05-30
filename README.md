@@ -1,6 +1,6 @@
 # karitomorise-mobile
 
-## Firebase Project References
+## Firebase Projects
 - [karitomorise-dev](https://console.firebase.google.com/u/0/project/karitomorise-dev/overview)
 - [karitomorise-stg](https://console.firebase.google.com/u/0/project/karitomorise-stg/overview)
 - [karitomorise](https://console.firebase.google.com/u/0/project/karitomorise/overview)
