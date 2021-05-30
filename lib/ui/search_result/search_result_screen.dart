@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../stores/users_store.dart';
+import '../../ui/components/advertising_cell.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/post_cell.dart';
@@ -88,8 +89,14 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             if (state is SearchResultScreenLoadSuccess) {
               final posts = state.posts ?? [];
               final cells = <Widget>[];
-              for (final post in posts) {
-                cells.add(PostCell(post: post));
+
+              for (var i = 0; i < posts.length; i++) {
+                cells.add(PostCell(post: posts[i]));
+                if (i >= 10 && i % 10 == 0) {
+                  // 10投稿ごとに広告を挿入する
+                  final adCell = AdvertisingCell();
+                  cells.add(adCell);
+                }
               }
 
               if (cells.isEmpty) {
