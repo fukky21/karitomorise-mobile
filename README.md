@@ -6,6 +6,11 @@
 - [karitomorise](https://console.firebase.google.com/u/0/project/karitomorise/overview)
 
 ## Setup
+### 環境変数ファイルを設定
+```
+$ cp .env.sample .env
+```
+
 ### xcconfigを設定
 以下のコマンドで`ios/Flutter`ディレクトリに`Development.xcconfig`, `Staging.xcconfig`, `Production.xcconfig`を作成する
 ```
