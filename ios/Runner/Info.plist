@@ -24,6 +24,11 @@
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>GADApplicationIdentifier</key>
 		<string>ca-app-pub-1922314637552443~7350413113</string>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>https</string>
+			<string>http</string>
+		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>SKAdNetworkItems</key>

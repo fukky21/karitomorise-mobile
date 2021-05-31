@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/app_user.dart';
 import '../../repositories/shared_preference_repository.dart';
@@ -257,8 +258,13 @@ class _ShowPrivacyPolicyCell extends StatelessWidget {
       child: ListTile(
         title: const Text('プライバシーポリシー'),
         trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () {
-          // TODO(fukky21): プライバシーポリシー画面へ遷移
+        onTap: () async {
+          const url = 'https://karitomorise.web.app/privacy_policy';
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            showErrorModal(context, 'エラーが発生しました');
+          }
         },
       ),
     );
