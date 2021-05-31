@@ -12,6 +12,7 @@ import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_modal.dart';
 import '../../ui/components/custom_snack_bar.dart';
 import '../../ui/components/scrollable_layout_builder.dart';
+import '../../ui/delete_user/delete_user_screen.dart';
 import '../../ui/edit_email/edit_email_screen.dart';
 import '../../ui/edit_password/edit_password_screen.dart';
 import '../../ui/edit_user/edit_user_screen.dart';
@@ -60,7 +61,7 @@ class MypageScreen extends StatelessWidget {
                       CustomDivider(),
                       _ShowLicenceCell(),
                       CustomDivider(),
-                      _DeleteAccountCell(),
+                      _DeleteAccountCell(isAnonymous: signedInUser.id == null),
                       CustomDivider(),
                       const SizedBox(height: 40),
                       _SignInButton(
@@ -283,6 +284,10 @@ class _ShowLicenceCell extends StatelessWidget {
 }
 
 class _DeleteAccountCell extends StatelessWidget {
+  const _DeleteAccountCell({@required this.isAnonymous});
+
+  final bool isAnonymous;
+
   @override
   Widget build(BuildContext context) {
     return Ink(
@@ -293,7 +298,11 @@ class _DeleteAccountCell extends StatelessWidget {
         title: const Text('アカウントを削除する'),
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () {
-          // TODO(fukky21): アカウント削除画面へ遷移
+          if (isAnonymous) {
+            Navigator.pushNamed(context, SignInScreen.route);
+          } else {
+            Navigator.pushNamed(context, DeleteUserScreen.route);
+          }
         },
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../ui/basic_usage/basic_usage_screen.dart';
 import '../ui/create_post/create_post_screen.dart';
+import '../ui/delete_user/delete_user_screen.dart';
 import '../ui/edit_email/edit_email_screen.dart';
 import '../ui/edit_password/edit_password_screen.dart';
 import '../ui/edit_user/edit_user_screen.dart';
@@ -36,6 +37,12 @@ class Routes {
             settings: routeSettings,
             fullscreenDialog: true,
             builder: (_) => CreatePostScreen(args: args),
+          );
+        case DeleteUserScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => DeleteUserScreen(),
           );
         case EditEmailScreen.route:
           return MaterialPageRoute<dynamic>(

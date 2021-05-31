@@ -111,4 +111,12 @@ class FirebaseUserRepository {
       });
     }
   }
+
+  Future<void> deleteUser() async {
+    final currentUser = _firebaseAuth.currentUser;
+    if (currentUser == null || currentUser.isAnonymous) {
+      throw Exception('currentUser is null or anonymous');
+    }
+    await _firebaseFirestore.collection('users').doc(currentUser.uid).delete();
+  }
 }
