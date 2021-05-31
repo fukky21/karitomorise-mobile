@@ -266,19 +266,6 @@ class FirebasePostRepository {
     return posts;
   }
 
-  // TODO(fukky21): 後で削除する
-  Future<void> createDummyPosts() async {
-    const count = 10;
-    const firstIndex = 0; // bodyに入る数値を変更する
-
-    for (var i = firstIndex; i < count + firstIndex; i++) {
-      await createPost(
-        body: 'これはダミー投稿${i + 1}です。',
-      );
-      debugPrint('ダミー投稿${i + 1}を作成しました');
-    }
-  }
-
   Post _parse(DocumentSnapshot doc) {
     final data = doc.data() as Map;
 
