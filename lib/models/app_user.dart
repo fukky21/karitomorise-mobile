@@ -19,6 +19,9 @@ enum AppUserAvatar {
   arzuros,
   azureRathalos,
   balefulGigginox,
+  barioth,
+  blackDiablos,
+  blueYianKutKu,
   unknown,
 }
 
@@ -29,7 +32,10 @@ extension AppUserAvatarExtension on AppUserAvatar {
     AppUserAvatar.arzuros: 3,
     AppUserAvatar.azureRathalos: 4,
     AppUserAvatar.balefulGigginox: 5,
-    AppUserAvatar.unknown: 6,
+    AppUserAvatar.barioth: 6,
+    AppUserAvatar.blackDiablos: 7,
+    AppUserAvatar.blueYianKutKu: 8,
+    AppUserAvatar.unknown: 9,
   };
   int get id => _idList[this];
 
@@ -39,6 +45,9 @@ extension AppUserAvatarExtension on AppUserAvatar {
     AppUserAvatar.arzuros: 'アオアシラ',
     AppUserAvatar.azureRathalos: 'リオレウス亜種',
     AppUserAvatar.balefulGigginox: 'ギギネブラ亜種',
+    AppUserAvatar.barioth: 'ベリオロス',
+    AppUserAvatar.blackDiablos: 'ディアブロス亜種',
+    AppUserAvatar.blueYianKutKu: 'イャンクック亜種',
     AppUserAvatar.unknown: 'Unknown',
   };
   String get name => _names[this];
@@ -50,6 +59,9 @@ extension AppUserAvatarExtension on AppUserAvatar {
     AppUserAvatar.arzuros: '$_path/arzuros.png',
     AppUserAvatar.azureRathalos: '$_path/azure_rathalos.png',
     AppUserAvatar.balefulGigginox: '$_path/baleful_gigginox.png',
+    AppUserAvatar.barioth: '$_path/barioth.png',
+    AppUserAvatar.blackDiablos: '$_path/black_diablos.png',
+    AppUserAvatar.blueYianKutKu: '$_path/blue_yian_kut-ku.png',
     AppUserAvatar.unknown: '$_path/unknown.png',
   };
   String get filePath => _filePaths[this];
