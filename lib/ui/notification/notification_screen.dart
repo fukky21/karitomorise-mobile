@@ -24,7 +24,7 @@ class NotificationScreen extends StatelessWidget {
 
           if (signedInUser.id == null) {
             return const Center(
-              child: Text('ログインすると表示されます'),
+              child: Text('サインインすると表示されます'),
             );
           }
 
@@ -85,17 +85,7 @@ class _NotificationList extends StatelessWidget {
                   return Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('通知はありません'),
-                          const SizedBox(height: 30),
-                          CustomRaisedButton(
-                            labelText: '再読み込み',
-                            onPressed: () async => viewModel.init(),
-                          ),
-                        ],
-                      ),
+                      child: const Text('通知はありません'),
                     ),
                   );
                 }
