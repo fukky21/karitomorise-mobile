@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             Navigator.pushNamed(context, CreatePostScreen.route);
           },
-          child: const Icon(Icons.add, color: AppColors.white),
+          child: const Icon(Icons.edit, color: AppColors.white),
         ),
         body: Consumer<HomeViewModel>(
           builder: (context, viewModel, _) {
