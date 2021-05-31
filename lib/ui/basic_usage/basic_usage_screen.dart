@@ -80,7 +80,7 @@ class _BasicUsageScreenState extends State<BasicUsageScreen> {
           body: 'ホーム画面右下のペンマークのボタンから募集内容を投稿することができます。',
           image: _screenImage(
             context,
-            'assets/images/basic_usage/dummy_image.png', // TODO(fukky21): 画像を差し替える
+            'assets/images/basic_usage/basic_usage1.png',
           ),
           decoration: pageDecoration,
         ),
@@ -89,7 +89,7 @@ class _BasicUsageScreenState extends State<BasicUsageScreen> {
           body: '気になる投稿に返信して、コミュニケーションをとることができます。',
           image: _screenImage(
             context,
-            'assets/images/basic_usage/dummy_image.png', // TODO(fukky21): 画像を差し替える
+            'assets/images/basic_usage/basic_usage2.png',
           ),
           decoration: pageDecoration,
         ),
@@ -98,7 +98,7 @@ class _BasicUsageScreenState extends State<BasicUsageScreen> {
           body: '検索画面右上の検索アイコンからキーワード検索をすることができます。',
           image: _screenImage(
             context,
-            'assets/images/basic_usage/dummy_image.png', // TODO(fukky21): 画像を差し替える
+            'assets/images/basic_usage/basic_usage3.png',
           ),
           decoration: pageDecoration,
         ),
@@ -108,7 +108,7 @@ class _BasicUsageScreenState extends State<BasicUsageScreen> {
               '※プッシュ通知を受け取るにはアプリにサインインする必要があります。',
           image: _screenImage(
             context,
-            'assets/images/basic_usage/dummy_image.png', // TODO(fukky21): 画像を差し替える
+            'assets/images/basic_usage/basic_usage4.png',
           ),
           decoration: pageDecoration,
         ),
