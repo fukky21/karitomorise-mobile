@@ -28,7 +28,7 @@ class ShowThreadScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: simpleAppBar(context),
+      appBar: simpleAppBar(context, title: 'スレッド'),
       body: ChangeNotifierProvider(
         create: (context) => ShowThreadViewModel(
           sourcePost: args.post,

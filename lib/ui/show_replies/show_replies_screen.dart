@@ -28,7 +28,7 @@ class ShowRepliesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: simpleAppBar(context),
+      appBar: simpleAppBar(context, title: 'リプライ'),
       body: ChangeNotifierProvider(
         create: (context) => ShowRepliesViewModel(
           sourcePost: args.post,

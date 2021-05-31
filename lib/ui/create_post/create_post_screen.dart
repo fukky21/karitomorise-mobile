@@ -8,6 +8,7 @@ import '../../stores/signed_in_user_store.dart';
 import '../../ui/components/bullet_texts.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
+import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/custom_text_form_field.dart';
 import '../../ui/components/scrollable_layout_builder.dart';
 import '../../util/app_colors.dart';
@@ -71,8 +72,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           if (state is CreatePostFailure) {
             return Scaffold(
               appBar: simpleAppBar(context),
-              body: const Center(
-                child: Text('エラーが発生しました'),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('エラーが発生しました'),
+                      const SizedBox(height: 30),
+                      CustomRaisedButton(
+                        labelText: 'とじる',
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
           }
@@ -80,8 +94,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           if (state is CreatePostSuccess) {
             return Scaffold(
               appBar: simpleAppBar(context),
-              body: const Center(
-                child: Text('投稿しました'),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('投稿しました！'),
+                      const SizedBox(height: 30),
+                      CustomRaisedButton(
+                        labelText: 'とじる',
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
           }
