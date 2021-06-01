@@ -165,13 +165,32 @@ class FirebasePostRepository {
       }
     }
 
+    // 禁則文字を弾く
+    final validatedTokens = <String>[];
+    for (final token in tokens) {
+      if (!token.contains(RegExp(r'\.|~|\*|/|\[|\]'))) {
+        validatedTokens.add(token);
+      }
+    }
+
+    if (validatedTokens.isEmpty) {
+      // 禁則文字を弾いた時点で検索トークンがなくなってしまった場合は検索結果なしとする
+      return [];
+    }
+
     Query query = _firebaseFirestore.collection('posts');
 
-    for (final token in tokens) {
-      if (token.length == 1) {
-        query = query.where('bodyUnigramTokenMap.$token', isEqualTo: true);
+    for (final validatedToken in validatedTokens) {
+      if (validatedToken.length == 1) {
+        query = query.where(
+          'bodyUnigramTokenMap.$validatedToken',
+          isEqualTo: true,
+        );
       } else {
-        query = query.where('bodyBigramTokenMap.$token', isEqualTo: true);
+        query = query.where(
+          'bodyBigramTokenMap.$validatedToken',
+          isEqualTo: true,
+        );
       }
     }
 
