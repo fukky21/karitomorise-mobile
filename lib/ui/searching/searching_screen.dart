@@ -58,8 +58,7 @@ class _SearchingScreenState extends State<SearchingScreen> {
           });
         },
         onFieldSubmitted: (text) async {
-          // TODO(fukky21): スペースだけのときでも遷移できてしまうので修正する
-          if (text.isNotEmpty) {
+          if (text.trim().isNotEmpty) {
             await Navigator.pushNamed(
               context,
               SearchResultScreen.route,
@@ -67,6 +66,11 @@ class _SearchingScreenState extends State<SearchingScreen> {
             );
             // 検索結果画面から戻ってくるとき、この画面はスルーする
             Navigator.of(context).pop();
+          } else {
+            _controller.clear();
+            setState(() {
+              _currentInput = '';
+            });
           }
         },
       ),

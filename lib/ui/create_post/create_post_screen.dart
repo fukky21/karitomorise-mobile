@@ -143,8 +143,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             maxLines: 15,
                             validator: _bodyValidator,
                             onChanged: (text) {
-                              // TODO(fukky21): スペースだけのときでも投稿できてしまうので修正する
-                              if (text.isEmpty) {
+                              if (text.trim().isEmpty) {
                                 setState(() {
                                   _isEnabled = false;
                                 });
