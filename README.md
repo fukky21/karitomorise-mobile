@@ -6,7 +6,7 @@
 - [karitomorise](https://console.firebase.google.com/u/0/project/karitomorise/overview)
 
 ## Setup
-### 環境変数ファイルを設定
+### 環境変数ファイルを生成
 ```
 $ cp .env.sample .env
 ```
