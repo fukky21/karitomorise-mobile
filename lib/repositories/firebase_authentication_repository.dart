@@ -83,6 +83,10 @@ class FirebaseAuthenticationRepository {
     await currentUser.updatePassword(newPassword);
   }
 
+  Future<void> sendPasswordResetEmail({@required String email}) async {
+    await _firebaseAuth.sendPasswordResetEmail(email: email);
+  }
+
   Future<void> deleteCurrentUser() async {
     await _firebaseAuth.currentUser.delete();
   }

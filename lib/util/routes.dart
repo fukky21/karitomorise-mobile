@@ -10,6 +10,7 @@ import '../ui/error/error_screen.dart';
 import '../ui/home/home_screen.dart';
 import '../ui/mypage/mypage_screen.dart';
 import '../ui/notification/notification_screen.dart';
+import '../ui/reset_password/reset_password_screen.dart';
 import '../ui/search/search_screen.dart';
 import '../ui/search_result/search_result_screen.dart';
 import '../ui/searching/searching_screen.dart';
@@ -77,6 +78,11 @@ class Routes {
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             builder: (_) => NotificationScreen(),
+          );
+        case ResetPasswordScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            builder: (_) => ResetPasswordScreen(),
           );
         case SearchScreen.route:
           return MaterialPageRoute<dynamic>(

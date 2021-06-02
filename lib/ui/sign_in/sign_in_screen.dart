@@ -12,6 +12,7 @@ import '../../ui/components/custom_outline_button.dart';
 import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/custom_text_form_field.dart';
 import '../../ui/components/scrollable_layout_builder.dart';
+import '../../ui/reset_password/reset_password_screen.dart';
 import '../../ui/sign_up/sign_up_screen.dart';
 import '../../util/validations.dart';
 import 'sign_in_view_model.dart';
@@ -159,7 +160,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                 labelText: 'パスワードを\nお忘れの方',
                                 maxLines: 2,
                                 onPressed: () {
-                                  // TODO(Fukky21): パスワードをお忘れの方画面を実装
+                                  Navigator.pushNamed(
+                                    context,
+                                    ResetPasswordScreen.route,
+                                  );
                                 },
                               ),
                               CustomOutlineButton(
