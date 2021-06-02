@@ -58,3 +58,16 @@ $ flutter run --release --flavor staging --dart-define=FLAVOR=staging
 ```
 $ flutter run --release --flavor production --dart-define=FLAVOR=production
 ```
+
+## Google AdMob
+環境変数ファイルの`GOOGLE_AD_UNIT_ID`を以下のように設定する
+
+### Development
+テスト用のサンプル広告ユニットIDを指定する
+
+`ca-app-pub-3940256099942544/2934735716`
+
+### Staging & Production
+[こちら](https://apps.admob.com/v2/apps/7350413113/adunits/list)から広告ユニットIDをコピーする
+
+※ Staging環境では、広告をクリックしないように注意すること！

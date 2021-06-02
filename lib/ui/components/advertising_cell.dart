@@ -17,15 +17,7 @@ class _AdvertisingCellState extends State<AdvertisingCell> {
   void initState() {
     super.initState();
 
-    const flavor = String.fromEnvironment('FLAVOR');
-    String adUnitId;
-    if (flavor == 'staging' || flavor == 'production') {
-      adUnitId = dotenv.env['GOOGLE_AD_UNIT_ID'];
-    } else {
-      // テスト用のサンプル広告ユニット
-      adUnitId = 'ca-app-pub-3940256099942544/2934735716';
-    }
-
+    final adUnitId = dotenv.env['GOOGLE_AD_UNIT_ID'];
     _ad = BannerAd(
       adUnitId: adUnitId,
       size: AdSize.fullBanner,
