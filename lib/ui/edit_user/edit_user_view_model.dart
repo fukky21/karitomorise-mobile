@@ -28,6 +28,7 @@ class EditUserViewModel with ChangeNotifier {
 
     try {
       await _userRepository.updateUser(name: name, avatar: avatar);
+      await _authRepository.updateDisplayName(displayName: name);
 
       // ユーザー情報を更新する
       final currentUser = _authRepository.getCurrentUser();

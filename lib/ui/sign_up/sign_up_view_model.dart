@@ -28,6 +28,7 @@ class SignUpViewModel with ChangeNotifier {
         email: email,
         password: password,
       );
+      await _authRepository.updateDisplayName(displayName: name);
       await _authRepository.sendEmailVerification();
       await _userRepository.createUser(name: name);
 

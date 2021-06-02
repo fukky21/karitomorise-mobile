@@ -50,6 +50,11 @@ class FirebaseAuthenticationRepository {
     );
   }
 
+  Future<void> updateDisplayName({@required String displayName}) async {
+    final currentUser = _firebaseAuth.currentUser;
+    await currentUser.updateProfile(displayName: displayName);
+  }
+
   Future<void> sendEmailVerification() async {
     final currentUser = _firebaseAuth.currentUser;
     await currentUser.sendEmailVerification();
