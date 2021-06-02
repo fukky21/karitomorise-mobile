@@ -14,7 +14,9 @@ class UsersStore with ChangeNotifier {
 
   void addUser({@required AppUser user}) {
     if (user != null) {
-      _users.add(user);
+      _users
+        ..removeWhere((oldUser) => oldUser.id == user.id)
+        ..add(user);
       notifyListeners();
     }
   }
