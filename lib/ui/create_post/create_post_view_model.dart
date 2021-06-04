@@ -1,9 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+import '../../repositories/firebase_authentication_repository.dart';
 import '../../repositories/firebase_post_repository.dart';
+import '../../repositories/firebase_user_repository.dart';
 
 class CreatePostViewModel with ChangeNotifier {
+  final _authRepository = FirebaseAuthenticationRepository();
+  final _userRepository = FirebaseUserRepository();
   final _postRepository = FirebasePostRepository();
 
   CreatePostScreenState _state;
@@ -17,6 +21,17 @@ class CreatePostViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
+      final currentUser = _authRepository.getCurrentUser();
+      if (!currentUser.isAnonymous) {
+        final isFrozen = await _userRepository.isFrozen(id: currentUser.uid);
+
+        if (isFrozen == null || isFrozen) {
+          _state = CreatePostFailure(type: CreatePostFailureType.accountFrozen);
+          notifyListeners();
+          return;
+        }
+      }
+
       await _postRepository.createPost(
         body: body,
         replyToNumber: replyToNumber,
@@ -25,7 +40,7 @@ class CreatePostViewModel with ChangeNotifier {
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
-      _state = CreatePostFailure();
+      _state = CreatePostFailure(type: CreatePostFailureType.other);
       notifyListeners();
     }
   }
@@ -40,4 +55,10 @@ class CreatePostInProgress extends CreatePostScreenState {}
 
 class CreatePostSuccess extends CreatePostScreenState {}
 
-class CreatePostFailure extends CreatePostScreenState {}
+class CreatePostFailure extends CreatePostScreenState {
+  CreatePostFailure({@required this.type});
+
+  final CreatePostFailureType type;
+}
+
+enum CreatePostFailureType { accountFrozen, other }

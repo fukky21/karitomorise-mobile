@@ -70,6 +70,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           }
 
           if (state is CreatePostFailure) {
+            var message = 'エラーが発生しました';
+            if (state.type == CreatePostFailureType.accountFrozen) {
+              message = '現在、このアカウントでは投稿できません';
+            }
+
             return Scaffold(
               appBar: simpleAppBar(context),
               body: Center(
@@ -78,7 +83,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('エラーが発生しました'),
+                      Text(message),
                       const SizedBox(height: 30),
                       CustomRaisedButton(
                         labelText: 'とじる',
