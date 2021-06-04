@@ -93,6 +93,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: '狩友Rise',
         theme: defaultTheme,
+        debugShowCheckedModeBanner: false,
         onGenerateRoute: Routes.generateRoute,
         onUnknownRoute: Routes.errorRoute,
         localizationsDelegates: const [
