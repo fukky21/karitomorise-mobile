@@ -27,6 +27,9 @@ class CustomOutlineButton extends StatelessWidget {
       height: height,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
+          primary: isDanger
+              ? Theme.of(context).errorColor
+              : Theme.of(context).primaryColor,
           elevation: 0,
           side: BorderSide(
             width: 1,
