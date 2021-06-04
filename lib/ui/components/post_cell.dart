@@ -5,6 +5,7 @@ import '../../models/app_user.dart';
 import '../../models/post.dart';
 import '../../stores/users_store.dart';
 import '../../ui/create_post/create_post_screen.dart';
+import '../../ui/send_report/send_report_screen.dart';
 import '../../ui/show_replies/show_replies_screen.dart';
 import '../../ui/show_thread/show_thread_screen.dart';
 import '../../util/app_colors.dart';
@@ -28,6 +29,7 @@ class PostCell extends StatelessWidget {
         children: [
           _header(context),
           _body(context),
+          const SizedBox(height: 10),
           _footer(context),
         ],
       ),
@@ -151,22 +153,58 @@ class PostCell extends StatelessWidget {
     }
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _replyCountButton,
-        CustomOutlineButton(
-          labelText: '返信する',
-          width: 100,
-          height: 40,
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              CreatePostScreen.route,
-              arguments: CreatePostScreenArguments(replyToNumber: post?.number),
-            );
-          },
+        _reportButton(context),
+        Row(
+          children: [
+            _replyCountButton,
+            CustomOutlineButton(
+              labelText: '返信する',
+              width: 100,
+              height: 40,
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  CreatePostScreen.route,
+                  arguments: CreatePostScreenArguments(
+                    replyToNumber: post?.number,
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _reportButton(BuildContext context) {
+    return SizedBox(
+      width: 60,
+      height: 40,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          primary: Theme.of(context).errorColor,
+          elevation: 0,
+          side: BorderSide(width: 1, color: Theme.of(context).errorColor),
+        ),
+        onPressed: () {
+          Navigator.pushNamed(
+            context,
+            SendReportScreen.route,
+            arguments: SendReportScreenArguments(
+              postNumber: post?.number,
+            ),
+          );
+        },
+        child: Center(
+          child: Icon(
+            Icons.outlined_flag,
+            color: Theme.of(context).errorColor,
+          ),
+        ),
+      ),
     );
   }
 }

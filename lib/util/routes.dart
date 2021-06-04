@@ -15,6 +15,7 @@ import '../ui/search/search_screen.dart';
 import '../ui/search_result/search_result_screen.dart';
 import '../ui/searching/searching_screen.dart';
 import '../ui/select_avatar/select_avatar_screen.dart';
+import '../ui/send_report/send_report_screen.dart';
 import '../ui/show_license/show_license_screen.dart';
 import '../ui/show_replies/show_replies_screen.dart';
 import '../ui/show_thread/show_thread_screen.dart';
@@ -105,6 +106,13 @@ class Routes {
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             builder: (_) => SelectAvatarScreen(),
+          );
+        case SendReportScreen.route:
+          final args = routeSettings.arguments as SendReportScreenArguments;
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => SendReportScreen(args: args),
           );
         case ShowLicenseScreen.route:
           return MaterialPageRoute<dynamic>(
