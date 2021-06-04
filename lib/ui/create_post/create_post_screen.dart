@@ -123,39 +123,37 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               body: Form(
                 key: _formKey,
                 child: ScrollableLayoutBuilder(
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 30,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _prohibitedMatters(),
-                          const SizedBox(height: 25),
-                          _avatarAndName(user: signedInUser),
-                          const SizedBox(height: 7),
-                          _replyToNumber(),
-                          CustomTextFormField(
-                            controller: _controller,
-                            maxLength: _bodyMaxLength,
-                            maxLines: 15,
-                            validator: _bodyValidator,
-                            onChanged: (text) {
-                              if (text.trim().isEmpty) {
-                                setState(() {
-                                  _isEnabled = false;
-                                });
-                              } else {
-                                setState(() {
-                                  _isEnabled = true;
-                                });
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 30,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _prohibitedMatters(),
+                        const SizedBox(height: 25),
+                        _avatarAndName(user: signedInUser),
+                        const SizedBox(height: 7),
+                        _replyToNumber(),
+                        CustomTextFormField(
+                          controller: _controller,
+                          maxLength: _bodyMaxLength,
+                          maxLines: 15,
+                          validator: _bodyValidator,
+                          onChanged: (text) {
+                            if (text.trim().isEmpty) {
+                              setState(() {
+                                _isEnabled = false;
+                              });
+                            } else {
+                              setState(() {
+                                _isEnabled = true;
+                              });
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
