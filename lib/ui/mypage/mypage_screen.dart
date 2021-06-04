@@ -63,6 +63,8 @@ class MypageScreen extends StatelessWidget {
                       CustomDivider(),
                       _ShowLicenceCell(),
                       CustomDivider(),
+                      _ShowContactCell(),
+                      CustomDivider(),
                       _DeleteAccountCell(isAnonymous: signedInUser.id == null),
                       CustomDivider(),
                       const SizedBox(height: 40),
@@ -285,6 +287,30 @@ class _ShowLicenceCell extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () {
           Navigator.pushNamed(context, ShowLicenseScreen.route);
+        },
+      ),
+    );
+  }
+}
+
+class _ShowContactCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('お問い合わせ'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {
+          const url =
+              'https://docs.google.com/forms/d/e/1FAIpQLSfVpwYT13Sr-Xrj-Ywe3gdVDBuJPDgvqE6ijHde_g3TcfTKUQ/viewform?usp=sf_link';
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            showErrorModal(context, 'エラーが発生しました');
+          }
         },
       ),
     );
