@@ -9,6 +9,7 @@ import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/post_cell.dart';
 import '../../ui/notification/notification_view_model.dart';
+import '../../util/app_colors.dart';
 
 class NotificationScreen extends StatelessWidget {
   static const route = '/notification';
@@ -127,10 +128,11 @@ class _NotificationCell extends StatelessWidget {
           final post = snapshot.data;
           return PostCell(post: post);
         }
-        return const SizedBox(
+        return Container(
+          color: AppColors.grey20,
           width: double.infinity,
           height: 150,
-          child: Center(
+          child: const Center(
             child: CircularProgressIndicator(),
           ),
         );

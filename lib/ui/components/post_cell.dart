@@ -20,6 +20,26 @@ class PostCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (post.isDeleted) {
+      return Container(
+        color: AppColors.grey20,
+        padding: const EdgeInsets.all(10),
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _header(context),
+            const SizedBox(
+              height: 100,
+              child: Center(
+                child: Text('この投稿は削除されました'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       color: AppColors.grey20,
       padding: const EdgeInsets.all(10),

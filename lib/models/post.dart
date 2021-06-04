@@ -6,6 +6,7 @@ class Post {
     @required this.uid,
     @required this.number,
     @required this.body,
+    @required this.isDeleted,
     @required this.replyToNumber,
     @required this.replyFromNumbers,
     @required this.createdAt,
@@ -15,6 +16,7 @@ class Post {
   final String uid;
   final int number;
   final String body;
+  final bool isDeleted;
   final int replyToNumber;
   final List<int> replyFromNumbers;
   final DateTime createdAt;

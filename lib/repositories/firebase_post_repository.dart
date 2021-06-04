@@ -52,6 +52,7 @@ class FirebasePostRepository {
           'replyFromNumbers': <int>[],
           'createdAt': now,
           'updatedAt': now,
+          'deletedAt': null,
         },
       );
 
@@ -293,11 +294,17 @@ class FirebasePostRepository {
       replyFromNumbers.add(id as int);
     }
 
+    var isDeleted = false;
+    if (data['deletedAt'] != null) {
+      isDeleted = true;
+    }
+
     return Post(
       id: doc.id,
       number: data['number'] as int,
       uid: data['uid'] as String,
       body: data['body'] as String,
+      isDeleted: isDeleted,
       replyToNumber: data['replyToNumber'] as int,
       replyFromNumbers: replyFromNumbers,
       createdAt: (data['createdAt'] as Timestamp)?.toDate(),
