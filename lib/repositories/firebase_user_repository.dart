@@ -34,18 +34,18 @@ class FirebaseUserRepository {
         'name': name,
         'avatarId': avatarId,
         'fcmTokens': <String>[],
-        'isFrozen': false,
+        'isAvailable': true,
         'createdAt': now,
         'updatedAt': now,
       },
     );
   }
 
-  Future<bool> isFrozen({@required String id}) async {
+  Future<bool> isAvailable({@required String id}) async {
     final snapshot = await _firebaseFirestore.collection('users').doc(id).get();
 
     if (snapshot.exists) {
-      return snapshot.data()['isFrozen'] as bool;
+      return snapshot.data()['isAvailable'] as bool;
     } else {
       debugPrint('User document is not found.');
       return null;

@@ -72,7 +72,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           if (state is CreatePostFailure) {
             var message = 'エラーが発生しました';
             if (state.type == CreatePostFailureType.accountFrozen) {
-              message = '現在、このアカウントでは投稿できません';
+              message = '現在、投稿機能が停止されています';
             }
 
             return Scaffold(
