@@ -37,6 +37,7 @@ class FirebaseUserRepository {
         'isAvailable': true,
         'createdAt': now,
         'updatedAt': now,
+        'deletedAt': null,
       },
     );
   }
@@ -57,11 +58,21 @@ class FirebaseUserRepository {
 
     if (snapshot.exists) {
       final data = snapshot.data();
-      return AppUser(
-        id: snapshot.id,
-        name: data['name'] as String,
-        avatar: getAppUserAvatar(id: data['avatarId'] as int),
-      );
+
+      if (data['deletedAt'] != null) {
+        // 削除済ユーザーの場合
+        return AppUser(
+          id: snapshot.id,
+          name: '(このユーザーは削除されました)',
+          avatar: null,
+        );
+      } else {
+        return AppUser(
+          id: snapshot.id,
+          name: data['name'] as String,
+          avatar: getAppUserAvatar(id: data['avatarId'] as int),
+        );
+      }
     }
     return null;
   }
@@ -129,6 +140,8 @@ class FirebaseUserRepository {
     if (currentUser == null || currentUser.isAnonymous) {
       throw Exception('currentUser is null or anonymous');
     }
-    await _firebaseFirestore.collection('users').doc(currentUser.uid).delete();
+    await _firebaseFirestore.collection('users').doc(currentUser.uid).update({
+      'deletedAt': DateTime.now(),
+    });
   }
 }
