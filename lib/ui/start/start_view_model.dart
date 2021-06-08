@@ -17,11 +17,8 @@ class StartViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final isFirstLaunchFinished =
-          await _prefRepository.checkIsFirstLaunchFinished();
-      _state = StartScreenLoadSuccess(
-        isFirstLaunchFinished: isFirstLaunchFinished,
-      );
+      final isFirstLaunched = await _prefRepository.isFirstLaunched();
+      _state = StartScreenLoadSuccess(isFirstLaunched: isFirstLaunched);
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -39,9 +36,9 @@ abstract class StartScreenState extends Equatable {
 class StartScreenLoading extends StartScreenState {}
 
 class StartScreenLoadSuccess extends StartScreenState {
-  StartScreenLoadSuccess({@required this.isFirstLaunchFinished});
+  StartScreenLoadSuccess({@required this.isFirstLaunched});
 
-  final bool isFirstLaunchFinished;
+  final bool isFirstLaunched;
 }
 
 class StartScreenLoadFailure extends StartScreenState {}

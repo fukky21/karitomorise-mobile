@@ -31,14 +31,13 @@ class SharedPreferenceRepository {
     await prefs.setStringList('searchHistories', []);
   }
 
-  Future<bool> checkIsFirstLaunchFinished() async {
+  Future<bool> isFirstLaunched() async {
     final prefs = await SharedPreferences.getInstance();
-    final isFirstLaunchFinished =
-        prefs.getBool('isFirstLaunchFinished') ?? false;
-    if (!isFirstLaunchFinished) {
-      await prefs.setBool('isFirstLaunchFinished', true);
+    final isFirstLaunched = prefs.getBool('isFirstLaunched') ?? true;
+    if (isFirstLaunched) {
+      await prefs.setBool('isFirstLaunched', false);
     }
-    return isFirstLaunchFinished;
+    return isFirstLaunched;
   }
 
   Future<List<String>> getBlockList() async {

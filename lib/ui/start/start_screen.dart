@@ -64,9 +64,9 @@ class _StartScreenState extends State<StartScreen> with WidgetsBindingObserver {
           }
 
           if (state is StartScreenLoadSuccess) {
-            final isFirstLaunchFinished = state.isFirstLaunchFinished;
+            final isFirstLaunched = state.isFirstLaunched;
 
-            if (!isFirstLaunchFinished) {
+            if (isFirstLaunched) {
               // はじめてアプリを起動したとき、基本的な使い方画面を表示する
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 await Navigator.pushNamed(context, BasicUsageScreen.route);
