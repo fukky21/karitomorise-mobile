@@ -32,9 +32,11 @@ class ShowThreadViewModel with ChangeNotifier {
 
       for (final post in posts) {
         // usersStoreに未追加の場合は追加する
-        if (usersStore.getUser(uid: post.uid) == null) {
-          final user = await _userRepository.getUser(id: post.uid);
-          usersStore.addUser(user: user);
+        if (!post.isAnonymous) {
+          if (usersStore.getUser(uid: post.uid) == null) {
+            final user = await _userRepository.getUser(id: post.uid);
+            usersStore.addUser(user: user);
+          }
         }
       }
 

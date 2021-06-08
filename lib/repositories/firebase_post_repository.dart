@@ -12,7 +12,6 @@ class FirebasePostRepository {
     final currentUser = _firebaseAuth.currentUser;
     final now = DateTime.now();
 
-    final uid = currentUser.isAnonymous ? null : currentUser.uid;
     await _firebaseFirestore.runTransaction((transaction) async {
       final docRef = _firebaseFirestore.collection('public').doc('dynamic');
       final snapshot = await transaction.get(docRef);
@@ -43,8 +42,9 @@ class FirebasePostRepository {
         <String, dynamic>{
           'documentVersion': 1,
           'number': currentPostCount + 1,
-          'uid': uid,
+          'uid': currentUser.uid,
           'body': body,
+          'isAnonymous': currentUser.isAnonymous,
           'bodyUnigramTokenMap': unigramTokenMap,
           'bodyBigramTokenMap': bigramTokenMap,
           'timeBlock': _getTimeBlock(now),
@@ -304,6 +304,7 @@ class FirebasePostRepository {
       number: data['number'] as int,
       uid: data['uid'] as String,
       body: data['body'] as String,
+      isAnonymous: data['isAnonymous'] as bool,
       isDeleted: isDeleted,
       replyToNumber: data['replyToNumber'] as int,
       replyFromNumbers: replyFromNumbers,

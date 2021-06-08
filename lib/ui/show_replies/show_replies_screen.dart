@@ -173,14 +173,14 @@ class _ReplyCell extends StatelessWidget {
     }
 
     AppUser user;
-    if (post.uid != null) {
-      user = context.watch<UsersStore>().getUser(uid: post.uid);
-    } else {
+    if (post.isAnonymous) {
       user = AppUser(
-        id: null,
+        id: post.uid,
         name: '名無しのハンター',
         avatar: AppUserAvatar.unknown,
       );
+    } else {
+      user = context.watch<UsersStore>().getUser(uid: post.uid);
     }
 
     return Container(

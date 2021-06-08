@@ -54,9 +54,11 @@ class HomeViewModel with ChangeNotifier {
             _posts.add(newPost);
 
             // usersStoreに未追加の場合は追加する
-            if (usersStore.getUser(uid: newPost.uid) == null) {
-              final user = await _userRepository.getUser(id: newPost.uid);
-              usersStore.addUser(user: user);
+            if (!newPost.isAnonymous) {
+              if (usersStore.getUser(uid: newPost.uid) == null) {
+                final user = await _userRepository.getUser(id: newPost.uid);
+                usersStore.addUser(user: user);
+              }
             }
           } else {
             // すでに追加されている場合は、最後まで取得したと判定する
