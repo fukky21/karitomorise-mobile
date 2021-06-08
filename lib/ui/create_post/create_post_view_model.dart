@@ -22,22 +22,24 @@ class CreatePostViewModel with ChangeNotifier {
 
     try {
       final currentUser = _authRepository.getCurrentUser();
+
+      var isAvailable = true;
       if (!currentUser.isAnonymous) {
-        final isAvailable = await _userRepository.isAvailable(
+        isAvailable = await _userRepository.isAvailable(
           id: currentUser.uid,
         );
+      }
 
-        if (isAvailable != null && isAvailable) {
-          await _postRepository.createPost(
-            body: body,
-            replyToNumber: replyToNumber,
-          );
-          _state = CreatePostSuccess();
-          notifyListeners();
-        } else {
-          _state = CreatePostFailure(type: CreatePostFailureType.accountFrozen);
-          notifyListeners();
-        }
+      if (isAvailable) {
+        await _postRepository.createPost(
+          body: body,
+          replyToNumber: replyToNumber,
+        );
+        _state = CreatePostSuccess();
+        notifyListeners();
+      } else {
+        _state = CreatePostFailure(type: CreatePostFailureType.accountFrozen);
+        notifyListeners();
       }
     } on Exception catch (e) {
       debugPrint(e.toString());
