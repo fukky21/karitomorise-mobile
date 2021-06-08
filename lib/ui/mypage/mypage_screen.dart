@@ -59,6 +59,8 @@ class MypageScreen extends StatelessWidget {
                       CustomDivider(),
                       _ShowBasicUsageCell(),
                       CustomDivider(),
+                      _ShowTermsOfServiceCell(),
+                      CustomDivider(),
                       _ShowPrivacyPolicyCell(),
                       CustomDivider(),
                       _ShowLicenceCell(),
@@ -245,6 +247,30 @@ class _ShowBasicUsageCell extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right_sharp),
         onTap: () {
           Navigator.pushNamed(context, BasicUsageScreen.route);
+        },
+      ),
+    );
+  }
+}
+
+class _ShowTermsOfServiceCell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('利用規約'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {
+          final baseURL = dotenv.env['HP_BASE_URL'];
+          final url = '$baseURL/terms_of_service';
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            showErrorModal(context, 'エラーが発生しました');
+          }
         },
       ),
     );

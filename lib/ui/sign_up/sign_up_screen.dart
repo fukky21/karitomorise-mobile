@@ -1,13 +1,20 @@
 import 'package:big_tip/big_tip.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../ui/components/bullet_texts.dart';
 import '../../ui/components/custom_app_bar.dart';
+import '../../ui/components/custom_divider.dart';
+import '../../ui/components/custom_modal.dart';
 import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/custom_text_form_field.dart';
 import '../../ui/components/scrollable_layout_builder.dart';
+import '../../util/app_colors.dart';
 import '../../util/validations.dart';
 import 'sign_up_view_model.dart';
 
@@ -25,6 +32,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _passwordController;
   TextEditingController _confirmPasswordController;
   TextEditingController _nameController;
+  TapGestureRecognizer _recognizer;
+  bool _agreed;
 
   static const _passwordMinLength = 8;
   static const _passwordMaxLength = 20;
@@ -41,6 +50,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
     _nameController = TextEditingController();
+    _recognizer = TapGestureRecognizer();
+    _agreed = false;
   }
 
   @override
@@ -50,6 +61,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _nameController.dispose();
+    _recognizer.dispose();
   }
 
   @override
@@ -151,6 +163,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ],
                             ),
                           ),
+                          const SizedBox(height: 30),
+                          _termsOfServiceCell(),
                           const SizedBox(height: 50),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -159,11 +173,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               onPressed: () {
                                 FocusScope.of(context).unfocus();
                                 if (_formKey.currentState.validate()) {
-                                  viewModel.signUp(
-                                    email: _emailController.text,
-                                    password: _passwordController.text,
-                                    name: _nameController.text,
-                                  );
+                                  if (_agreed) {
+                                    viewModel.signUp(
+                                      email: _emailController.text,
+                                      password: _passwordController.text,
+                                      name: _nameController.text,
+                                    );
+                                  } else {
+                                    showErrorModal(
+                                      context,
+                                      '利用規約に同意していません',
+                                    );
+                                  }
                                 }
                               },
                             ),
@@ -178,6 +199,68 @@ class _SignUpScreenState extends State<SignUpScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _termsOfServiceCell() {
+    return Column(
+      children: [
+        CustomDivider(),
+        Container(
+          color: AppColors.grey20,
+          width: double.infinity,
+          height: 50,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 15),
+                child: Row(
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        text: '利用規約',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        recognizer: _recognizer
+                          ..onTap = () async {
+                            final baseURL = dotenv.env['HP_BASE_URL'];
+                            final url = '$baseURL/terms_of_service';
+                            if (await canLaunch(url)) {
+                              await launch(url);
+                            } else {
+                              showErrorModal(context, 'エラーが発生しました');
+                            }
+                          },
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'に同意する',
+                      style: Theme.of(context).textTheme.bodyText1,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.only(right: 5),
+                child: CupertinoSwitch(
+                  value: _agreed,
+                  onChanged: (value) {
+                    setState(() {
+                      _agreed = value;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        CustomDivider(),
+      ],
     );
   }
 
