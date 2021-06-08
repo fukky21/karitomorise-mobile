@@ -57,6 +57,8 @@ class MypageScreen extends StatelessWidget {
                       CustomDivider(),
                       _DeleteSearchHistoriesCell(),
                       CustomDivider(),
+                      _ClearBlockListCell(),
+                      CustomDivider(),
                       _ShowBasicUsageCell(),
                       CustomDivider(),
                       _ShowTermsOfServiceCell(),
@@ -225,6 +227,33 @@ class _DeleteSearchHistoriesCell extends StatelessWidget {
             try {
               await _prefRepository.deleteAllSearchHistories();
               showSnackBar(context, '検索履歴を全て削除しました');
+            } on Exception catch (e) {
+              debugPrint(e.toString());
+            }
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _ClearBlockListCell extends StatelessWidget {
+  final _prefRepository = SharedPreferenceRepository();
+
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      decoration: const BoxDecoration(
+        color: AppColors.grey20,
+      ),
+      child: ListTile(
+        title: const Text('ブロックリストの初期化'),
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () async {
+          if (await showConfirmModal(context, 'ブロックリストを初期化しますか？')) {
+            try {
+              await _prefRepository.clearBlockList();
+              showSnackBar(context, 'ブロックリストを初期化しました');
             } on Exception catch (e) {
               debugPrint(e.toString());
             }
