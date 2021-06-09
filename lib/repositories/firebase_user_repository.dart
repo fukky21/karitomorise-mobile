@@ -33,7 +33,7 @@ class FirebaseUserRepository {
         'documentVersion': 1,
         'name': name,
         'avatarId': avatarId,
-        'fcmTokens': <String>[],
+        'notificationTokens': <String>[],
         'isAvailable': true,
         'createdAt': now,
         'updatedAt': now,
@@ -108,7 +108,7 @@ class FirebaseUserRepository {
           transaction.update(
             docRef,
             <String, dynamic>{
-              'fcmTokens': FieldValue.arrayUnion(<String>[token]),
+              'notificationTokens': FieldValue.arrayUnion(<String>[token]),
             },
           );
         }
@@ -127,7 +127,7 @@ class FirebaseUserRepository {
           transaction.update(
             docRef,
             <String, dynamic>{
-              'fcmTokens': FieldValue.arrayRemove(<String>[token]),
+              'notificationTokens': FieldValue.arrayRemove(<String>[token]),
             },
           );
         }
