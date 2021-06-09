@@ -1,11 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
 import '../../models/post.dart';
 import '../../store.dart';
 import '../../ui/create_post/create_post_screen.dart';
-import '../../ui/send_report/send_report_screen.dart';
 import '../../ui/show_replies/show_replies_screen.dart';
 import '../../ui/show_thread/show_thread_screen.dart';
 import '../../util/app_colors.dart';
@@ -170,7 +171,7 @@ class PostCell extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _reportButton(context, post),
+        _OptionButton(post: post),
         Row(
           children: [
             _replyCountButton,
@@ -193,32 +194,80 @@ class PostCell extends StatelessWidget {
       ],
     );
   }
+}
 
-  Widget _reportButton(BuildContext context, Post post) {
+class _OptionButton extends StatelessWidget {
+  const _OptionButton({@required this.post});
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = context.select((Store store) => store.currentUser);
+    final actions = [reportAction(context), blockAction(context)];
+
+    if (post != null && currentUser != null && post.uid == currentUser.uid) {
+      actions.add(deleteAction(context));
+    }
+
     return SizedBox(
-      width: 60,
+      width: 45,
       height: 40,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-          primary: Theme.of(context).errorColor,
+          primary: Theme.of(context).primaryColor,
           elevation: 0,
-          side: BorderSide(width: 1, color: Theme.of(context).errorColor),
+          side: BorderSide(width: 1, color: Theme.of(context).primaryColor),
         ),
         onPressed: () {
-          Navigator.pushNamed(
-            context,
-            SendReportScreen.route,
-            arguments: SendReportScreenArguments(
-              postNumber: post?.number,
+          showCupertinoModalPopup<void>(
+            context: context,
+            builder: (context) => CupertinoActionSheet(
+              actions: actions,
+              cancelButton: CupertinoActionSheetAction(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('キャンセル'),
+              ),
             ),
           );
         },
         child: Center(
           child: Icon(
-            Icons.outlined_flag,
-            color: Theme.of(context).errorColor,
+            FontAwesomeIcons.ellipsisH,
+            color: Theme.of(context).primaryColor,
+            size: 15,
           ),
         ),
+      ),
+    );
+  }
+
+  CupertinoActionSheetAction reportAction(BuildContext context) {
+    return CupertinoActionSheetAction(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      child: const Text('通報する'),
+    );
+  }
+
+  CupertinoActionSheetAction blockAction(BuildContext context) {
+    return CupertinoActionSheetAction(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      child: const Text('このユーザーをブロックする'),
+    );
+  }
+
+  CupertinoActionSheetAction deleteAction(BuildContext context) {
+    return CupertinoActionSheetAction(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      child: Text(
+        '削除する',
+        style: TextStyle(color: Theme.of(context).errorColor),
       ),
     );
   }
