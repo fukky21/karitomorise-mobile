@@ -5,8 +5,12 @@ import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
 import '../../models/post.dart';
+import '../../repositories/firebase_post_repository.dart';
+import '../../repositories/shared_preference_repository.dart';
 import '../../store.dart';
+import '../../ui/components/custom_snack_bar.dart';
 import '../../ui/create_post/create_post_screen.dart';
+import '../../ui/send_report/send_report_screen.dart';
 import '../../ui/show_replies/show_replies_screen.dart';
 import '../../ui/show_thread/show_thread_screen.dart';
 import '../../util/app_colors.dart';
@@ -197,9 +201,11 @@ class PostCell extends StatelessWidget {
 }
 
 class _OptionButton extends StatelessWidget {
-  const _OptionButton({@required this.post});
+  _OptionButton({@required this.post});
 
   final Post post;
+  final _prefRepository = SharedPreferenceRepository();
+  final _postRepository = FirebasePostRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -246,6 +252,11 @@ class _OptionButton extends StatelessWidget {
     return CupertinoActionSheetAction(
       onPressed: () {
         Navigator.pop(context);
+        Navigator.pushNamed(
+          context,
+          SendReportScreen.route,
+          arguments: SendReportScreenArguments(postNumber: post?.number),
+        );
       },
       child: const Text('通報する'),
     );
@@ -253,8 +264,19 @@ class _OptionButton extends StatelessWidget {
 
   CupertinoActionSheetAction blockAction(BuildContext context) {
     return CupertinoActionSheetAction(
-      onPressed: () {
+      onPressed: () async {
         Navigator.pop(context);
+        try {
+          if (post?.uid != null) {
+            await _prefRepository.addToBlockList(uid: post.uid);
+            final newBlockList = await _prefRepository.getBlockList();
+            context.read<Store>().setBlockList(newBlockList);
+            showSnackBar(context, 'ブロックリストに追加しました');
+          }
+        } on Exception catch (e) {
+          debugPrint(e.toString());
+          showSnackBar(context, 'エラーが発生しました');
+        }
       },
       child: const Text('このユーザーをブロックする'),
     );
@@ -262,8 +284,19 @@ class _OptionButton extends StatelessWidget {
 
   CupertinoActionSheetAction deleteAction(BuildContext context) {
     return CupertinoActionSheetAction(
-      onPressed: () {
+      onPressed: () async {
         Navigator.pop(context);
+        try {
+          await _postRepository.deletePost(postId: post?.id);
+          final deletedPost = await _postRepository.getPost(
+            number: post?.number,
+          );
+          context.read<Store>().addPost(post: deletedPost);
+          showSnackBar(context, '投稿を削除しました');
+        } on Exception catch (e) {
+          debugPrint(e.toString());
+          showSnackBar(context, 'エラーが発生しました');
+        }
       },
       child: Text(
         '削除する',
