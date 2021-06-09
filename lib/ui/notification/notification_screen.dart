@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/post.dart';
+import '../../models/app_user.dart';
 import '../../repositories/firebase_post_repository.dart';
+import '../../repositories/firebase_user_repository.dart';
 import '../../store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_divider.dart';
@@ -110,17 +111,39 @@ class _NotificationList extends StatelessWidget {
 class _NotificationCell extends StatelessWidget {
   _NotificationCell({@required this.postNumber});
 
+  final _userRepository = FirebaseUserRepository();
   final _postRepository = FirebasePostRepository();
   final int postNumber;
+
+  Future<String> _getPost(BuildContext context) async {
+    final store = context.read<Store>();
+    final post = await _postRepository.getPost(number: postNumber);
+
+    if (post.isAnonymous) {
+      store.addUser(
+        user: AppUser(
+          id: post.uid,
+          name: '名無しのハンター',
+          avatar: AppUserAvatar.unknown,
+        ),
+      );
+    } else {
+      final user = await _userRepository.getUser(id: post.uid);
+      store.addUser(user: user);
+    }
+
+    store.addPost(post: post);
+    return post.id;
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _postRepository.getPost(number: postNumber),
-      builder: (context, AsyncSnapshot<Post> snapshot) {
+      future: _getPost(context),
+      builder: (context, AsyncSnapshot<String> snapshot) {
         if (snapshot.hasData) {
-          final post = snapshot.data;
-          return PostCell(post: post);
+          final postId = snapshot.data;
+          return PostCell(postId: postId);
         }
         return Container(
           color: AppColors.grey20,

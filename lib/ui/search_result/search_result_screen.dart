@@ -87,11 +87,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             }
 
             if (state is SearchResultScreenLoadSuccess) {
-              final posts = state.posts ?? [];
+              final postIdList = state.postIdList ?? [];
               final cells = <Widget>[];
 
-              for (var i = 0; i < posts.length; i++) {
-                cells.add(PostCell(post: posts[i]));
+              for (var i = 0; i < postIdList.length; i++) {
+                cells.add(PostCell(postId: postIdList[i]));
                 if (i >= 10 && i % 10 == 0) {
                   // 10投稿ごとに広告を挿入する
                   final adCell = AdvertisingCell();

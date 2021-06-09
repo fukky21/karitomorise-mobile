@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/app_user.dart';
-import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
 import '../../repositories/firebase_user_repository.dart';
 import '../../repositories/shared_preference_repository.dart';
@@ -32,11 +31,15 @@ class SearchResultViewModel with ChangeNotifier {
       await _prefRepository.addSearchKeyword(keyword: keyword);
 
       final posts = await _postRepository.getPostsByKeyword(keyword: keyword);
+      final _postIdList = <String>[];
 
       // 重複してgetUserしないようにする
       final addedUidByThisSearch = <String>[];
 
       for (final post in posts) {
+        _postIdList.add(post.id);
+        store.addPost(post: post);
+
         // 今回のfetchで未追加(更新)のユーザーの場合はStoreに追加(更新)する
         if (post.uid != null && !addedUidByThisSearch.contains(post.uid)) {
           if (post.isAnonymous) {
@@ -55,7 +58,7 @@ class SearchResultViewModel with ChangeNotifier {
         }
       }
 
-      _state = SearchResultScreenLoadSuccess(posts: posts);
+      _state = SearchResultScreenLoadSuccess(postIdList: _postIdList);
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -73,9 +76,9 @@ abstract class SearchResultScreenState extends Equatable {
 class SearchResultScreenLoading extends SearchResultScreenState {}
 
 class SearchResultScreenLoadSuccess extends SearchResultScreenState {
-  SearchResultScreenLoadSuccess({@required this.posts});
+  SearchResultScreenLoadSuccess({@required this.postIdList});
 
-  final List<Post> posts;
+  final List<String> postIdList;
 }
 
 class SearchResultScreenLoadFailure extends SearchResultScreenState {}

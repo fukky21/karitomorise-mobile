@@ -16,7 +16,7 @@ class HomeViewModel with ChangeNotifier {
   final _postRepository = FirebasePostRepository();
 
   HomeScreenState _state = HomeScreenLoading();
-  List<Post> _posts = [];
+  List<String> _postIdList = [];
   QueryDocumentSnapshot _lastVisible;
   bool _isFetching = false;
 
@@ -29,7 +29,7 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      _posts = [];
+      _postIdList = [];
       _lastVisible = null;
       await fetch();
     } on Exception catch (e) {
@@ -53,9 +53,10 @@ class HomeViewModel with ChangeNotifier {
         final addedUidByThisFetch = <String>[];
 
         for (final newPost in newPosts) {
-          if (_posts.where((post) => post.id == newPost.id).isEmpty) {
+          if (!_postIdList.contains(newPost.id)) {
             // まだ追加されていない場合は追加する
-            _posts.add(newPost);
+            _postIdList.add(newPost.id);
+            store.addPost(post: newPost);
 
             // 今回のfetchで未追加(更新)のユーザーの場合はStoreに追加(更新)する
             if (newPost.uid != null &&
@@ -76,13 +77,19 @@ class HomeViewModel with ChangeNotifier {
             }
           } else {
             // すでに追加されている場合は、最後まで取得したと判定する
-            _state = HomeScreenLoadSuccess(posts: _posts, isFetchabled: false);
+            _state = HomeScreenLoadSuccess(
+              postIdList: _postIdList,
+              isFetchabled: false,
+            );
             notifyListeners();
             _isFetching = false; // fetchは終了したのでfalseにする
             return;
           }
         }
-        _state = HomeScreenLoadSuccess(posts: _posts, isFetchabled: true);
+        _state = HomeScreenLoadSuccess(
+          postIdList: _postIdList,
+          isFetchabled: true,
+        );
         notifyListeners();
       } on Exception catch (e) {
         debugPrint(e.toString());
@@ -102,9 +109,12 @@ abstract class HomeScreenState extends Equatable {
 class HomeScreenLoading extends HomeScreenState {}
 
 class HomeScreenLoadSuccess extends HomeScreenState {
-  HomeScreenLoadSuccess({@required this.posts, @required this.isFetchabled});
+  HomeScreenLoadSuccess({
+    @required this.postIdList,
+    @required this.isFetchabled,
+  });
 
-  final List<Post> posts;
+  final List<String> postIdList;
   final bool isFetchabled;
 }
 

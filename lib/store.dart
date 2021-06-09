@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'models/app_user.dart';
 import 'models/current_user.dart';
+import 'models/post.dart';
 import 'repositories/firebase_user_repository.dart';
 
 class Store with ChangeNotifier {
@@ -45,6 +46,7 @@ class Store with ChangeNotifier {
   final userRepository = FirebaseUserRepository();
   CurrentUser currentUser;
   Map<String, AppUser> users = {};
+  Map<String, Post> posts = {};
 
   void addUser({@required AppUser user}) {
     if (user != null && user.id != null) {
@@ -52,6 +54,15 @@ class Store with ChangeNotifier {
       notifyListeners();
     } else {
       debugPrint('addUser failed.');
+    }
+  }
+
+  void addPost({@required Post post}) {
+    if (post != null && post.id != null) {
+      posts[post.id] = post;
+      notifyListeners();
+    } else {
+      debugPrint('addPost failed.');
     }
   }
 }

@@ -58,11 +58,11 @@ class ShowThreadScreen extends StatelessWidget {
             }
 
             if (state is ShowThreadScreenLoadSuccess) {
-              final posts = state.posts;
+              final postIdList = state.postIdList;
 
               final cells = <Widget>[];
-              for (final post in posts) {
-                cells.add(_ThreadCell(post: post));
+              for (final postId in postIdList) {
+                cells.add(_ThreadCell(postId: postId));
               }
 
               return ListView.separated(
@@ -83,13 +83,14 @@ class ShowThreadScreen extends StatelessWidget {
 }
 
 class _ThreadCell extends StatelessWidget {
-  const _ThreadCell({@required this.post});
+  const _ThreadCell({@required this.postId});
 
-  final Post post;
+  final String postId;
 
   @override
   Widget build(BuildContext context) {
-    final user = context.select((Store store) => store.users)[post.uid];
+    final post = context.select((Store store) => store.posts[postId]);
+    final user = context.select((Store store) => store.users[post?.uid]);
 
     if (post.isDeleted) {
       return Container(
@@ -99,7 +100,7 @@ class _ThreadCell extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header(context),
+            _header(context, post),
             const SizedBox(
               height: 100,
               child: Center(
@@ -118,14 +119,14 @@ class _ThreadCell extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _header(context),
-          _body(context, user),
+          _header(context, post),
+          _body(context, user, post),
         ],
       ),
     );
   }
 
-  Widget _header(BuildContext context) {
+  Widget _header(BuildContext context, Post post) {
     final dateTime = post?.createdAt;
     var elapsedTimeText = '';
     if (dateTime != null) {
@@ -160,7 +161,7 @@ class _ThreadCell extends StatelessWidget {
     );
   }
 
-  Widget _body(BuildContext context, AppUser user) {
+  Widget _body(BuildContext context, AppUser user, Post post) {
     Widget _replyToButton = Container();
     if (post?.replyToNumber != null) {
       _replyToButton = Container(

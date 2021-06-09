@@ -14,13 +14,14 @@ import 'custom_circle_avatar.dart';
 import 'custom_outline_button.dart';
 
 class PostCell extends StatelessWidget {
-  const PostCell({@required this.post});
+  const PostCell({@required this.postId});
 
-  final Post post;
+  final String postId;
 
   @override
   Widget build(BuildContext context) {
-    final user = context.select((Store store) => store.users[post.uid]);
+    final post = context.select((Store store) => store.posts[postId]);
+    final user = context.select((Store store) => store.users[post?.uid]);
 
     if (post.isDeleted) {
       return Container(
@@ -30,7 +31,7 @@ class PostCell extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header(context),
+            _header(context, post),
             const SizedBox(
               height: 100,
               child: Center(
@@ -49,16 +50,16 @@ class PostCell extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _header(context),
-          _body(context, user),
+          _header(context, post),
+          _body(context, user, post),
           const SizedBox(height: 10),
-          _footer(context),
+          _footer(context, post),
         ],
       ),
     );
   }
 
-  Widget _header(BuildContext context) {
+  Widget _header(BuildContext context, Post post) {
     final dateTime = post?.createdAt;
     var elapsedTimeText = '';
     if (dateTime != null) {
@@ -93,7 +94,7 @@ class PostCell extends StatelessWidget {
     );
   }
 
-  Widget _body(BuildContext context, AppUser user) {
+  Widget _body(BuildContext context, AppUser user, Post post) {
     Widget _replyToButton = Container();
     if (post?.replyToNumber != null) {
       _replyToButton = Container(
@@ -143,7 +144,7 @@ class PostCell extends StatelessWidget {
     );
   }
 
-  Widget _footer(BuildContext context) {
+  Widget _footer(BuildContext context, Post post) {
     Widget _replyCountButton = Container();
     if (post?.replyFromNumbers != null && post.replyFromNumbers.isNotEmpty) {
       _replyCountButton = ElevatedButton(
@@ -166,7 +167,7 @@ class PostCell extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _reportButton(context),
+        _reportButton(context, post),
         Row(
           children: [
             _replyCountButton,
@@ -190,7 +191,7 @@ class PostCell extends StatelessWidget {
     );
   }
 
-  Widget _reportButton(BuildContext context) {
+  Widget _reportButton(BuildContext context, Post post) {
     return SizedBox(
       width: 60,
       height: 40,

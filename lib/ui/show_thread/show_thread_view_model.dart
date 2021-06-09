@@ -31,10 +31,15 @@ class ShowThreadViewModel with ChangeNotifier {
       );
       posts.insert(0, sourcePost); // 自分自身を配列の先頭に入れる
 
+      final _postIdList = <String>[];
+
       // 重複してgetUserしないようにする
       final addedUid = <String>[];
 
       for (final post in posts) {
+        _postIdList.add(post.id);
+        store.addPost(post: post);
+
         // 今回のfetchで未追加(更新)のユーザーの場合はStoreに追加(更新)する
         if (post.uid != null && !addedUid.contains(post.uid)) {
           if (post.isAnonymous) {
@@ -53,7 +58,7 @@ class ShowThreadViewModel with ChangeNotifier {
         }
       }
 
-      _state = ShowThreadScreenLoadSuccess(posts: posts);
+      _state = ShowThreadScreenLoadSuccess(postIdList: _postIdList);
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -71,9 +76,9 @@ abstract class ShowThreadScreenState extends Equatable {
 class ShowThreadScreenLoading extends ShowThreadScreenState {}
 
 class ShowThreadScreenLoadSuccess extends ShowThreadScreenState {
-  ShowThreadScreenLoadSuccess({@required this.posts});
+  ShowThreadScreenLoadSuccess({@required this.postIdList});
 
-  final List<Post> posts;
+  final List<String> postIdList;
 }
 
 class ShowThreadScreenLoadFailure extends ShowThreadScreenState {}

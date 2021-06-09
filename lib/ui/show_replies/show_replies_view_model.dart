@@ -31,10 +31,15 @@ class ShowRepliesViewModel with ChangeNotifier {
       );
       posts.insert(0, sourcePost); // 自分自身を配列の先頭に入れる
 
+      final _postIdList = <String>[];
+
       // 重複してgetUserしないようにする
       final addedUid = <String>[];
 
       for (final post in posts) {
+        _postIdList.add(post.id);
+        store.addPost(post: post);
+
         // 今回のfetchで未追加(更新)のユーザーの場合はStoreに追加(更新)する
         if (post.uid != null && !addedUid.contains(post.uid)) {
           if (post.isAnonymous) {
@@ -53,7 +58,7 @@ class ShowRepliesViewModel with ChangeNotifier {
         }
       }
 
-      _state = ShowRepliesScreenLoadSuccess(posts: posts);
+      _state = ShowRepliesScreenLoadSuccess(postIdList: _postIdList);
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -71,9 +76,9 @@ abstract class ShowRepliesScreenState extends Equatable {
 class ShowRepliesScreenLoading extends ShowRepliesScreenState {}
 
 class ShowRepliesScreenLoadSuccess extends ShowRepliesScreenState {
-  ShowRepliesScreenLoadSuccess({@required this.posts});
+  ShowRepliesScreenLoadSuccess({@required this.postIdList});
 
-  final List<Post> posts;
+  final List<String> postIdList;
 }
 
 class ShowRepliesScreenLoadFailure extends ShowRepliesScreenState {}
