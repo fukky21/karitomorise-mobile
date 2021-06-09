@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../stores/users_store.dart';
+import '../../store.dart';
 import '../../ui/components/advertising_cell.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_raised_button.dart';
@@ -46,7 +46,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     return ChangeNotifierProvider(
       create: (context) => SearchResultViewModel(
         keyword: widget.args.keyword,
-        usersStore: context.read<UsersStore>(),
+        store: context.read<Store>(),
       )..init(),
       child: Scaffold(
         appBar: _appBar(

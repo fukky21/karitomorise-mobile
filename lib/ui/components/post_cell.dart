@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
 import '../../models/post.dart';
-import '../../stores/users_store.dart';
+import '../../store.dart';
 import '../../ui/create_post/create_post_screen.dart';
 import '../../ui/send_report/send_report_screen.dart';
 import '../../ui/show_replies/show_replies_screen.dart';
@@ -20,6 +20,8 @@ class PostCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.select((Store store) => store.users[post.uid]);
+
     if (post.isDeleted) {
       return Container(
         color: AppColors.grey20,
@@ -48,7 +50,7 @@ class PostCell extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _header(context),
-          _body(context),
+          _body(context, user),
           const SizedBox(height: 10),
           _footer(context),
         ],
@@ -91,7 +93,7 @@ class PostCell extends StatelessWidget {
     );
   }
 
-  Widget _body(BuildContext context) {
+  Widget _body(BuildContext context, AppUser user) {
     Widget _replyToButton = Container();
     if (post?.replyToNumber != null) {
       _replyToButton = Container(
@@ -109,17 +111,6 @@ class PostCell extends StatelessWidget {
           },
         ),
       );
-    }
-
-    AppUser user;
-    if (post.isAnonymous) {
-      user = AppUser(
-        id: post.uid,
-        name: '名無しのハンター',
-        avatar: AppUserAvatar.unknown,
-      );
-    } else {
-      user = context.watch<UsersStore>().getUser(uid: post.uid);
     }
 
     return Container(

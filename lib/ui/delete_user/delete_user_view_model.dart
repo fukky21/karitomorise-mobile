@@ -2,15 +2,10 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/app_user.dart';
 import '../../repositories/firebase_authentication_repository.dart';
 import '../../repositories/firebase_user_repository.dart';
-import '../../stores/signed_in_user_store.dart';
 
 class DeleteUserViewModel with ChangeNotifier {
-  DeleteUserViewModel({@required this.signedInUserStore});
-
-  final SignedInUserStore signedInUserStore;
   final _authRepository = FirebaseAuthenticationRepository();
   final _userRepository = FirebaseUserRepository();
   DeleteUserScreenState _state;
@@ -36,13 +31,6 @@ class DeleteUserViewModel with ChangeNotifier {
         await _userRepository.deleteUser();
         await _authRepository.deleteCurrentUser();
         await _authRepository.signInAnonymously();
-        signedInUserStore.setUser(
-          user: AppUser(
-            id: null,
-            name: '名無しのハンター',
-            avatar: AppUserAvatar.unknown,
-          ),
-        );
         _state = DeleteUserSuccess();
         notifyListeners();
       }

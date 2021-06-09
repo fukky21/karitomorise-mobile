@@ -4,7 +4,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
-import '../../stores/signed_in_user_store.dart';
+import '../../store.dart';
 import '../../ui/components/bullet_texts.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
@@ -51,7 +51,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final signedInUser = context.watch<SignedInUserStore>().getUser();
+    final currentUser = context.select((Store store) => store.currentUser);
+    final user = context.select((Store store) => store.users[currentUser?.uid]);
 
     return ChangeNotifierProvider(
       create: (_) => CreatePostViewModel(),
@@ -138,7 +139,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       children: [
                         _prohibitedMatters(),
                         const SizedBox(height: 25),
-                        _avatarAndName(user: signedInUser),
+                        _avatarAndName(user: user),
                         const SizedBox(height: 7),
                         _replyToNumber(),
                         CustomTextFormField(

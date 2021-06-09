@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/app_user.dart';
 import '../../repositories/shared_preference_repository.dart';
-import '../../stores/signed_in_user_store.dart';
+import '../../store.dart';
 import '../../ui/basic_usage/basic_usage_screen.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
@@ -29,13 +29,13 @@ class MypageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = context.select((Store store) => store.currentUser);
+    final user = context.select((Store store) => store.users[currentUser?.uid]);
+
     return ChangeNotifierProvider(
-      create: (context) => MypageViewModel(
-        signedInUserStore: context.read<SignedInUserStore>(),
-      ),
+      create: (_) => MypageViewModel(),
       child: Consumer<MypageViewModel>(
         builder: (context, viewModel, _) {
-          final signedInUser = context.watch<SignedInUserStore>().getUser();
           final state = viewModel.getState();
 
           return ModalProgressHUD(
@@ -48,12 +48,17 @@ class MypageScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      _AccountCard(signedInUser: signedInUser),
+                      _AccountCard(
+                        isAnonymous: currentUser?.isAnonymous ?? true,
+                        user: user,
+                      ),
                       const SizedBox(height: 40),
                       CustomDivider(),
-                      _EditEmailCell(isAnonymous: signedInUser.id == null),
+                      _EditEmailCell(
+                          isAnonymous: currentUser?.isAnonymous ?? true),
                       CustomDivider(),
-                      _EditPasswordCell(isAnonymous: signedInUser.id == null),
+                      _EditPasswordCell(
+                          isAnonymous: currentUser?.isAnonymous ?? true),
                       CustomDivider(),
                       _DeleteSearchHistoriesCell(),
                       CustomDivider(),
@@ -69,11 +74,12 @@ class MypageScreen extends StatelessWidget {
                       CustomDivider(),
                       _ShowContactCell(),
                       CustomDivider(),
-                      _DeleteAccountCell(isAnonymous: signedInUser.id == null),
+                      _DeleteAccountCell(
+                          isAnonymous: currentUser?.isAnonymous ?? true),
                       CustomDivider(),
                       const SizedBox(height: 40),
                       _SignInButton(
-                        isAnonymous: signedInUser.id == null,
+                        isAnonymous: currentUser?.isAnonymous ?? true,
                         signOutEvent: () async => viewModel.signOut(),
                       ),
                     ],
@@ -89,9 +95,10 @@ class MypageScreen extends StatelessWidget {
 }
 
 class _AccountCard extends StatelessWidget {
-  const _AccountCard({@required this.signedInUser});
+  const _AccountCard({@required this.isAnonymous, @required this.user});
 
-  final AppUser signedInUser;
+  final bool isAnonymous;
+  final AppUser user;
 
   @override
   Widget build(BuildContext context) {
@@ -104,14 +111,14 @@ class _AccountCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
-        onTap: signedInUser.id != null
+        onTap: !isAnonymous
             ? () {
                 Navigator.pushNamed(
                   context,
                   EditUserScreen.route,
                   arguments: EditUserScreenArguments(
-                    name: signedInUser.name,
-                    avatar: signedInUser.avatar,
+                    name: user?.name,
+                    avatar: user?.avatar,
                   ),
                 );
               }
@@ -128,13 +135,13 @@ class _AccountCard extends StatelessWidget {
                   child: Row(
                     children: [
                       CustomCircleAvatar(
-                        filePath: signedInUser.avatar?.filePath,
+                        filePath: user?.avatar?.filePath,
                         radius: _height / 2 - 10,
                       ),
                       const SizedBox(width: 10),
                       Flexible(
                         child: Text(
-                          signedInUser.name ?? 'Unknown',
+                          user?.name ?? 'Unknown',
                           maxLines: 2,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
@@ -146,7 +153,7 @@ class _AccountCard extends StatelessWidget {
               ),
               Container(
                 margin: const EdgeInsets.only(left: 5),
-                child: signedInUser.id != null
+                child: !isAnonymous
                     ? const Icon(Icons.chevron_right_sharp)
                     : Container(),
               ),

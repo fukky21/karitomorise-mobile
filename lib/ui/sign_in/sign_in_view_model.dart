@@ -5,12 +5,8 @@ import 'package:flutter/material.dart';
 import '../../repositories/firebase_authentication_repository.dart';
 import '../../repositories/firebase_messaging_repository.dart';
 import '../../repositories/firebase_user_repository.dart';
-import '../../stores/signed_in_user_store.dart';
 
 class SignInViewModel with ChangeNotifier {
-  SignInViewModel({@required this.signedInUserStore});
-
-  final SignedInUserStore signedInUserStore;
   final _authRepository = FirebaseAuthenticationRepository();
   final _messagingRepository = FirebaseMessagingRepository();
   final _userRepository = FirebaseUserRepository();
@@ -37,10 +33,6 @@ class SignInViewModel with ChangeNotifier {
       // サインイン時にトークンを追加する
       final token = await _messagingRepository.getToken();
       await _userRepository.addToken(token: token);
-
-      final currentUser = _authRepository.getCurrentUser();
-      final user = await _userRepository.getUser(id: currentUser.uid);
-      signedInUserStore.setUser(user: user);
 
       _state = SignInSuccess();
       notifyListeners();

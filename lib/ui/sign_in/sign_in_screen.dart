@@ -4,7 +4,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
-import '../../stores/signed_in_user_store.dart';
+import '../../store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_divider.dart';
@@ -46,9 +46,7 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => SignInViewModel(
-        signedInUserStore: context.read<SignedInUserStore>(),
-      ),
+      create: (_) => SignInViewModel(),
       child: Consumer<SignInViewModel>(
         builder: (context, viewModel, _) {
           final state = viewModel.getState();
@@ -77,7 +75,10 @@ class _SignInScreenState extends State<SignInScreen> {
           }
 
           if (state is SignInSuccess) {
-            final user = context.read<SignedInUserStore>().getUser();
+            final currentUser =
+                context.select((Store store) => store.currentUser);
+            final user =
+                context.select((Store store) => store.users[currentUser?.uid]);
 
             return Scaffold(
               body: Center(
@@ -87,12 +88,12 @@ class _SignInScreenState extends State<SignInScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CustomCircleAvatar(
-                        filePath: user.avatar.filePath,
+                        filePath: user?.avatar?.filePath,
                         radius: 50,
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        user.name ?? 'Unknown',
+                        user?.name ?? 'Unknown',
                         style: Theme.of(context).textTheme.headline5,
                         textAlign: TextAlign.center,
                       ),

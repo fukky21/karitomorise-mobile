@@ -1,16 +1,17 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+import '../../models/app_user.dart';
 import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
 import '../../repositories/firebase_user_repository.dart';
-import '../../stores/users_store.dart';
+import '../../store.dart';
 
 class ShowRepliesViewModel with ChangeNotifier {
-  ShowRepliesViewModel({@required this.sourcePost, @required this.usersStore});
+  ShowRepliesViewModel({@required this.sourcePost, @required this.store});
 
   final Post sourcePost;
-  final UsersStore usersStore;
+  final Store store;
   final _userRepository = FirebaseUserRepository();
   final _postRepository = FirebasePostRepository();
 
@@ -30,13 +31,25 @@ class ShowRepliesViewModel with ChangeNotifier {
       );
       posts.insert(0, sourcePost); // 自分自身を配列の先頭に入れる
 
+      // 重複してgetUserしないようにする
+      final addedUid = <String>[];
+
       for (final post in posts) {
-        // usersStoreに未追加の場合は追加する
-        if (!post.isAnonymous) {
-          if (usersStore.getUser(uid: post.uid) == null) {
+        // 今回のfetchで未追加(更新)のユーザーの場合はStoreに追加(更新)する
+        if (post.uid != null && !addedUid.contains(post.uid)) {
+          if (post.isAnonymous) {
+            store.addUser(
+              user: AppUser(
+                id: post.uid,
+                name: '名無しのハンター',
+                avatar: AppUserAvatar.unknown,
+              ),
+            );
+          } else {
             final user = await _userRepository.getUser(id: post.uid);
-            usersStore.addUser(user: user);
+            store.addUser(user: user);
           }
+          addedUid.add(post.uid);
         }
       }
 

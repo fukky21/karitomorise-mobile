@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
-import '../../stores/signed_in_user_store.dart';
+import '../../store.dart';
 import '../../ui/components/bullet_texts.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
@@ -39,9 +39,7 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => DeleteUserViewModel(
-        signedInUserStore: context.read<SignedInUserStore>(),
-      ),
+      create: (_) => DeleteUserViewModel(),
       child: Consumer<DeleteUserViewModel>(
         builder: (context, viewModel, _) {
           final state = viewModel.getState();
@@ -180,19 +178,20 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
   }
 
   Widget _userAvatarAndName(BuildContext context) {
-    final signedInUser = context.read<SignedInUserStore>().getUser();
+    final currentUser = context.select((Store store) => store.currentUser);
+    final user = context.select((Store store) => store.users[currentUser?.uid]);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CustomCircleAvatar(
-          filePath: signedInUser?.avatar?.filePath ?? '',
+          filePath: user?.avatar?.filePath ?? '',
           radius: 30,
         ),
         const SizedBox(width: 10),
         Flexible(
           child: Text(
-            signedInUser?.name ?? 'Unknown',
+            user?.name ?? 'Unknown',
             maxLines: 2,
             style: const TextStyle(fontWeight: FontWeight.bold),
             overflow: TextOverflow.ellipsis,

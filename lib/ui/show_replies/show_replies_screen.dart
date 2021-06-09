@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
 import '../../models/post.dart';
-import '../../stores/users_store.dart';
+import '../../store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_circle_avatar.dart';
 import '../../ui/components/custom_divider.dart';
@@ -32,7 +32,7 @@ class ShowRepliesScreen extends StatelessWidget {
       body: ChangeNotifierProvider(
         create: (context) => ShowRepliesViewModel(
           sourcePost: args.post,
-          usersStore: context.read<UsersStore>(),
+          store: context.read<Store>(),
         )..init(),
         child: Consumer<ShowRepliesViewModel>(
           builder: (context, viewModel, _) {
@@ -89,6 +89,8 @@ class _ReplyCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.select((Store store) => store.users)[post.uid];
+
     if (post.isDeleted) {
       return Container(
         color: AppColors.grey20,
@@ -117,7 +119,7 @@ class _ReplyCell extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _header(context),
-          _body(context),
+          _body(context, user),
         ],
       ),
     );
@@ -158,7 +160,7 @@ class _ReplyCell extends StatelessWidget {
     );
   }
 
-  Widget _body(BuildContext context) {
+  Widget _body(BuildContext context, AppUser user) {
     Widget _replyToButton = Container();
     if (post?.replyToNumber != null) {
       _replyToButton = Container(
@@ -170,17 +172,6 @@ class _ReplyCell extends StatelessWidget {
           onPressed: null,
         ),
       );
-    }
-
-    AppUser user;
-    if (post.isAnonymous) {
-      user = AppUser(
-        id: post.uid,
-        name: '名無しのハンター',
-        avatar: AppUserAvatar.unknown,
-      );
-    } else {
-      user = context.watch<UsersStore>().getUser(uid: post.uid);
     }
 
     return Container(

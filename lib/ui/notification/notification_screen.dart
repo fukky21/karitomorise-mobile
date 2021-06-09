@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
-import '../../stores/signed_in_user_store.dart';
+import '../../store.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_raised_button.dart';
@@ -17,21 +17,15 @@ class NotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = context.select((Store store) => store.currentUser);
+
     return Scaffold(
       appBar: simpleAppBar(context, title: _appBarTitle),
-      body: Consumer<SignedInUserStore>(
-        builder: (context, store, _) {
-          final signedInUser = store.getUser();
-
-          if (signedInUser.id == null) {
-            return const Center(
+      body: currentUser == null || currentUser.isAnonymous
+          ? const Center(
               child: Text('サインインすると表示されます'),
-            );
-          }
-
-          return _NotificationList();
-        },
-      ),
+            )
+          : _NotificationList(),
     );
   }
 }

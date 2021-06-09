@@ -7,13 +7,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
-import '../../stores/signed_in_user_store.dart';
 import 'localizations/ja.dart';
-import 'models/app_user.dart';
 import 'repositories/firebase_authentication_repository.dart';
 import 'repositories/firebase_messaging_repository.dart';
 import 'repositories/firebase_user_repository.dart';
-import 'stores/users_store.dart';
+import 'store.dart';
 import 'util/routes.dart';
 import 'util/style.dart';
 
@@ -44,20 +42,6 @@ Future<void> main() async {
     await authRepository.signInAnonymously();
   }
 
-  AppUser user;
-  if (currentUser != null && !currentUser.isAnonymous) {
-    user = await userRepository.getUser(id: currentUser.uid);
-    if (user == null) {
-      throw Exception('User document is not found.');
-    }
-  } else {
-    user = AppUser(
-      id: null,
-      name: '名無しのハンター',
-      avatar: AppUserAvatar.unknown,
-    );
-  }
-
   await messagingRepository.requestPermission();
   await messagingRepository.setForegroundNotificationPresentationOptions(
     alert: true,
@@ -72,15 +56,8 @@ Future<void> main() async {
       .listen((token) => userRepository.addToken(token: token));
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => SignedInUserStore()..setUser(user: user),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => UsersStore(),
-        ),
-      ],
+    ChangeNotifierProvider(
+      create: (_) => Store(),
       child: MyApp(),
     ),
   );

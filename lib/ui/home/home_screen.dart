@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../stores/users_store.dart';
+import '../../store.dart';
 import '../../ui/components/advertising_cell.dart';
 import '../../ui/components/custom_app_bar.dart';
 import '../../ui/components/custom_divider.dart';
@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => HomeViewModel(
-        usersStore: context.read<UsersStore>(),
+        store: context.read<Store>(),
       )..init(),
       child: Scaffold(
         appBar: simpleAppBar(context, title: _appBarTitle),

@@ -1,17 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+import '../../models/app_user.dart';
 import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
 import '../../repositories/firebase_user_repository.dart';
 import '../../repositories/shared_preference_repository.dart';
-import '../../stores/users_store.dart';
+import '../../store.dart';
 
 class SearchResultViewModel with ChangeNotifier {
-  SearchResultViewModel({@required this.keyword, @required this.usersStore});
+  SearchResultViewModel({@required this.keyword, @required this.store});
 
   final String keyword;
-  final UsersStore usersStore;
+  final Store store;
   final _userRepository = FirebaseUserRepository();
   final _postRepository = FirebasePostRepository();
   final _prefRepository = SharedPreferenceRepository();
@@ -32,11 +33,25 @@ class SearchResultViewModel with ChangeNotifier {
 
       final posts = await _postRepository.getPostsByKeyword(keyword: keyword);
 
+      // 重複してgetUserしないようにする
+      final addedUidByThisSearch = <String>[];
+
       for (final post in posts) {
-        // usersStoreに未追加の場合は追加する
-        if (usersStore.getUser(uid: post.uid) == null) {
-          final user = await _userRepository.getUser(id: post.uid);
-          usersStore.addUser(user: user);
+        // 今回のfetchで未追加(更新)のユーザーの場合はStoreに追加(更新)する
+        if (post.uid != null && !addedUidByThisSearch.contains(post.uid)) {
+          if (post.isAnonymous) {
+            store.addUser(
+              user: AppUser(
+                id: post.uid,
+                name: '名無しのハンター',
+                avatar: AppUserAvatar.unknown,
+              ),
+            );
+          } else {
+            final user = await _userRepository.getUser(id: post.uid);
+            store.addUser(user: user);
+          }
+          addedUidByThisSearch.add(post.uid);
         }
       }
 
