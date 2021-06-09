@@ -28,7 +28,7 @@ class SearchResultViewModel with ChangeNotifier {
 
     try {
       // 検索履歴に保存する
-      await _prefRepository.addSearchKeyword(keyword: keyword);
+      await _prefRepository.addToSearchHistory(keyword: keyword);
 
       final posts = await _postRepository.getPostsByKeyword(keyword: keyword);
       final _postIdList = <String>[];

@@ -17,7 +17,7 @@ class SearchingViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final histories = await _prefRepository.getSearchHistories();
+      final histories = await _prefRepository.getSearchHistory();
       _state = SearchingScreenLoadSuccess(histories: histories);
       notifyListeners();
     } on Exception catch (e) {
@@ -28,7 +28,7 @@ class SearchingViewModel with ChangeNotifier {
   }
 
   Future<void> deleteSearchKeyword({@required String keyword}) async {
-    await _prefRepository.deleteSearchKeyword(keyword: keyword);
+    await _prefRepository.removeFromSearchHistory(keyword: keyword);
     await init();
   }
 }

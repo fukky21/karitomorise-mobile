@@ -232,7 +232,7 @@ class _DeleteSearchHistoriesCell extends StatelessWidget {
         onTap: () async {
           if (await showConfirmModal(context, '検索履歴を全て削除しますか？')) {
             try {
-              await _prefRepository.deleteAllSearchHistories();
+              await _prefRepository.clearSearchHistory();
               showSnackBar(context, '検索履歴を全て削除しました');
             } on Exception catch (e) {
               debugPrint(e.toString());

@@ -2,33 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferenceRepository {
-  Future<List<String>> getSearchHistories() async {
+  Future<List<String>> getSearchHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final searchHistories = prefs.getStringList('searchHistories') ?? [];
+    final searchHistory = prefs.getStringList('searchHistory') ?? [];
 
-    return List.from(searchHistories.reversed);
+    return List.from(searchHistory.reversed);
   }
 
-  Future<void> addSearchKeyword({@required String keyword}) async {
+  Future<void> addToSearchHistory({@required String keyword}) async {
     final prefs = await SharedPreferences.getInstance();
-    final searchHistories = prefs.getStringList('searchHistories') ?? []
+    final searchHistory = prefs.getStringList('searchHistory') ?? []
       ..removeWhere((history) => history == keyword)
       ..add(keyword);
 
-    await prefs.setStringList('searchHistories', searchHistories);
+    await prefs.setStringList('searchHistory', searchHistory);
   }
 
-  Future<void> deleteSearchKeyword({@required String keyword}) async {
+  Future<void> removeFromSearchHistory({@required String keyword}) async {
     final prefs = await SharedPreferences.getInstance();
-    final searchHistories = prefs.getStringList('searchHistories') ?? []
+    final searchHistory = prefs.getStringList('searchHistory') ?? []
       ..removeWhere((history) => history == keyword);
 
-    await prefs.setStringList('searchHistories', searchHistories);
+    await prefs.setStringList('searchHistory', searchHistory);
   }
 
-  Future<void> deleteAllSearchHistories() async {
+  Future<void> clearSearchHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('searchHistories', []);
+    await prefs.setStringList('searchHistory', []);
   }
 
   Future<bool> isFirstLaunched() async {
