@@ -286,6 +286,33 @@ class FirebasePostRepository {
     return posts;
   }
 
+  Future<void> deletePost({@required String postId}) async {
+    if (postId == null) {
+      throw Exception('postId is null.');
+    }
+    final currentUser = _firebaseAuth.currentUser;
+
+    await _firebaseFirestore.runTransaction((transaction) async {
+      final docRef = _firebaseFirestore.collection('posts').doc(postId);
+      final snapshot = await transaction.get(docRef);
+
+      if (!snapshot.exists) {
+        throw Exception('Post is not found. ( postId: $postId )');
+      }
+
+      if ((snapshot.data()['uid'] as String) != currentUser.uid) {
+        throw Exception(
+          'CurrentUser is not creator of the post ( postId: $postId )',
+        );
+      }
+
+      transaction.update(
+        docRef,
+        <String, dynamic>{'deletedAt': DateTime.now()},
+      );
+    });
+  }
+
   Post _parse(DocumentSnapshot doc) {
     final data = doc.data() as Map;
 
