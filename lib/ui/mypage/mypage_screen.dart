@@ -260,6 +260,7 @@ class _ClearBlockListCell extends StatelessWidget {
           if (await showConfirmModal(context, 'ブロックリストを初期化しますか？')) {
             try {
               await _prefRepository.clearBlockList();
+              context.read<Store>().setBlockList([]);
               showSnackBar(context, 'ブロックリストを初期化しました');
             } on Exception catch (e) {
               debugPrint(e.toString());

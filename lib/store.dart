@@ -47,6 +47,7 @@ class Store with ChangeNotifier {
   CurrentUser currentUser;
   Map<String, AppUser> users = {};
   Map<String, Post> posts = {};
+  List<String> blockList = [];
 
   void addUser({@required AppUser user}) {
     if (user != null && user.id != null) {
@@ -64,5 +65,10 @@ class Store with ChangeNotifier {
     } else {
       debugPrint('addPost failed.');
     }
+  }
+
+  void setBlockList(List<String> blockList) {
+    this.blockList = blockList;
+    notifyListeners();
   }
 }

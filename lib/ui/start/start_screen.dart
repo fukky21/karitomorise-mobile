@@ -3,6 +3,7 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
+import '../../store.dart';
 import '../../ui/basic_usage/basic_usage_screen.dart';
 import '../../ui/error/error_screen.dart';
 import '../../ui/home/home_screen.dart';
@@ -54,7 +55,9 @@ class _StartScreenState extends State<StartScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => StartViewModel()..init(),
+      create: (context) => StartViewModel(
+        store: context.read<Store>(),
+      )..init(),
       child: Consumer<StartViewModel>(
         builder: (context, viewModel, child) {
           final state = viewModel.getState() ?? StartScreenLoading();

@@ -91,8 +91,9 @@ class _ReplyCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final post = context.select((Store store) => store.posts[postId]);
     final user = context.select((Store store) => store.users[post?.uid]);
+    final blockList = context.select((Store store) => store.blockList);
 
-    if (post.isDeleted) {
+    if (post.isDeleted || blockList.contains(user?.id)) {
       return Container(
         color: AppColors.grey20,
         padding: const EdgeInsets.all(10),
@@ -101,10 +102,12 @@ class _ReplyCell extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _header(context, post),
-            const SizedBox(
+            SizedBox(
               height: 100,
               child: Center(
-                child: Text('この投稿は削除されました'),
+                child: Text(
+                  post.isDeleted ? 'この投稿は削除されました' : 'このユーザーはブロックされています',
+                ),
               ),
             ),
           ],

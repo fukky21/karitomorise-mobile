@@ -2,8 +2,12 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../../repositories/shared_preference_repository.dart';
+import '../../store.dart';
 
 class StartViewModel with ChangeNotifier {
+  StartViewModel({@required this.store});
+
+  final Store store;
   final _prefRepository = SharedPreferenceRepository();
 
   StartScreenState _state = StartScreenLoading();
@@ -18,6 +22,8 @@ class StartViewModel with ChangeNotifier {
 
     try {
       final isFirstLaunched = await _prefRepository.isFirstLaunched();
+      final blockList = await _prefRepository.getBlockList();
+      store.setBlockList(blockList);
       _state = StartScreenLoadSuccess(isFirstLaunched: isFirstLaunched);
       notifyListeners();
     } on Exception catch (e) {
