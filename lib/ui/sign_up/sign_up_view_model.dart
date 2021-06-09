@@ -33,7 +33,6 @@ class SignUpViewModel with ChangeNotifier {
       await _userRepository.createUser(name: name);
 
       // アカウント作成後にサインイン状態にしない
-      await _authRepository.signOut();
       await _authRepository.signInAnonymously();
 
       _state = SignUpSuccess(email: email);

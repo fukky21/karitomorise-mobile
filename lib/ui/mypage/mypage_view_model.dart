@@ -25,7 +25,6 @@ class MypageViewModel with ChangeNotifier {
       await _userRepository.removeToken(token: token);
 
       // 匿名でサインインし直す
-      await _authRepository.signOut();
       await _authRepository.signInAnonymously();
     } on Exception catch (e) {
       debugPrint(e.toString());

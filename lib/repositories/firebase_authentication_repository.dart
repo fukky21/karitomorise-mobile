@@ -36,10 +36,6 @@ class FirebaseAuthenticationRepository {
     await _firebaseAuth.signInAnonymously();
   }
 
-  Future<void> signOut() async {
-    await _firebaseAuth.signOut();
-  }
-
   Future<void> signUpWithEmailAndPassword({
     @required String email,
     @required String password,
