@@ -18,6 +18,7 @@ class FirebaseReportRepository {
         'uid': _firebaseAuth.currentUser.uid,
         'postNumber': postNumber,
         'body': report,
+        'isChecked': false,
         'createdAt': now,
         'updatedAt': now,
       },
