@@ -10,13 +10,12 @@ class FirebaseReportRepository {
     @required String report,
     @required int postNumber,
   }) async {
-    final currentUser = _firebaseAuth.currentUser;
     final now = DateTime.now();
 
     await _firebaseFirestore.collection('reports').add(
       <String, dynamic>{
         'documentVersion': 1,
-        'uid': currentUser.isAnonymous ? null : currentUser.uid,
+        'uid': _firebaseAuth.currentUser.uid,
         'postNumber': postNumber,
         'body': report,
         'createdAt': now,
