@@ -8,6 +8,7 @@ import '../../models/post.dart';
 import '../../repositories/firebase_post_repository.dart';
 import '../../repositories/shared_preference_repository.dart';
 import '../../store.dart';
+import '../../ui/components/custom_modal.dart';
 import '../../ui/components/custom_snack_bar.dart';
 import '../../ui/create_post/create_post_screen.dart';
 import '../../ui/send_report/send_report_screen.dart';
@@ -175,7 +176,7 @@ class PostCell extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _OptionButton(post: post),
+        _OptionButton(parentContext: context, post: post),
         Row(
           children: [
             _replyCountButton,
@@ -201,8 +202,9 @@ class PostCell extends StatelessWidget {
 }
 
 class _OptionButton extends StatelessWidget {
-  _OptionButton({@required this.post});
+  _OptionButton({@required this.parentContext, @required this.post});
 
+  final BuildContext parentContext;
   final Post post;
   final _prefRepository = SharedPreferenceRepository();
   final _postRepository = FirebasePostRepository();
@@ -271,11 +273,11 @@ class _OptionButton extends StatelessWidget {
             await _prefRepository.addToBlockList(uid: post.uid);
             final newBlockList = await _prefRepository.getBlockList();
             context.read<Store>().setBlockList(newBlockList);
-            showSnackBar(context, 'ブロックリストに追加しました');
+            showSnackBar(parentContext, 'ブロックリストに追加しました');
           }
         } on Exception catch (e) {
           debugPrint(e.toString());
-          showSnackBar(context, 'エラーが発生しました');
+          showSnackBar(parentContext, 'エラーが発生しました');
         }
       },
       child: const Text('このユーザーをブロックする'),
@@ -286,16 +288,18 @@ class _OptionButton extends StatelessWidget {
     return CupertinoActionSheetAction(
       onPressed: () async {
         Navigator.pop(context);
-        try {
-          await _postRepository.deletePost(postId: post?.id);
-          final deletedPost = await _postRepository.getPost(
-            number: post?.number,
-          );
-          context.read<Store>().addPost(post: deletedPost);
-          showSnackBar(context, '投稿を削除しました');
-        } on Exception catch (e) {
-          debugPrint(e.toString());
-          showSnackBar(context, 'エラーが発生しました');
+        if (await showConfirmModal(context, '投稿を削除しますか？')) {
+          try {
+            await _postRepository.deletePost(postId: post?.id);
+            final deletedPost = await _postRepository.getPost(
+              number: post?.number,
+            );
+            context.read<Store>().addPost(post: deletedPost);
+            showSnackBar(parentContext, '投稿を削除しました');
+          } on Exception catch (e) {
+            debugPrint(e.toString());
+            showSnackBar(parentContext, 'エラーが発生しました');
+          }
         }
       },
       child: Text(
