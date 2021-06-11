@@ -22,6 +22,7 @@ import '../ui/show_thread/show_thread_screen.dart';
 import '../ui/sign_in/sign_in_screen.dart';
 import '../ui/sign_up/sign_up_screen.dart';
 import '../ui/start/start_screen.dart';
+import '../ui/terms_of_service/terms_of_service_screen.dart';
 
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
@@ -148,6 +149,12 @@ class Routes {
           return MaterialPageRoute<dynamic>(
             settings: routeSettings,
             builder: (_) => StartScreen(),
+          );
+        case TermsOfServiceScreen.route:
+          return MaterialPageRoute<dynamic>(
+            settings: routeSettings,
+            fullscreenDialog: true,
+            builder: (_) => TermsOfServiceScreen(),
           );
         default:
           return errorRoute(routeSettings);

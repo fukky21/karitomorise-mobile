@@ -31,13 +31,16 @@ class SharedPreferenceRepository {
     await prefs.setStringList('searchHistory', []);
   }
 
-  Future<bool> isFirstLaunched() async {
+  Future<bool> hasAgreedToTermsOfService() async {
     final prefs = await SharedPreferences.getInstance();
-    final isFirstLaunched = prefs.getBool('isFirstLaunched') ?? true;
-    if (isFirstLaunched) {
-      await prefs.setBool('isFirstLaunched', false);
-    }
-    return isFirstLaunched;
+    final hasAgreedToTermsOfService =
+        prefs.getBool('hasAgreedToTermsOfService') ?? false;
+    return hasAgreedToTermsOfService;
+  }
+
+  Future<void> agreeToTermsOfService() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasAgreedToTermsOfService', true);
   }
 
   Future<List<String>> getBlockList() async {

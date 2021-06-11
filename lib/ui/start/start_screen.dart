@@ -10,6 +10,7 @@ import '../../ui/home/home_screen.dart';
 import '../../ui/mypage/mypage_screen.dart';
 import '../../ui/notification/notification_screen.dart';
 import '../../ui/search/search_screen.dart';
+import '../../ui/terms_of_service/terms_of_service_screen.dart';
 import '../../util/app_colors.dart';
 import 'start_view_model.dart';
 
@@ -67,11 +68,12 @@ class _StartScreenState extends State<StartScreen> with WidgetsBindingObserver {
           }
 
           if (state is StartScreenLoadSuccess) {
-            final isFirstLaunched = state.isFirstLaunched;
+            final hasAgreedToTermsOfService = state.hasAgreedToTermsOfService;
 
-            if (isFirstLaunched) {
-              // はじめてアプリを起動したとき、基本的な使い方画面を表示する
+            if (!hasAgreedToTermsOfService) {
+              // はじめてアプリを起動したとき、利用規約画面と基本的な使い方画面を表示する
               WidgetsBinding.instance.addPostFrameCallback((_) async {
+                await Navigator.pushNamed(context, TermsOfServiceScreen.route);
                 await Navigator.pushNamed(context, BasicUsageScreen.route);
                 await viewModel.init();
               });

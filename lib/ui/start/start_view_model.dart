@@ -21,10 +21,12 @@ class StartViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final isFirstLaunched = await _prefRepository.isFirstLaunched();
+      final hasAgreedToTermsOfService =
+          await _prefRepository.hasAgreedToTermsOfService();
       final blockList = await _prefRepository.getBlockList();
       store.setBlockList(blockList);
-      _state = StartScreenLoadSuccess(isFirstLaunched: isFirstLaunched);
+      _state = StartScreenLoadSuccess(
+          hasAgreedToTermsOfService: hasAgreedToTermsOfService);
       notifyListeners();
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -42,9 +44,9 @@ abstract class StartScreenState extends Equatable {
 class StartScreenLoading extends StartScreenState {}
 
 class StartScreenLoadSuccess extends StartScreenState {
-  StartScreenLoadSuccess({@required this.isFirstLaunched});
+  StartScreenLoadSuccess({@required this.hasAgreedToTermsOfService});
 
-  final bool isFirstLaunched;
+  final bool hasAgreedToTermsOfService;
 }
 
 class StartScreenLoadFailure extends StartScreenState {}
