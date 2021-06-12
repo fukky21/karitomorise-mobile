@@ -39,7 +39,7 @@ class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
           children: [
             Container(
               width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.7,
+              height: MediaQuery.of(context).size.height * 0.65,
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: WebView(
                 initialUrl: '${dotenv.env['HP_BASE_URL']}/terms_of_service',
