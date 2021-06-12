@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../store.dart';
-import '../../ui/components/advertising_cell.dart';
 import '../../ui/components/custom_divider.dart';
 import '../../ui/components/custom_raised_button.dart';
 import '../../ui/components/post_cell.dart';
@@ -92,11 +91,13 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
               for (var i = 0; i < postIdList.length; i++) {
                 cells.add(PostCell(postId: postIdList[i]));
-                if (i >= 10 && i % 10 == 0) {
-                  // 10投稿ごとに広告を挿入する
-                  final adCell = AdvertisingCell();
-                  cells.add(adCell);
-                }
+
+                // TODO(fukky21): 広告配信準備後に有効化する
+                // if (i >= 10 && i % 10 == 0) {
+                //   // 10投稿ごとに広告を挿入する
+                //   final adCell = AdvertisingCell();
+                //   cells.add(adCell);
+                // }
               }
 
               if (cells.isEmpty) {

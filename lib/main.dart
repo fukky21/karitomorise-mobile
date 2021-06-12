@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import 'localizations/ja.dart';
@@ -19,7 +18,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await dotenv.load(fileName: '.env');
-  await MobileAds.instance.initialize();
+
+  // TODO(fukky21): 広告配信準備後に有効化する
+  // await MobileAds.instance.initialize();
 
   const flavor = String.fromEnvironment('FLAVOR');
   if (flavor == 'development') {
